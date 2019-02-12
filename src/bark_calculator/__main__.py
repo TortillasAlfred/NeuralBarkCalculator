@@ -5,7 +5,7 @@ from treatment_method.builder import build_from_treatment_method_arg
 from image_treatment_processor.builder import build_from_image_processor_arg
 
 
-if __name__ == "__main__":
+def parse_all_args():
     parser = argparse.ArgumentParser()
 
     parser.add_argument("image_loader", help="How to load images to process. Can be an image folder " + \
@@ -15,7 +15,11 @@ if __name__ == "__main__":
     parser.add_argument("--image_processor", help="Process applied to every image once treated. " + \
                         "Possible values are : 'display'", type=str, default="display")                                         
 
-    args = parser.parse_args()
+    return parser.parse_args()
+
+
+if __name__ == "__main__":
+    args = parse_all_args()
 
     image_loader = build_from_image_loader_arg(args.image_loader)
     treatment_method = build_from_treatment_method_arg(args.treatment_method)
