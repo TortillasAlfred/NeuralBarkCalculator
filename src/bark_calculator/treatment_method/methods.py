@@ -2,9 +2,6 @@
 
 class TreatmentMethod:
 
-    def __init__(self):
-        pass # Nothing to do here
-
     def treat_image(self, image):
         raise NotImplementedError("Should be implemented by children classes.")
         
@@ -13,9 +10,6 @@ class TreatmentMethod:
         
 
 class EdgeDetection(TreatmentMethod):
-
-    def __init__(self):
-        super().__init__()
 
     def treat_image(self, image):
         pass
