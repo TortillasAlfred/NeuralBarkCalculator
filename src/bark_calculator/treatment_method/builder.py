@@ -7,3 +7,6 @@ def build_from_treatment_method_arg(treatment_method):
 
     if treatment_method == "id":
         return Identity()
+
+    if treatment_method == "black_filter":
+        return BlackFilter()
