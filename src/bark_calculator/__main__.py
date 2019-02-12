@@ -1,9 +1,6 @@
 import argparse
 
-from image_loader.builder import build_from_image_loader_arg
-from treatment_method.builder import build_from_treatment_method_arg
-from image_treatment_processor.builder import build_from_image_processor_arg
-
+from experiments.builder import build_experiment_from_args
 
 def parse_all_args():
     parser = argparse.ArgumentParser()
@@ -19,10 +16,5 @@ def parse_all_args():
 
 
 if __name__ == "__main__":
-    args = parse_all_args()
-
-    image_loader = build_from_image_loader_arg(args.image_loader)
-    treatment_method = build_from_treatment_method_arg(args.treatment_method)
-    image_processor = build_from_image_processor_arg(args.image_processor)
-    
-    image_processor.process(image_loader, treatment_method)
+    exp = build_experiment_from_args(parse_all_args())
+    exp.run()
