@@ -13,3 +13,9 @@ class EdgeDetection(TreatmentMethod):
 
     def treat_image(self, image):
         pass
+
+
+class Identity(TreatmentMethod):
+
+    def treat_image(self, image):
+        return image

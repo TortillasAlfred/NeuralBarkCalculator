@@ -1,4 +1,4 @@
-from skimage.io import show, imshow_collection
+from skimage.io import show, imshow
 
 
 class Processor:
@@ -11,6 +11,6 @@ class Processor:
 
 class DisplayProcessor(Processor):
 
-    def processor_handle(self, treated_images):
-        imshow_collection(treated_images)
+    def processor_handle(self, treated_image):
+        imshow(treated_image)
         show()

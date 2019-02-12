@@ -11,7 +11,7 @@ if __name__ == "__main__":
     parser.add_argument("image_loader", help="How to load images to process. Can be an image folder " + \
                         "or 'good_examples' for a pre-filtered images source", type=str)
     parser.add_argument("--treatment_method", help="Treatment method used when calculating an image's bark. " + \
-                        "Possible values are : 'edge_detection'", type=str, default="edge_detection")
+                        "Possible values are : 'edge_detection', 'id'", type=str, default="edge_detection")
     parser.add_argument("--image_processor", help="Process applied to every image once treated. " + \
                         "Possible values are : 'display'", type=str, default="display")                                         
 
@@ -20,3 +20,5 @@ if __name__ == "__main__":
     image_loader = build_from_image_loader_arg(args.image_loader)
     treatment_method = build_from_treatment_method_arg(args.treatment_method)
     image_processor = build_from_image_processor_arg(args.image_processor)
+    
+    image_processor.process(image_loader, treatment_method)

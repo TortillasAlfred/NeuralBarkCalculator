@@ -9,13 +9,9 @@ class Loader:
     def __init__(self, source_path=default_source_path):
         self.source_path = source_path
         self.images_list = []
-        self.images_iter = None
 
     def __iter__(self):
-        return self.images_iter
-
-    def __next__(self):
-        return self.images_iter.next()
+        yield from self.images_list
 
     def build_images_list_from_names(self, image_names):
         for image_name in image_names:
@@ -25,8 +21,7 @@ class Loader:
             image_path = os.path.join(self.source_path, image_name)
             self.images_list.append(imread(image_path))
 
-        self.images_iter = iter(self.images_list)
-        
+
 
 class GoodExamplesLoader(Loader):
     good_examples_path = "res/good_examples.txt"
