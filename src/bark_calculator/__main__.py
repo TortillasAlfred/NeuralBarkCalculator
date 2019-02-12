@@ -11,4 +11,3 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     image_loader = build_from_image_src_arg(args.image_src)
-    print("allo")

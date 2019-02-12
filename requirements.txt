@@ -1,1 +1,4 @@
 argparse
+numpy=1.15
+skimage
+imageio
