@@ -1,5 +1,7 @@
 from skimage.io import show, imshow
 
+import numpy as np
+
 import matplotlib.pyplot as plt
 
 
@@ -14,7 +16,6 @@ class Processor:
 class DisplayProcessor(Processor):
 
     def processor_handle(self, treated_images):
-        for treated_image in treated_images:
-            imshow(treated_image)
-            show()
-        
+        imshow(np.concatenate(treated_images, axis=1))
+        show()
+    
