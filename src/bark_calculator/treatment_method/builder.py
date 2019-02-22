@@ -22,3 +22,6 @@ def build_from_treatment_method_arg(treatment_method):
 
     if treatment_method == "threshold":
         return Thresholding()
+
+    if treatment_method == "v1":
+        return V1()
