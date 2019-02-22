@@ -156,13 +156,16 @@ class ColorFilter(TreatmentMethod):
     def treat_image(self, image):
         image = rescale(image, 1/8)
 
-        mask = BlackMask().make_mask(image)
+        im = image.reshape((image.shape[0] * image.shape[0], 3))
 
-        pca = PCA(n_components=1)
+        kmeans = KMeans(n_clusters=4, n_jobs=-1, n_init=50)
 
-        final_image = np.ones_like(image) * 0.5
-        pca_treated = pca.fit_transform(image[mask])
-        black_white_pca = 1 - minmax_scale(pca_treated)
-        final_image[mask] = black_white_pca
+        k_means_4_image = kmeans.fit_predict(im).reshape((image.shape[0], image.shape[0]))
+        sorted_centers_args = np.argsort(np.linalg.norm(kmeans.cluster_centers_, axis=-1))[::-1]
         
-        return [image, final_image]
+        for prev_number, sorted_number in enumerate(sorted_centers_args):
+            np.put(k_means_4_image, kmeans.labels_ == prev_number, sorted_number)
+
+        k_means_4_image = grey2rgb(1 - (k_means_4_image / k_means_4_image.max()))
+
+        return [image, (k_means_4_image + image)/2, k_means_4_image]
