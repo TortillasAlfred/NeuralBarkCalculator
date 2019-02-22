@@ -69,12 +69,12 @@ class ComponentDetection(TreatmentMethod):
         
         markers = np.zeros_like(final_image)
         markers[final_image > 0.6] = 2
-        markers[final_image < 0.4] = 1
+        markers[final_image < 0.45] = 1
         markers[~black_mask] = 0
 
-        ws_image = watershed(edges, markers, mask=black_mask)
+        ws_image = grey2rgb(watershed(edges, markers, mask=black_mask)/2)
         
-        return [final_image, ws_image, label(ws_image == 1)]
+        return [image, (image + ws_image)/2, ws_image]
 
 
 class Thresholding(TreatmentMethod):
