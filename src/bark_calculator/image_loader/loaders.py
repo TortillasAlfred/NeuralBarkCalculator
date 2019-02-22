@@ -19,9 +19,7 @@ class Loader:
                 "Unsupported image file type {}".format(image_name[-4:])
                 
             image_path = os.path.join(self.source_path, image_name)
-            self.images_list.append(imread(image_path))
-
-
+            self.images_list.append([imread(image_path), image_name])
 
 class GoodExamplesLoader(Loader):
     good_examples_path = "res/good_examples.txt"

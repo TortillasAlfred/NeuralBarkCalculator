@@ -6,4 +6,7 @@ def build_from_image_processor_arg(image_processor):
         return DisplayProcessor()
 
     if image_processor == "data_view":
-            return DataViewing()
+        return DataViewing()
+
+    if image_processor == "save":
+        return Saver()
