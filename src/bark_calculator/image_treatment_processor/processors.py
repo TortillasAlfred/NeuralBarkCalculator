@@ -20,12 +20,17 @@ class DisplayProcessor(Processor):
 
     def processor_handle(self, treated_images):
         n_images = len(treated_images)
-        fig, axes = plt.subplots(ncols=3, nrows=ceil(n_images/3))
+        n_cols = 3
+        n_rows = ceil(n_images/3)
+        fig, axes = plt.subplots(ncols=n_cols, nrows=n_rows)
 
         for idx, image in enumerate(treated_images):
-            axes[idx].imshow(image, cmap=plt.get_cmap('binary'))
-            axes[idx].axis('off')
+            ax = axes[idx] if n_rows == 1 else axes[idx // n_cols][idx % n_cols]
+            ax.imshow(image, cmap=plt.get_cmap('binary'))
+            ax.axis('off')
 
+        figManager = plt.get_current_fig_manager()
+        figManager.window.showMaximized()
         plt.tight_layout()
         plt.show()
 
