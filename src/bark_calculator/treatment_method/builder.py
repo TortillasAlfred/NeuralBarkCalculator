@@ -16,3 +16,6 @@ def build_from_treatment_method_arg(treatment_method):
 
     if treatment_method == "color_filter":
         return ColorFilter()
+
+    if treatment_method == "component_detection":
+        return ComponentDetection()

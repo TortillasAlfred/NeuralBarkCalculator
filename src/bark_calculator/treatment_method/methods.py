@@ -2,7 +2,9 @@ import numpy as np
 
 from skimage.color import rgb2grey, grey2rgb
 from skimage.feature import canny
+from skimage.filters import sobel, scharr, threshold_otsu
 from skimage.transform import rescale
+from skimage.segmentation import watershed
 
 from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
@@ -46,7 +48,33 @@ class EdgeDetection(TreatmentMethod):
         black_white_pca = 1 - minmax_scale(pca_treated)
         np.put(final_image, np.where(black_mask.flatten()), black_white_pca)
         
-        return [canny(final_image, sigma=1.6)]
+        return [sobel(final_image), scharr(final_image), canny(final_image, sigma=1.6)]
+        
+class ComponentDetection(TreatmentMethod):
+
+    def treat_image(self, image):
+        image = rescale(image, 1/8)
+
+        black_mask = BlackMask().make_mask(image)
+
+        pca = PCA(n_components=1)
+
+        final_image = np.zeros((image.shape[0], image.shape[0]))
+        pca_treated = pca.fit_transform(image[black_mask])
+        black_white_pca = 1 - minmax_scale(pca_treated)
+        np.put(final_image, np.where(black_mask.flatten()), black_white_pca)
+        
+        edges = sobel(final_image)
+        
+        markers = np.zeros_like(final_image)
+        markers[final_image > 0.6] = 1
+        markers[final_image < 0.4] = 2
+        markers[~black_mask] = 0
+
+        ws_image = watershed(final_image, markers, mask=black_mask)
+        
+        return [final_image, ws_image]
+
 
 class Identity(TreatmentMethod):
 
