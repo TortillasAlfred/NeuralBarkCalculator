@@ -1,5 +1,7 @@
 from skimage.io import show, imshow
 
+from math import ceil
+
 import numpy as np
 
 import matplotlib.pyplot as plt
@@ -17,8 +19,15 @@ class Processor:
 class DisplayProcessor(Processor):
 
     def processor_handle(self, treated_images):
-        imshow(np.concatenate(treated_images, axis=1)) 
-        show()
+        n_images = len(treated_images)
+        fig, axes = plt.subplots(ncols=3, nrows=ceil(n_images/3))
+
+        for idx, image in enumerate(treated_images):
+            axes[idx].imshow(image, cmap=plt.gray())
+            axes[idx].axis('off')
+
+        fig.tight_layout()
+        plt.show()
 
 class DataViewing(Processor):
 
