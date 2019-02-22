@@ -23,10 +23,10 @@ class DisplayProcessor(Processor):
         fig, axes = plt.subplots(ncols=3, nrows=ceil(n_images/3))
 
         for idx, image in enumerate(treated_images):
-            axes[idx].imshow(image, cmap=plt.gray())
+            axes[idx].imshow(image, cmap=plt.get_cmap('binary'))
             axes[idx].axis('off')
 
-        fig.tight_layout()
+        plt.tight_layout()
         plt.show()
 
 class DataViewing(Processor):
