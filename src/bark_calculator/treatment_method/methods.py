@@ -37,8 +37,6 @@ class EdgeDetection(TreatmentMethod):
         return treated_list
 
     def auto_canny(self, image):
-        sigma = 0.33
-
         black_mask = self.black_masker.make_mask(image)
 
         pca = PCA(n_components=1)
@@ -47,12 +45,6 @@ class EdgeDetection(TreatmentMethod):
         pca_treated = pca.fit_transform(image[black_mask])
         black_white_pca = 1 - minmax_scale(pca_treated)
         np.put(final_image, np.where(black_mask.flatten()), black_white_pca)
-
-        v = np.median(black_white_pca)
-
-        #---- apply automatic Canny edge detection using the computed median----
-        lower = max(0, (1.0 - sigma) * v)
-        upper = min(1, (1.0 + sigma) * v)
         
         return [canny(final_image, sigma=1.6)]
 
