@@ -1,6 +1,13 @@
 import numpy as np
 
 from skimage.color import rgb2grey, grey2rgb
+from skimage.feature import canny
+from skimage.transform import rescale
+
+from sklearn.cluster import KMeans
+from sklearn.decomposition import PCA
+from sklearn.preprocessing import minmax_scale
+
 import cv2
 
 class TreatmentMethod:
@@ -20,29 +27,34 @@ class EdgeDetection(TreatmentMethod):
 
 
     def treat_image(self, image):
+        image = rescale(image, 1/8)
+
         treated_list = [rgb2grey(image)]
 
         # Add edge detection
-        treated_list.append(self.auto_canny(image))
+        treated_list.extend(self.auto_canny(image))
         
         return treated_list
 
     def auto_canny(self, image):
         sigma = 0.33
 
-        black_mask = self.black_masker.treat_image(image)
+        black_mask = self.black_masker.make_mask(image)
 
-        grey_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        pca = PCA(n_components=1)
 
-        grey_image_masked = np.ma.array(grey_image, mask=black_mask)
+        final_image = np.zeros((image.shape[0], image.shape[0]))
+        pca_treated = pca.fit_transform(image[black_mask])
+        black_white_pca = 1 - minmax_scale(pca_treated)
+        np.put(final_image, np.where(black_mask.flatten()), black_white_pca)
 
-        v = np.median(grey_image_masked)
+        v = np.median(black_white_pca)
 
         #---- apply automatic Canny edge detection using the computed median----
-        lower = int(max(0, (1.0 - sigma) * v))
-        upper = int(min(255, (1.0 + sigma) * v))
+        lower = max(0, (1.0 - sigma) * v)
+        upper = min(1, (1.0 + sigma) * v)
         
-        return cv2.Canny(grey_image_masked, lower, upper)
+        return [canny(final_image, sigma=1.6)]
 
 class Identity(TreatmentMethod):
 
@@ -75,7 +87,8 @@ class BlackFilter(TreatmentMethod):
 class BlackMask(TreatmentMethod):
 
     def treat_image(self, image):
-        return self.make_mask(image)
+        pipi = np.ma.array(rgb2grey(image), mask=self.make_mask(image))
+        return [image, pipi]
 
     def make_mask(self, image):
         black_image = rgb2grey(image)
@@ -90,3 +103,19 @@ class BlackMask(TreatmentMethod):
         black_mask[black_lines, :] = False
 
         return black_mask
+
+class ColorFilter(TreatmentMethod):
+
+    def treat_image(self, image):
+        image = rescale(image, 1/8)
+
+        mask = BlackMask().make_mask(image)
+
+        pca = PCA(n_components=1)
+
+        final_image = np.ones_like(image) * 0.5
+        pca_treated = pca.fit_transform(image[mask])
+        black_white_pca = 1 - minmax_scale(pca_treated)
+        final_image[mask] = black_white_pca
+        
+        return [image, final_image]

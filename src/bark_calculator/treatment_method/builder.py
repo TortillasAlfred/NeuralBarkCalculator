@@ -10,3 +10,9 @@ def build_from_treatment_method_arg(treatment_method):
 
     if treatment_method == "black_filter":
         return BlackFilter()
+
+    if treatment_method == "black_mask":
+        return BlackMask()
+
+    if treatment_method == "color_filter":
+        return ColorFilter()
