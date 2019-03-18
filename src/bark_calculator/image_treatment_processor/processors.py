@@ -49,14 +49,12 @@ class Saver(Processor):
             ax.imshow(image, cmap=plt.get_cmap('binary'))
             ax.axis('off')
 
-        figManager = plt.get_current_fig_manager()
-        figManager.window.showMaximized()
         plt.tight_layout()
         image_name = image_name.replace("/", "_")
         image_name = image_name.replace('\\', "_")
         image_name = image_name.replace(" ", "_")
         image_name = image_name.replace(".bmp", "")
-        plt.savefig(target_folder + image_name + ".pdf", format="pdf", dpi=900)
+        plt.savefig(target_folder + image_name + ".png", format="png", dpi=900)
 
 class DataViewing(Processor):
 
