@@ -1,5 +1,7 @@
 import os
 from skimage.io import imread
+from pathlib import Path
+import glob
 
 
 class Loader:
@@ -30,3 +32,12 @@ class GoodExamplesLoader(Loader):
         self.target_images_names = [image_name.split("\n")[0] for image_name in 
                                     open(self.good_examples_path, "r").readlines()]
         self.build_images_list_from_names(self.target_images_names)
+
+class FolderLoader(Loader):
+
+    def __init__(self, folder_path):
+        super().__init__()
+        images_paths = list(Path(folder_path).rglob("*.bmp"))
+        
+        self.images_list = [[imread(str(p)), p.name] for p in images_paths]
+
