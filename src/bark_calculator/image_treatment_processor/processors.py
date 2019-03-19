@@ -37,7 +37,7 @@ class DisplayProcessor(Processor):
 class Saver(Processor):
 
     def processor_handle(self, treated_images, image_name):
-        target_folder = "Images/v1_1/"
+        target_folder = "Images/entropy/"
 
         n_images = len(treated_images)
         n_cols = 3

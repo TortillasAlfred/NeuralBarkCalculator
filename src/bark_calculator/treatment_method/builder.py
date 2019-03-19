@@ -25,3 +25,6 @@ def build_from_treatment_method_arg(treatment_method):
 
     if treatment_method == "v1":
         return V1()
+
+    if treatment_method == "entropy":
+        return Entropy()
