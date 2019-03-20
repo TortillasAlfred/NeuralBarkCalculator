@@ -1,15 +1,21 @@
 import numpy as np
 
-from skimage.color import rgb2grey, grey2rgb
+from skimage.color import rgb2grey, grey2rgb, rgb2hsv, hsv2rgb
 from skimage.feature import canny
 from skimage.filters import sobel, threshold_otsu, threshold_adaptive, \
-    laplace, scharr, prewitt, roberts
+    laplace, scharr, prewitt, roberts, gabor_kernel
+from skimage.feature.texture import local_binary_pattern
 from skimage.transform import rescale
 from skimage.measure import label
 from skimage.morphology import disk, label
 from skimage.filters.rank import entropy
 from skimage.segmentation import watershed
 from skimage.exposure import histogram
+from skimage import img_as_float
+
+from scipy import ndimage as ndi
+
+from cv2 import Laplacian
 
 from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
@@ -28,7 +34,7 @@ class TreatmentMethod:
 
 
 class Grey(TreatmentMethod):
-    
+
     def treat_image(self, image):
         return rgb2grey(image)
 
@@ -257,22 +263,84 @@ class V1(TreatmentMethod):
 
 class V2(TreatmentMethod):
 
+    def power(self, image, kernel):
+        image = (image - image.mean()) / image.std()
+        return np.sqrt(ndi.convolve(image, np.real(kernel), mode='wrap')**2 +
+                       ndi.convolve(image, np.imag(kernel), mode='wrap')**2)
+
     def treat_image(self, image):
+        black_white_big = rgb2grey(image)
         image = rescale(image, 1/8)
 
         black_white = rgb2grey(image)
 
         treated_images = [image]
-        treated_images.extend(self.get_hist_and_threshhold(black_white))
+        for h, l in [(0.55, 0.70), (0.55, 0.72), (0.55, 0.74),
+                     (0.55, 0.76), (0.55, 0.78)]:
+            hist = self.get_hist_and_threshhold(black_white, h, l)
+            # treated_images.append(hist)
+
+        hist = self.get_hist_and_threshhold(black_white, 0.55, 0.70)
+        edges = sobel(hist)
+
+        black_mask = BlackMask().make_mask(image)
+        markers = np.copy(hist)
+        markers[~black_mask] = 0
+
+        ws_image = grey2rgb(watershed(edges, markers, mask=black_mask)/2)
+
+        treated_images.append(hist)
+        treated_images.append(ws_image)
+
+        gabors = []
+        for freq in [0.4, 1.0, 2.0, 5.0]:
+            for theta in range(8):
+                theta = theta / 4. * np.pi
+                kernel = gabor_kernel(freq, theta=theta)
+                gabors.append(self.power(black_mask, kernel))
+
+            treated_images.append(np.sum(gabors, axis=0))
+
+        # black_mask = BlackMask().make_mask(image)
+        # edges = sobel(black_white, mask=black_mask)
+        # treated_images.append(edges)
+
+        # for thresh in [0.15, 0.20, 0.25]:
+        #     pipi = np.ones_like(edges)
+        #     pipi[edges > thresh] = 0
+        #     treated_images.append(pipi)
+
+        # kernel = np.array([[-1, -1, 0, -1, -1],
+        #                    [-1, 0, 2, 0, -1],
+        #                    [0, 2, 4, 2, 0],
+        #                    [-1, 0, 2, 0, -1],
+        #                    [-1, -1, 0, -1, -1]])
+
+        # hsv_image = rgb2hsv(image)
+
+        # dst_h = cv2.filter2D(hsv_image[:, :, 0], -1, kernel)
+        # dst_s = cv2.filter2D(hsv_image[:, :, 1], -1, kernel)
+        # dst_v = cv2.filter2D(hsv_image[:, :, 2], -1, kernel)
+
+        # dst_hsv = np.stack([dst_h, dst_s, dst_v], axis=-1)
+
+        # treated_images.append(hsv2rgb(dst_hsv))
+        # treated_images.append(rgb2grey(hsv2rgb(dst_hsv)))
+
+        # win_rows, win_cols = 150, 150
+        # win_mean = ndimage.uniform_filter(
+        #     black_white_big, (win_rows, win_cols))
+        # win_sqr_mean = ndimage.uniform_filter(
+        #     black_white_big**2, (win_rows, win_cols))
+        # win_var = win_sqr_mean - win_mean**2
+
+        # treated_images.append(win_var)
 
         return treated_images
 
-    def get_hist_and_threshhold(self, image, threshold=0.65):
-        returned_image = np.ones_like(image)
-        returned_image[image < 0.65] = 0
+    def get_hist_and_threshhold(self, image, h, l):
+        returned_image = np.zeros_like(image)
+        returned_image[image < h] = 1
+        returned_image[image > l] = 2
 
-        components = label(returned_image)
-        components[returned_image == 0] = 0
-        components = grey2rgb(minmax_scale(components))
-
-        return returned_image, components
+        return returned_image
