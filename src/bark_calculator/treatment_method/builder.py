@@ -28,3 +28,9 @@ def build_from_treatment_method_arg(treatment_method):
 
     if treatment_method == "entropy":
         return Entropy()
+
+    if treatment_method == "v2":
+        return V2()
+
+    if treatment_method == "grey":
+        return Grey()

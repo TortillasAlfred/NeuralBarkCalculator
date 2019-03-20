@@ -2,12 +2,14 @@ import numpy as np
 
 from skimage.color import rgb2grey, grey2rgb
 from skimage.feature import canny
-from skimage.filters import sobel, threshold_otsu, threshold_adaptive
+from skimage.filters import sobel, threshold_otsu, threshold_adaptive, \
+    laplace, scharr, prewitt, roberts
 from skimage.transform import rescale
 from skimage.measure import label
-from skimage.morphology import disk
+from skimage.morphology import disk, label
 from skimage.filters.rank import entropy
 from skimage.segmentation import watershed
+from skimage.exposure import histogram
 
 from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
@@ -25,6 +27,12 @@ class TreatmentMethod:
         return [self.treat_image(image) for image in images]
 
 
+class Grey(TreatmentMethod):
+    
+    def treat_image(self, image):
+        return rgb2grey(image)
+
+
 class EdgeDetection(TreatmentMethod):
 
     def __init__(self):
@@ -37,11 +45,16 @@ class EdgeDetection(TreatmentMethod):
         treated_list = [rgb2grey(image)]
 
         # Add edge detection
-        treated_list.extend(self.auto_canny(image))
+        image = self.filtered_image(image)
+        treated_list.append(sobel(image))
+        treated_list.append(laplace(image))
+        treated_list.append(prewitt(image))
+        treated_list.append(scharr(image))
+        treated_list.append(roberts(image))
 
         return treated_list
 
-    def auto_canny(self, image):
+    def filtered_image(self, image):
         black_mask = self.black_masker.make_mask(image)
 
         pca = PCA(n_components=1)
@@ -51,6 +64,9 @@ class EdgeDetection(TreatmentMethod):
         black_white_pca = 1 - minmax_scale(pca_treated)
         np.put(final_image, np.where(black_mask.flatten()), black_white_pca)
 
+        return final_image
+
+    def auto_canny(self, image):
         return [canny(final_image, sigma=1.6)]
 
 
@@ -204,7 +220,7 @@ class Entropy(TreatmentMethod):
 
     def treat_image(self, image):
         final_image = rgb2grey(image)
-        
+
         treated_list = [image]
 
         for r in [10, 12, 15, 20, 25]:
@@ -237,3 +253,26 @@ class V1(TreatmentMethod):
                             treat_image_with_markers(image, markers_for_component_detection)[2])
 
         return treated_list
+
+
+class V2(TreatmentMethod):
+
+    def treat_image(self, image):
+        image = rescale(image, 1/8)
+
+        black_white = rgb2grey(image)
+
+        treated_images = [image]
+        treated_images.extend(self.get_hist_and_threshhold(black_white))
+
+        return treated_images
+
+    def get_hist_and_threshhold(self, image, threshold=0.65):
+        returned_image = np.ones_like(image)
+        returned_image[image < 0.65] = 0
+
+        components = label(returned_image)
+        components[returned_image == 0] = 0
+        components = grey2rgb(minmax_scale(components))
+
+        return returned_image, components

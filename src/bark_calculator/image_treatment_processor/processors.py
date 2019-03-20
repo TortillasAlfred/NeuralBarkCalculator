@@ -1,4 +1,5 @@
 from skimage.io import show, imshow
+from sklearn.preprocessing import minmax_scale
 
 from math import ceil
 
@@ -25,7 +26,8 @@ class DisplayProcessor(Processor):
         fig, axes = plt.subplots(ncols=n_cols, nrows=n_rows)
 
         for idx, image in enumerate(treated_images):
-            ax = axes[idx] if n_rows == 1 else axes[idx // n_cols][idx % n_cols]
+            ax = axes[idx] if n_rows == 1 else axes[idx //
+                                                    n_cols][idx % n_cols]
             ax.imshow(image, cmap=plt.get_cmap('binary'))
             ax.axis('off')
 
@@ -34,10 +36,11 @@ class DisplayProcessor(Processor):
         plt.tight_layout()
         plt.show()
 
+
 class Saver(Processor):
 
     def processor_handle(self, treated_images, image_name):
-        target_folder = "Images/entropy/"
+        target_folder = "Images/hist/"
 
         n_images = len(treated_images)
         n_cols = 3
@@ -45,7 +48,8 @@ class Saver(Processor):
         fig, axes = plt.subplots(ncols=n_cols, nrows=n_rows)
 
         for idx, image in enumerate(treated_images):
-            ax = axes[idx] if n_rows == 1 else axes[idx // n_cols][idx % n_cols]
+            ax = axes[idx] if n_rows == 1 else axes[idx //
+                                                    n_cols][idx % n_cols]
             ax.imshow(image, cmap=plt.get_cmap('binary'))
             ax.axis('off')
 
@@ -55,6 +59,7 @@ class Saver(Processor):
         image_name = image_name.replace(" ", "_")
         image_name = image_name.replace(".bmp", "")
         plt.savefig(target_folder + image_name + ".png", format="png", dpi=900)
+
 
 class DataViewing(Processor):
 
@@ -67,5 +72,28 @@ class DataViewing(Processor):
             x = reshaped[:, 0]
             y = reshaped[:, 1]
             sns.scatterplot(x, y)
-    
+
+        plt.show()
+
+
+class HistogramViewing():
+
+    def process(self, image_loader, treatment_method):
+        histograms = []
+        hist_centers = np.arange(256)/255
+
+        for image, image_name in image_loader:
+            treated_image = treatment_method.treat_image(image)
+            bins = np.histogram(
+                treated_image[treated_image > 1e-5], bins=256)[0]
+            hist = minmax_scale(bins)
+            histograms.append(hist)
+            plt.plot(hist_centers, hist, linewidth=3, color='r', alpha=0.3)
+
+        hist = np.mean(histograms, axis=0)
+
+        plt.plot(hist_centers, hist, linewidth=6, color='k')
+        plt.plot(hist_centers, hist, linewidth=3, color='r')
+        plt.axvline(x=0.65, color='k', linewidth=4, linestyle='--')
+        plt.title("Distribution des couleurs pour l'épinette gelée")
         plt.show()
