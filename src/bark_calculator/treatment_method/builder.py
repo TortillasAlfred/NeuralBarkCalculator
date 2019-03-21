@@ -34,3 +34,6 @@ def build_from_treatment_method_arg(treatment_method):
 
     if treatment_method == "grey":
         return Grey()
+
+    if treatment_method == "eq":
+        return Equalizer()

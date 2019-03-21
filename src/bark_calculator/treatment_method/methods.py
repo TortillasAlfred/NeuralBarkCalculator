@@ -5,13 +5,15 @@ from skimage.feature import canny
 from skimage.filters import sobel, threshold_otsu, threshold_adaptive, \
     laplace, scharr, prewitt, roberts, gabor_kernel
 from skimage.feature.texture import local_binary_pattern
-from skimage.transform import rescale
+from skimage.transform import rescale, resize
 from skimage.measure import label
 from skimage.morphology import disk, label
 from skimage.filters.rank import entropy
 from skimage.segmentation import watershed
 from skimage.exposure import histogram
 from skimage import img_as_float
+from skimage.util import view_as_blocks, view_as_windows
+from skimage.exposure import equalize_adapthist, equalize_hist
 
 from scipy import ndimage as ndi
 
@@ -186,7 +188,7 @@ class BlackMask(TreatmentMethod):
     def make_mask(self, image):
         black_image = rgb2grey(image)
 
-        black_points = black_image < 0.15
+        black_points = black_image < 0.05
 
         black_lines = np.mean(black_image, axis=1) < 10 ** -1
 
@@ -261,6 +263,12 @@ class V1(TreatmentMethod):
         return treated_list
 
 
+class Equalizer(TreatmentMethod):
+
+    def treat_image(self, image):
+        return rgb2grey(equalize_adapthist(image))
+
+
 class V2(TreatmentMethod):
 
     def power(self, image, kernel):
@@ -269,76 +277,48 @@ class V2(TreatmentMethod):
                        ndi.convolve(image, np.imag(kernel), mode='wrap')**2)
 
     def treat_image(self, image):
-        black_white_big = rgb2grey(image)
-        image = rescale(image, 1/8)
+        big_image = np.copy(image)
+        big_black_mask = BlackMask().make_mask(image)
+        big_image[~big_black_mask] = [1, 1, 1]
 
-        black_white = rgb2grey(image)
+        adapt_image = equalize_adapthist(image)
+        black_white = rgb2grey(adapt_image)
 
-        treated_images = [image]
-        for h, l in [(0.55, 0.70), (0.55, 0.72), (0.55, 0.74),
-                     (0.55, 0.76), (0.55, 0.78)]:
-            hist = self.get_hist_and_threshhold(black_white, h, l)
-            # treated_images.append(hist)
+        treated_images = [1 - black_white]
 
-        hist = self.get_hist_and_threshhold(black_white, 0.55, 0.70)
-        edges = sobel(hist)
+        block_shape = (16, 16)
 
-        black_mask = BlackMask().make_mask(image)
+        view = view_as_blocks(black_white, block_shape)
+
+        flatten_view = view.reshape(view.shape[0], view.shape[1], -1)
+
+        max_view = np.max(flatten_view, axis=2)
+
+        hist = self.get_hist(max_view, 0.55, 0.70)
+        black_mask = BlackMask().make_mask(grey2rgb(max_view))
+        edges = minmax_scale(sobel(hist))
         markers = np.copy(hist)
         markers[~black_mask] = 0
+        markers[np.logical_and(edges > 0.4, edges < 0.6)] = 3
 
-        ws_image = grey2rgb(watershed(edges, markers, mask=black_mask)/2)
+        ws_image = watershed(edges, markers, mask=black_mask)
 
-        treated_images.append(hist)
-        treated_images.append(ws_image)
+        treated_images.append(1 - max_view)
 
-        gabors = []
-        for freq in [0.4, 1.0, 2.0, 5.0]:
-            for theta in range(8):
-                theta = theta / 4. * np.pi
-                kernel = gabor_kernel(freq, theta=theta)
-                gabors.append(self.power(black_mask, kernel))
-
-            treated_images.append(np.sum(gabors, axis=0))
-
-        # black_mask = BlackMask().make_mask(image)
-        # edges = sobel(black_white, mask=black_mask)
-        # treated_images.append(edges)
-
-        # for thresh in [0.15, 0.20, 0.25]:
-        #     pipi = np.ones_like(edges)
-        #     pipi[edges > thresh] = 0
-        #     treated_images.append(pipi)
-
-        # kernel = np.array([[-1, -1, 0, -1, -1],
-        #                    [-1, 0, 2, 0, -1],
-        #                    [0, 2, 4, 2, 0],
-        #                    [-1, 0, 2, 0, -1],
-        #                    [-1, -1, 0, -1, -1]])
-
-        # hsv_image = rgb2hsv(image)
-
-        # dst_h = cv2.filter2D(hsv_image[:, :, 0], -1, kernel)
-        # dst_s = cv2.filter2D(hsv_image[:, :, 1], -1, kernel)
-        # dst_v = cv2.filter2D(hsv_image[:, :, 2], -1, kernel)
-
-        # dst_hsv = np.stack([dst_h, dst_s, dst_v], axis=-1)
-
-        # treated_images.append(hsv2rgb(dst_hsv))
-        # treated_images.append(rgb2grey(hsv2rgb(dst_hsv)))
-
-        # win_rows, win_cols = 150, 150
-        # win_mean = ndimage.uniform_filter(
-        #     black_white_big, (win_rows, win_cols))
-        # win_sqr_mean = ndimage.uniform_filter(
-        #     black_white_big**2, (win_rows, win_cols))
-        # win_var = win_sqr_mean - win_mean**2
-
-        # treated_images.append(win_var)
+        ws_copy = np.copy(ws_image)
+        ws_copy[ws_image > 1] = 0
+        treated_images.append(ws_copy)
+        ws_copy = minmax_scale(resize(ws_copy, (4096, 4096)))
+        big_image_2 = np.copy(big_image)
+        big_image[ws_copy == 1] = [0, 0, 0]
+        big_image_2[~(ws_copy == 1)] = [0, 0, 0]
+        treated_images.append(image)
+        treated_images.append(big_image)
+        treated_images.append(big_image_2)
 
         return treated_images
 
-    def get_hist_and_threshhold(self, image, h, l):
+    def get_hist(self, image, h, l):
         returned_image = np.zeros_like(image)
         returned_image[image < h] = 1
         returned_image[image > l] = 2
