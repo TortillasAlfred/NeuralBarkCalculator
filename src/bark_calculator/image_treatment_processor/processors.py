@@ -85,7 +85,7 @@ class HistogramViewing():
         for image, image_name in image_loader:
             treated_image = treatment_method.treat_image(image)
             bins = np.histogram(
-                treated_image[treated_image > 1e-5], bins=256)[0]
+                treated_image[treated_image > 1e-1], bins=256)[0]
             hist = minmax_scale(bins)
             histograms.append(hist)
             plt.plot(hist_centers, hist, linewidth=3, color='r', alpha=0.3)
