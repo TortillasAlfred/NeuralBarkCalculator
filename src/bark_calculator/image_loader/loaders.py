@@ -42,11 +42,18 @@ class FolderLoader(Loader):
         self.wood_types = ["epn_gele", "epn_non-gele",
                            "sap_gele"]
 
-        image_paths = []
+        self.image_paths = []
         for wood_type in self.wood_types:
             wood_type_path = Path(os.path.join(folder_path, wood_type))
-            image_paths.extend([(img_path, wood_type) for img_path
-                                in wood_type_path.rglob("*.bmp")])
+            self.image_paths.extend([(img_path, wood_type) for img_path
+                                     in wood_type_path.rglob("*.bmp")])
 
-        self.images_list = [[imread(str(p)), t, p.name]
-                            for p, t in image_paths]
+        self.idx = 0
+
+    def __next__(self):
+        p, t = self.image_paths[self.idx]
+        self.idx += 1
+        return [imread(str(p)), t, p.name]
+
+    def __iter__(self):
+        return self
