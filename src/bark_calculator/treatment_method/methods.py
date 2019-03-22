@@ -28,16 +28,17 @@ import cv2
 
 class TreatmentMethod:
 
-    def treat_image(self, image):
+    def treat_image(self, image, image_type):
         raise NotImplementedError("Should be implemented by children classes.")
 
-    def treat_images(self, images):
-        return [self.treat_image(image) for image in images]
+    def treat_images(self, images, image_types):
+        return [self.treat_image(image, image_type) for image, image_type
+                in zip(images, image_types)]
 
 
 class Grey(TreatmentMethod):
 
-    def treat_image(self, image):
+    def treat_image(self, image, image_type):
         return rgb2grey(image)
 
 
@@ -47,7 +48,7 @@ class EdgeDetection(TreatmentMethod):
         super().__init__()
         self.black_masker = BlackMask()
 
-    def treat_image(self, image):
+    def treat_image(self, image, image_type):
         image = rescale(image, 1/8)
 
         treated_list = [rgb2grey(image)]
@@ -80,7 +81,7 @@ class EdgeDetection(TreatmentMethod):
 
 class ComponentDetection(TreatmentMethod):
 
-    def treat_image(self, image):
+    def treat_image(self, image, image_type):
         image = rescale(image, 1/8)
 
         black_mask = BlackMask().make_mask(image)
@@ -126,7 +127,7 @@ class ComponentDetection(TreatmentMethod):
 
 class Thresholding(TreatmentMethod):
 
-    def treat_image(self, image):
+    def treat_image(self, image, image_type):
         image = rescale(image, 1/8)
 
         black_mask = BlackMask().make_mask(image)
@@ -152,13 +153,13 @@ class Thresholding(TreatmentMethod):
 
 class Identity(TreatmentMethod):
 
-    def treat_image(self, image):
+    def treat_image(self, image, image_type):
         return [image]
 
 
 class BlackFilter(TreatmentMethod):
 
-    def treat_image(self, image):
+    def treat_image(self, image, image_type):
         return [image, self.remove_black_regions(image)]
 
     def remove_black_regions(self, image):
@@ -181,7 +182,7 @@ class BlackFilter(TreatmentMethod):
 
 class BlackMask(TreatmentMethod):
 
-    def treat_image(self, image):
+    def treat_image(self, image, image_type):
         pipi = np.ma.array(rgb2grey(image), mask=self.make_mask(image))
         return [image, pipi]
 
@@ -202,7 +203,7 @@ class BlackMask(TreatmentMethod):
 
 class ColorFilter(TreatmentMethod):
 
-    def treat_image(self, image):
+    def treat_image(self, image, image_type):
         image = rescale(image, 1/8)
 
         im = image.reshape((image.shape[0] * image.shape[0], 3))
@@ -226,7 +227,7 @@ class ColorFilter(TreatmentMethod):
 
 class Entropy(TreatmentMethod):
 
-    def treat_image(self, image):
+    def treat_image(self, image, image_type):
         final_image = rgb2grey(image)
 
         treated_list = [image]
@@ -240,7 +241,7 @@ class Entropy(TreatmentMethod):
 
 class V1(TreatmentMethod):
 
-    def treat_image(self, image):
+    def treat_image(self, image, image_type):
         treated_list = [rescale(image, 1/8)]
 
         color_filtered = ColorFilter().treat_image(image)[1:]
@@ -265,18 +266,22 @@ class V1(TreatmentMethod):
 
 class Equalizer(TreatmentMethod):
 
-    def treat_image(self, image):
+    def treat_image(self, image, image_type):
         return rgb2grey(equalize_adapthist(image))
 
 
 class V2(TreatmentMethod):
+
+    def __init__(self):
+        super().__init__()
+        self.threshold_dict = {"epn_non-gele": [0.55, 0.70]}
 
     def power(self, image, kernel):
         image = (image - image.mean()) / image.std()
         return np.sqrt(ndi.convolve(image, np.real(kernel), mode='wrap')**2 +
                        ndi.convolve(image, np.imag(kernel), mode='wrap')**2)
 
-    def treat_image(self, image):
+    def treat_image(self, image, image_type):
         big_image = np.copy(image)
         big_black_mask = BlackMask().make_mask(image)
         big_image[~big_black_mask] = [1, 1, 1]

@@ -12,14 +12,14 @@ import seaborn as sns
 class Processor:
 
     def process(self, image_loader, treatment_method):
-        for image, image_name in image_loader:
-            treated_image = treatment_method.treat_image(image)
-            self.processor_handle(treated_image, image_name)
+        for image, image_type, image_name in image_loader:
+            treated_image = treatment_method.treat_image(image, image_type)
+            self.processor_handle(treated_image, image_type, image_name)
 
 
 class DisplayProcessor(Processor):
 
-    def processor_handle(self, treated_images, image_name):
+    def processor_handle(self, treated_images, image_type, image_name):
         n_images = len(treated_images)
         n_cols = 3
         n_rows = ceil(n_images/3)
@@ -39,9 +39,7 @@ class DisplayProcessor(Processor):
 
 class Saver(Processor):
 
-    def processor_handle(self, treated_images, image_name):
-        target_folder = "Images/hist/"
-
+    def processor_handle(self, treated_images, image_type, image_name):
         n_images = len(treated_images)
         n_cols = 3
         n_rows = ceil(n_images/3)
@@ -58,12 +56,15 @@ class Saver(Processor):
         image_name = image_name.replace('\\', "_")
         image_name = image_name.replace(" ", "_")
         image_name = image_name.replace(".bmp", "")
-        plt.savefig(target_folder + image_name + ".png", format="png", dpi=900)
+        plt.savefig("Images/results/{}/{}.png".format(image_type,
+                                                      image_name),
+                    format="png",
+                    dpi=900)
 
 
 class DataViewing(Processor):
 
-    def processor_handle(self, treated_images, image_name):
+    def processor_handle(self, treated_images, image_type, image_name):
         imshow(treated_images[0])
         show()
 
