@@ -95,6 +95,6 @@ class HistogramViewing():
 
         plt.plot(hist_centers, hist, linewidth=6, color='k')
         plt.plot(hist_centers, hist, linewidth=3, color='r')
-        plt.axvline(x=0.65, color='k', linewidth=4, linestyle='--')
+        # plt.axvline(x=0.65, color='k', linewidth=4, linestyle='--')
         plt.title("Distribution des couleurs pour l'épinette gelée")
         plt.show()
