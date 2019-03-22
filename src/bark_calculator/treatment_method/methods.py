@@ -274,22 +274,23 @@ class V2(TreatmentMethod):
 
     def __init__(self):
         super().__init__()
-        self.threshold_dict = {"epn_non-gele": [0.55, 0.70]}
-
-    def power(self, image, kernel):
-        image = (image - image.mean()) / image.std()
-        return np.sqrt(ndi.convolve(image, np.real(kernel), mode='wrap')**2 +
-                       ndi.convolve(image, np.imag(kernel), mode='wrap')**2)
+        self.threshold_dict = {"epn_gele": [0.50, 0.65, 0.4, 0.6],
+                               "epn_non-gele": [0.4, 0.58, 0.5, 1.0],
+                               "sap_gele": [0.52, 0.64, 0.5, 0.7]}
+        self.black_masker = BlackMask()
 
     def treat_image(self, image, image_type):
+        h, l, h_2, l_2 = self.threshold_dict[image_type]
+
         big_image = np.copy(image)
-        big_black_mask = BlackMask().make_mask(image)
+        big_black_mask = self.black_masker.make_mask(image)
         big_image[~big_black_mask] = [1, 1, 1]
 
         adapt_image = equalize_adapthist(image)
         black_white = rgb2grey(adapt_image)
 
-        treated_images = [1 - black_white]
+        treated_images = []
+        treated_images.append(1 - black_white)
 
         block_shape = (16, 16)
 
@@ -299,16 +300,24 @@ class V2(TreatmentMethod):
 
         max_view = np.max(flatten_view, axis=2)
 
-        hist = self.get_hist(max_view, 0.55, 0.70)
-        black_mask = BlackMask().make_mask(grey2rgb(max_view))
-        edges = minmax_scale(sobel(hist))
+        hist = self.get_hist(max_view, h, l)
+        black_mask = self.black_masker.make_mask(grey2rgb(max_view))
+        hist_edges = np.copy(hist)
+        hist_edges[hist == 0] = 1
+        hist_edges[hist == 1] = 0
+        hist_edges /= 2
+        edges = minmax_scale(sobel((max_view + hist_edges)/2))
         markers = np.copy(hist)
         markers[~black_mask] = 0
-        markers[np.logical_and(edges > 0.4, edges < 0.6)] = 3
+        markers[np.logical_and(
+                    np.logical_and(edges > h_2, edges < l_2),
+                    hist == 0)] = 3
 
         ws_image = watershed(edges, markers, mask=black_mask)
 
-        treated_images.append(1 - max_view)
+        # treated_images.append(1 - max_view)
+        treated_images.append(hist)
+        # treated_images.append(edges)
 
         ws_copy = np.copy(ws_image)
         ws_copy[ws_image > 1] = 0
