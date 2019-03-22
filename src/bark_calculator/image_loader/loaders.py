@@ -55,5 +55,8 @@ class FolderLoader(Loader):
         self.idx += 1
         return [imread(str(p)), t, p.name]
 
+    def __len__(self):
+        return len(self.image_paths)
+
     def __iter__(self):
         return self
