@@ -83,8 +83,8 @@ class HistogramViewing():
         histograms = []
         hist_centers = np.arange(256)/255
 
-        for image, image_name in image_loader:
-            treated_image = treatment_method.treat_image(image)
+        for image, image_type, image_name in image_loader:
+            treated_image = treatment_method.treat_image(image, image_type)
             bins = np.histogram(
                 treated_image[treated_image > 1e-1], bins=256)[0]
             hist = minmax_scale(bins)
@@ -96,5 +96,5 @@ class HistogramViewing():
         plt.plot(hist_centers, hist, linewidth=6, color='k')
         plt.plot(hist_centers, hist, linewidth=3, color='r')
         # plt.axvline(x=0.65, color='k', linewidth=4, linestyle='--')
-        plt.title("Distribution des couleurs pour l'épinette gelée")
+        plt.title("Distribution des couleurs pour l'épinette non-gelée")
         plt.show()
