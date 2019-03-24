@@ -1,5 +1,5 @@
 from torch import nn
-from torchvision.models import vgg11_bn
+from torchvision import models
 import math
 
 
@@ -21,7 +21,7 @@ class RegressionVGG19_BN(nn.Module):
 
     def __init__(self):
         super().__init__()
-        model = vgg11_bn(pretrained=True)
+        model = models.densenet121(pretrained=True)
 
         for params in model.parameters():
             params.requires_grad = False
