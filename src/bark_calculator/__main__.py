@@ -11,7 +11,14 @@ import torch
 
 
 if __name__ == "__main__":
-    dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/nn", transform=ToTensor())
+    dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/nn",
+                                      input_only_transform=Compose(
+                                          [Normalize(mean, std)]
+                                      ),
+                                      transform=Compose(
+                                          [Resize(224),
+                                           ToTensor()]
+                                      ))
     mean, std = get_mean_std()
     augmented_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/nn",
                                                 input_only_transform=Compose(
