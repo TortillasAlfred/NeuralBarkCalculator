@@ -62,8 +62,9 @@ class Saver(Processor):
         #             format="png",
         #             dpi=900)
 
-        ws = treated_images[2]
-        imsave("Images/v2_results/{}".format(image_name), ws)
+        imsave("Images/nn/targets/{}".format(image_name), treated_images[2])
+
+        imsave("Images/nn/samples/{}".format(image_name), treated_images[3])
 
 
 class DataViewing(Processor):
