@@ -109,7 +109,9 @@ class RegressionDatasetFolder(data.Dataset):
             E.g, ``transforms.RandomCrop`` for images.
         input_only_transform (callable, optional): A function/transform that takes
             in the sample and transforms it. If given, this will always
-            be called prior to the transform argument.
+            be called prior to the transform argument. Since
+            'transform' will be applied after, should always return a
+            PILImage.
             E.g, ``transforms.Normalize`` for sample images, where
             target is boolean image.
      Attributes:
