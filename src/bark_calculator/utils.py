@@ -7,7 +7,7 @@ from torch.utils.data import DataLoader
 def compute_mean_std(working_dir: str):
     train_dataset = RegressionDatasetFolder(working_dir,
                                             transform=Compose(
-                                                [ToTensor()]))
+                                                [Resize((224, 224)), ToTensor()]))
     loader = DataLoader(train_dataset, batch_size=100)
 
     mean = 0.
@@ -29,7 +29,7 @@ def compute_mean_std(working_dir: str):
 def get_mean_std():
     # Util function to not have to recalculate them
     # every single time
-    mean = [0.5494703054428101, 0.46148523688316345, 0.3453504145145416]
-    std = [0.3568655550479889, 0.31607526540756226, 0.25801268219947815]
+    mean = [0.5495320558547974, 0.46154847741127014, 0.34539610147476196]
+    std = [0.35342904925346375, 0.3120446503162384, 0.25366029143333435]
 
     return mean, std
