@@ -310,19 +310,18 @@ class V2(TreatmentMethod):
         markers = np.copy(hist)
         markers[~black_mask] = 0
         markers[np.logical_and(
-                    np.logical_and(edges > h_2, edges < l_2),
-                    hist == 0)] = 3
+            np.logical_and(edges > h_2, edges < l_2),
+            hist == 0)] = 3
 
         ws_image = watershed(edges, markers, mask=black_mask)
 
         # treated_images.append(1 - max_view)
         treated_images.append(hist)
         # treated_images.append(edges)
+        ws_image[~(ws_image == 1)] = 0
 
-        ws_copy = np.copy(ws_image)
-        ws_copy[ws_image > 1] = 0
-        treated_images.append(ws_copy)
-        ws_copy = minmax_scale(resize(ws_copy, (4096, 4096)))
+        ws_copy = np.repeat(ws_image, 16, axis=0).repeat(16, axis=1)
+        treated_images.append(1 - ws_copy)
         big_image_2 = np.copy(big_image)
         big_image[ws_copy == 1] = [0, 0, 0]
         big_image_2[~(ws_copy == 1)] = [0, 0, 0]

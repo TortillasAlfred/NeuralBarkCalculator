@@ -1,4 +1,5 @@
 from skimage.io import show, imshow
+from scipy.misc import imsave
 from sklearn.preprocessing import minmax_scale
 
 from math import ceil
@@ -40,26 +41,29 @@ class DisplayProcessor(Processor):
 class Saver(Processor):
 
     def processor_handle(self, treated_images, image_type, image_name):
-        n_images = len(treated_images)
-        n_cols = 3
-        n_rows = ceil(n_images/3)
-        fig, axes = plt.subplots(ncols=n_cols, nrows=n_rows)
+        # n_images = len(treated_images)
+        # n_cols = 3
+        # n_rows = ceil(n_images/3)
+        # fig, axes = plt.subplots(ncols=n_cols, nrows=n_rows)
 
-        for idx, image in enumerate(treated_images):
-            ax = axes[idx] if n_rows == 1 else axes[idx //
-                                                    n_cols][idx % n_cols]
-            ax.imshow(image, cmap=plt.get_cmap('binary'))
-            ax.axis('off')
+        # for idx, image in enumerate(treated_images):
+        #     ax = axes[idx] if n_rows == 1 else axes[idx //
+        #                                             n_cols][idx % n_cols]
+        #     ax.imshow(image, cmap=plt.get_cmap('binary'))
+        #     ax.axis('off')
 
-        plt.tight_layout()
-        image_name = image_name.replace("/", "_")
-        image_name = image_name.replace('\\', "_")
-        image_name = image_name.replace(" ", "_")
-        image_name = image_name.replace(".bmp", "")
-        plt.savefig("Images/results/{}/{}.png".format(image_type,
-                                                      image_name),
-                    format="png",
-                    dpi=900)
+        # plt.tight_layout()
+        # image_name = image_name.replace("/", "_")
+        # image_name = image_name.replace('\\', "_")
+        # image_name = image_name.replace(" ", "_")
+        # image_name = image_name.replace(".bmp", "")
+        # plt.savefig("Images/results/{}/{}.png".format(image_type,
+        #                                               image_name),
+        #             format="png",
+        #             dpi=900)
+
+        ws = treated_images[2]
+        imsave("Images/v2_results/{}".format(image_name), ws)
 
 
 class DataViewing(Processor):
