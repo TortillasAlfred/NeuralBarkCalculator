@@ -66,11 +66,12 @@ IMG_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.ppm',
                   '.bmp', '.pgm', '.tif', '.tiff', 'webp']
 
 
-def pil_loader(path):
+def pil_loader(path, grayscale=False):
     # open path as file to avoid ResourceWarning (https://github.com/python-pillow/Pillow/issues/835)
     with open(path, 'rb') as f:
         img = Image.open(f)
-        return img.convert('RGB')
+        target_format = 'LA' if grayscale else 'RGB'
+        return img.convert(target_format)
 
 
 def accimage_loader(path):
@@ -79,14 +80,6 @@ def accimage_loader(path):
         return accimage.Image(path)
     except IOError:
         # Potentially a decoding problem, fall back to PIL.Image
-        return pil_loader(path)
-
-
-def default_loader(path):
-    from torchvision import get_image_backend
-    if get_image_backend() == 'accimage':
-        return accimage_loader(path)
-    else:
         return pil_loader(path)
 
 
@@ -118,7 +111,7 @@ class RegressionDatasetFolder(data.Dataset):
         samples (list): List of (sample path, target path) tuples
     """
 
-    def __init__(self, root, extensions=IMG_EXTENSIONS, loader=default_loader,
+    def __init__(self, root, extensions=IMG_EXTENSIONS, loader=pil_loader,
                  transform=None, input_only_transform=None):
         samples = make_dataset(root, extensions)
         if len(samples) == 0:
@@ -142,7 +135,7 @@ class RegressionDatasetFolder(data.Dataset):
         """
         path, target_path = self.samples[index]
         sample = self.loader(path)
-        target = self.loader(target_path)
+        target = self.loader(target_path, grayscale=True)
 
         if self.transform is not None:
             random_seed = np.random.randint(2147483647)

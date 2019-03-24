@@ -1,7 +1,26 @@
 from dataset import RegressionDatasetFolder
 
 from torchvision.transforms import Compose, Resize, ToTensor
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, SubsetRandomSampler
+
+from math import ceil
+import numpy as np
+
+
+def get_train_valid_samplers(dataset, train_percent):
+    n_items = len(dataset.samples)
+
+    all_idx = np.arange(n_items)
+
+    np.random.shuffle(all_idx)
+
+    n_train = ceil(n_items * train_percent)
+    n_valid = n_items - n_train
+
+    train_idx = all_idx[:n_train]
+    valid_idx = all_idx[-n_valid:]
+
+    return SubsetRandomSampler(train_idx), SubsetRandomSampler(valid_idx)
 
 
 def compute_mean_std(working_dir: str):
