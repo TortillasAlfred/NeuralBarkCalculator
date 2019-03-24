@@ -8,7 +8,7 @@ import numpy as np
 
 
 def get_train_valid_samplers(dataset, train_percent):
-    n_items = len(dataset.samples)
+    n_items = len(dataset)
 
     all_idx = np.arange(n_items)
 
