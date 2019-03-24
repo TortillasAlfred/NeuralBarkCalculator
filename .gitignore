@@ -130,3 +130,8 @@ venv.bak/
 *.pt 
 *-ubyte
 *.pck
+
+*.tsv
+*.ckpt
+*.optim
+*.epoch
