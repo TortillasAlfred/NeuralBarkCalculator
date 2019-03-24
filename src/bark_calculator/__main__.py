@@ -23,8 +23,6 @@ if __name__ == "__main__":
     augmented_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/nn",
                                                 input_only_transform=Compose(
                                                     [Normalize(mean, std),
-                                                     ToPILImage(),
-                                                     ColorJitter(),
                                                      ToTensor()]
                                                 ),
                                                 transform=Compose(
