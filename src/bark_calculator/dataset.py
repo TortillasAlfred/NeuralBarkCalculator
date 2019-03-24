@@ -144,9 +144,6 @@ class RegressionDatasetFolder(data.Dataset):
         sample = self.loader(path)
         target = self.loader(target_path)
 
-        if self.input_only_transform is not None:
-            sample = self.input_only_transform(sample)
-
         if self.transform is not None:
             random_seed = np.random.randint(2147483647)
 
@@ -155,6 +152,9 @@ class RegressionDatasetFolder(data.Dataset):
 
             random.seed(random_seed)
             target = self.transform(target)
+
+        if self.input_only_transform is not None:
+            sample = self.input_only_transform(sample)
 
         return sample, target
 
