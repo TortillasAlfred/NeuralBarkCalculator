@@ -49,9 +49,9 @@ if __name__ == "__main__":
 
     train_sampler, valid_sampler = get_train_valid_samplers(dataset,
                                                             train_percent=0.8)
-    train_loader = DataLoader(augmented_dataset, batch_size=4,
+    train_loader = DataLoader(augmented_dataset, batch_size=2,
                               sampler=train_sampler)
-    valid_loader = DataLoader(dataset, batch_size=4,
+    valid_loader = DataLoader(dataset, batch_size=2,
                               sampler=valid_sampler)
     exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/exp_vgg19_bn/",
                      module=RegressionVGG19_BN(),
