@@ -27,13 +27,7 @@ class RegressionVGG19_BN(nn.Module):
             params.requires_grad = False
 
         regressor = nn.Sequential(
-            nn.Linear(512 * 7 * 7, 4096),
-            nn.ReLU(True),
-            nn.Dropout(),
-            nn.Linear(4096, 4096),
-            nn.ReLU(True),
-            nn.Dropout(),
-            nn.Linear(4096, 50176),
+            nn.Linear(512 * 7 * 7, 50176),
             nn.Sigmoid()
         )
         regressor.apply(initialize_weights)
