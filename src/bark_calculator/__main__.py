@@ -46,14 +46,14 @@ if __name__ == "__main__":
 
     train_sampler, valid_sampler = get_train_valid_samplers(dataset,
                                                             train_percent=0.8)
-    train_loader = DataLoader(dataset, batch_size=32,
+    train_loader = DataLoader(dataset, batch_size=8,
                               sampler=train_sampler)
-    valid_loader = DataLoader(dataset, batch_size=32,
+    valid_loader = DataLoader(dataset, batch_size=8,
                               sampler=valid_sampler)
     exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/exp_unet/",
                      module=vanilla_unet(),
                      device=torch.device("cuda:0"),
-                     optimizer="sgd",
+                     optimizer="adam",
                      type="reg")
 
-    exp.train(train_loader=train_loader, valid_loader=valid_loader)
+    exp.train(train_loader=train_loader, valid_loader=valid_loader, epochs=100000)
