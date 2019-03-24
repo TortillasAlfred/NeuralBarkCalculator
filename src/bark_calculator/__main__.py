@@ -1,6 +1,6 @@
 from dataset import RegressionDatasetFolder
 from utils import compute_mean_std, get_mean_std, get_train_valid_samplers
-from models import RegressionVGG19_BN
+from models import vanilla_unet
 
 from torchvision.transforms import *
 
@@ -17,17 +17,16 @@ if __name__ == "__main__":
                                           [Normalize(mean, std)]
                                       ),
                                       transform=Compose(
-                                          [Resize(224),
+                                          [Resize(256),
                                            ToTensor()]
                                       ))
     augmented_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/nn",
                                                 input_only_transform=Compose(
-                                                    [Normalize(mean, std),
-                                                     ToTensor()]
+                                                    [Normalize(mean, std)]
                                                 ),
                                                 transform=Compose(
                                                     [RandomRotation(180, expand=True),
-                                                     RandomResizedCrop(224),
+                                                     RandomResizedCrop(256),
                                                      ToTensor()]
                                                 ))
 
@@ -47,14 +46,14 @@ if __name__ == "__main__":
 
     train_sampler, valid_sampler = get_train_valid_samplers(dataset,
                                                             train_percent=0.8)
-    train_loader = DataLoader(augmented_dataset, batch_size=2,
+    train_loader = DataLoader(dataset, batch_size=32,
                               sampler=train_sampler)
-    valid_loader = DataLoader(dataset, batch_size=2,
+    valid_loader = DataLoader(dataset, batch_size=32,
                               sampler=valid_sampler)
-    exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/exp_vgg19_bn/",
-                     module=RegressionVGG19_BN(),
-                     device=torch.device("cuda:1"),
-                     optimizer="adam",
+    exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/exp_unet/",
+                     module=vanilla_unet(),
+                     device=torch.device("cuda:0"),
+                     optimizer="sgd",
                      type="reg")
 
     exp.train(train_loader=train_loader, valid_loader=valid_loader)
