@@ -133,7 +133,7 @@ class RegressionDatasetFolder(data.Dataset):
         Returns:
             tuple: (sample, target) the sample and target images.
         """
-        path, target_path = self.samples[index % self.samples]
+        path, target_path = self.samples[index % len(self.samples)]
         sample = self.loader(path)
         target = self.loader(target_path, grayscale=True)
 
