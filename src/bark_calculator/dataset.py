@@ -143,7 +143,7 @@ class RegressionDatasetFolder(data.Dataset):
         target = self.loader(target_path)
 
         if self.input_only_transform is not None:
-            sample = self.input_only_transform(target)
+            sample = self.input_only_transform(sample)
 
         if self.transform is not None:
             random_seed = np.random.randint(2147483647)
