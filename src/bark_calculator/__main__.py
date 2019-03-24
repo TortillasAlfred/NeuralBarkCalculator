@@ -4,7 +4,7 @@ from models import vanilla_unet
 
 from torchvision.transforms import *
 
-from pytoune.framework import Experiment
+from pytoune.framework import Experiment, ReduceLROnPlateau
 from torch.utils.data import DataLoader
 import matplotlib.pyplot as plt
 import torch
@@ -17,7 +17,7 @@ if __name__ == "__main__":
                                           [Normalize(mean, std)]
                                       ),
                                       transform=Compose(
-                                          [Resize(256),
+                                          [Resize(1024),
                                            ToTensor()]
                                       ))
     augmented_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/nn",
@@ -26,7 +26,7 @@ if __name__ == "__main__":
                                                 ),
                                                 transform=Compose(
                                                     [RandomRotation(180, expand=True),
-                                                     RandomResizedCrop(256),
+                                                     RandomResizedCrop(1024),
                                                      ToTensor()]
                                                 ))
 
@@ -56,4 +56,8 @@ if __name__ == "__main__":
                      optimizer="adam",
                      type="reg")
 
-    exp.train(train_loader=train_loader, valid_loader=valid_loader, epochs=100000)
+    lr_schedulers = [ReduceLROnPlateau()]
+    exp.train(train_loader=train_loader,
+              valid_loader=valid_loader,
+              epochs=100000,
+              lr_schedulers=lr_schedulers)
