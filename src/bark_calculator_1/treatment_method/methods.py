@@ -325,7 +325,7 @@ class V2(TreatmentMethod):
         big_image_2 = np.copy(big_image)
         big_image[ws_copy == 1] = [0, 0, 0]
         big_image_2[~(ws_copy == 1)] = [0, 0, 0]
-        treated_images.append(rescale(image, 1/4))
+        treated_images.append(image)
         treated_images.append(big_image)
         treated_images.append(big_image_2)
 
