@@ -1,16 +1,32 @@
-from dataset import RegressionDatasetFolder
-from utils import compute_mean_std
-
 import matplotlib.pyplot as plt
+from dataset import RegressionDatasetFolder
+from utils import compute_mean_std, get_mean_std
+
+from torchvision.transforms import *
 
 
 if __name__ == "__main__":
     dataset = RegressionDatasetFolder("./Images/nn")
+    mean, std = get_mean_std()
+    augmented_dataset = RegressionDatasetFolder("./Images/nn",
+                                                input_only_transform=Compose(
+                                                    [Normalize(mean, std),
+                                                     ToPILImage(),
+                                                     ColorJitter(),
+                                                     ToTensor()]
+                                                ),
+                                                transform=Compose(
+                                                    [RandomRotation(180, expand=True),
+                                                     RandomResizedCrop(224),
+                                                     ToTensor()]
+                                                ))
 
-    for sample in iter(dataset):
-        _,  axs = plt.subplots(1, 2)
+    for sample, augmented_sample in zip(iter(dataset), iter(augmented_dataset)):
+        _,  axs = plt.subplots(2, 2)
 
-        for ax, img in zip(axs, sample):
+        sample += augmented_sample
+
+        for ax, img in zip(axs.flatten(), sample):
             ax.imshow(img)
             ax.axis('off')
 
