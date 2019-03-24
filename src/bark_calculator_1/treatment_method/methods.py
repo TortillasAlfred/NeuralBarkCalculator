@@ -321,11 +321,11 @@ class V2(TreatmentMethod):
         ws_image[~(ws_image == 1)] = 0
 
         ws_copy = np.repeat(ws_image, 16, axis=0).repeat(16, axis=1)
-        treated_images.append(ws_image)
+        treated_images.append(ws_copy)
         big_image_2 = np.copy(big_image)
         big_image[ws_copy == 1] = [0, 0, 0]
         big_image_2[~(ws_copy == 1)] = [0, 0, 0]
-        treated_images.append(rescale(image, 1/16))
+        treated_images.append(image)
         treated_images.append(big_image)
         treated_images.append(big_image_2)
 
