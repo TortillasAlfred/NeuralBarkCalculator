@@ -70,7 +70,7 @@ def pil_loader(path, grayscale=False):
     # open path as file to avoid ResourceWarning (https://github.com/python-pillow/Pillow/issues/835)
     with open(path, 'rb') as f:
         img = Image.open(f)
-        target_format = 'LA' if grayscale else 'RGB'
+        target_format = 'F' if grayscale else 'RGB'
         return img.convert(target_format)
 
 

@@ -42,4 +42,4 @@ class RegressionVGG19_BN(nn.Module):
 
     def forward(self, x):
         x = self.model(x)
-        return x.reshape(x.size(0), 224, 224)
+        return x.reshape(x.size(0), 224, 224).unsqueeze(1)
