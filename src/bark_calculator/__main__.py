@@ -4,7 +4,7 @@ from models import vanilla_unet
 
 from torchvision.transforms import *
 
-from pytoune.framework import Experiment, ReduceLROnPlateau
+from pytoune.framework import Experiment
 from torch.utils.data import DataLoader
 import matplotlib.pyplot as plt
 import torch
@@ -46,18 +46,16 @@ if __name__ == "__main__":
 
     train_sampler, valid_sampler = get_train_valid_samplers(dataset,
                                                             train_percent=0.8)
-    train_loader = DataLoader(dataset, batch_size=8,
+    train_loader = DataLoader(dataset, batch_size=2,
                               sampler=train_sampler)
-    valid_loader = DataLoader(dataset, batch_size=8,
+    valid_loader = DataLoader(dataset, batch_size=2,
                               sampler=valid_sampler)
-    exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/exp_unet/",
+    exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/raw_unet/",
                      module=vanilla_unet(),
                      device=torch.device("cuda:0"),
                      optimizer="adam",
                      type="reg")
 
-    lr_schedulers = [ReduceLROnPlateau()]
     exp.train(train_loader=train_loader,
               valid_loader=valid_loader,
-              epochs=100000,
-              lr_schedulers=lr_schedulers)
+              epochs=100000)
