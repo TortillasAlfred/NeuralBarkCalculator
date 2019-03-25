@@ -1,12 +1,13 @@
 from dataset import RegressionDatasetFolder
-from utils import compute_mean_std, get_mean_std, get_train_valid_samplers
+from utils import *
 from models import vanilla_unet
 
 from torchvision.transforms import *
 
-from pytoune.framework import Experiment
+from poutyne.framework import Experiment
 from torch.utils.data import DataLoader
 import matplotlib.pyplot as plt
+from torch.nn.modules.loss import BCEWithLogitsLoss
 import torch
 
 
@@ -17,8 +18,7 @@ if __name__ == "__main__":
                                           [Normalize(mean, std)]
                                       ),
                                       transform=Compose(
-                                          [Resize(1024),
-                                           ToTensor()]
+                                          [ToTensor()]
                                       ))
     augmented_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/nn",
                                                 input_only_transform=Compose(
@@ -54,8 +54,10 @@ if __name__ == "__main__":
                      module=vanilla_unet(),
                      device=torch.device("cuda:0"),
                      optimizer="adam",
-                     type="reg")
+                     type="reg",
+                     loss_function=BCEWithLogitsLoss(),
+                     metrics=["mse", "l1"])
 
     exp.train(train_loader=train_loader,
               valid_loader=valid_loader,
-              epochs=100000)
+              epochs=1000)

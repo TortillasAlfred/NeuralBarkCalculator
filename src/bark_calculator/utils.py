@@ -5,6 +5,7 @@ from torch.utils.data import DataLoader, SubsetRandomSampler
 
 from math import ceil
 import numpy as np
+import torch
 
 
 def get_train_valid_samplers(dataset, train_percent):
@@ -48,7 +49,11 @@ def compute_mean_std(working_dir: str):
 def get_mean_std():
     # Util function to not have to recalculate them
     # every single time
-    mean = [0.5495320558547974, 0.46154847741127014, 0.34539610147476196]
-    std = [0.35342904925346375, 0.3120446503162384, 0.25366029143333435]
+    # mean = [0.5495320558547974, 0.46154847741127014, 0.34539610147476196]
+    # std = [0.35342904925346375, 0.3120446503162384,
+    # 0.25366029143333435]
+
+    mean = [0.485, 0.456, 0.406]
+    std = [0.229, 0.224, 0.225]
 
     return mean, std

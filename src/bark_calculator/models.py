@@ -173,7 +173,7 @@ class UnetSkipConnectionBlock(nn.Module):
                                         kernel_size=4, stride=2,
                                         padding=1)
             down = [downconv]
-            up = [uprelu, upconv, nn.Sigmoid()]
+            up = [uprelu, upconv]
             model = down + [submodule] + up
         elif innermost:
             upconv = nn.ConvTranspose2d(inner_nc, outer_nc,
@@ -207,7 +207,7 @@ def vanilla_unet():
     net = None
     norm_layer = get_norm_layer(norm_type="batch")
 
-    net = UnetGenerator(3, 1, 10, 64,
+    net = UnetGenerator(3, 2, 10, 64,
                         norm_layer=norm_layer, use_dropout=True)
 
     return init_net(net, "xavier", gpu_ids=[0])

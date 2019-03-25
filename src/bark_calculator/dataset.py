@@ -2,6 +2,7 @@
 Copy-pasta from torchvision.
 """
 import torch.utils.data as data
+import torch
 
 from PIL import Image
 
@@ -148,6 +149,14 @@ class RegressionDatasetFolder(data.Dataset):
 
         if self.input_only_transform is not None:
             sample = self.input_only_transform(sample)
+
+        target[target > 0.5] = 1
+        target[target <= 0.5] = 0
+        target = target.unsqueeze(1)
+        one_hot = torch.FloatTensor(target.size(
+            0), 2, target.size(2), target.size(3)).zero_()
+        target = one_hot.scatter_(1, target.long(), 1)
+        target = target.squeeze(0)
 
         return sample, target
 
