@@ -95,6 +95,16 @@ def is_image_file(filename):
     return has_file_allowed_extension(filename, IMG_EXTENSIONS)
 
 
+def make_one_hot(target):
+    target = target.unsqueeze(1)
+    one_hot = torch.FloatTensor(target.size(
+        0), 2, target.size(2), target.size(3)).zero_()
+    target = one_hot.scatter_(1, target.long(), 1)
+    target = target.squeeze(0)
+
+    return target
+
+
 def make_dataset(dir, extensions):
     images = []
     dir = os.path.expanduser(dir)
@@ -213,11 +223,7 @@ class RegressionDatasetFolder(data.Dataset):
 
         target[target > 0.5] = 1
         target[target <= 0.5] = 0
-        target = target.unsqueeze(1)
-        one_hot = torch.FloatTensor(target.size(
-            0), 2, target.size(2), target.size(3)).zero_()
-        target = one_hot.scatter_(1, target.long(), 1)
-        target = target.squeeze(0)
+        # target = make_one_hot(target)
 
         return sample, target
 

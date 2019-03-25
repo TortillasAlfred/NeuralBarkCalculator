@@ -207,7 +207,7 @@ def vanilla_unet():
     net = None
     norm_layer = get_norm_layer(norm_type="batch")
 
-    net = UnetGenerator(3, 2, 7, 64,
+    net = UnetGenerator(3, 1, 8, 64,
                         norm_layer=norm_layer, use_dropout=True)
 
     return init_net(net, "xavier", gpu_ids=[1])

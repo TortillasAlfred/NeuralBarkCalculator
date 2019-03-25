@@ -93,4 +93,4 @@ class MixedLoss(nn.Module):
             pos_weight=get_pos_weight())
 
     def forward(self, predict, true):
-        return self.dice(predict, true) + self.bce(predict, true)
+        return 0.5 * self.dice(predict, true) + 0.5 * self.bce(predict, true)
