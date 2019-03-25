@@ -83,7 +83,11 @@ class MixedLoss(nn.Module):
     def __init__(self):
         super(MixedLoss, self).__init__()
         self.dice = SoftDiceLoss()
-        self.bce = nn.modules.loss.BCEWithLogitsLoss()
 
     def forward(self, predict, true):
-        return self.dice(predict, true) + self.bce(predict, true)
+        target = true[0]
+        weights = true[1]
+        bce_loss = torch.nn.functional.binary_cross_entropy_with_logits(input,
+                                                                        target,
+                                                                        weights)
+        return self.dice(predict, target) + bce_loss

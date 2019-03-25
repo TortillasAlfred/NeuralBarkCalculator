@@ -101,7 +101,7 @@ def make_dataset(dir, extensions):
 
     samples_dir = os.path.join(dir, "samples")
     targets_dir = os.path.join(dir, "targets")
-    # target_weights_dir = os.path.join(dir, "target_weights")
+    target_weights_dir = os.path.join(dir, "target_weights")
 
     if not os.path.isdir(samples_dir):
         raise IOError("Root folder should have a 'samples' subfolder !")
@@ -109,26 +109,26 @@ def make_dataset(dir, extensions):
     if not os.path.isdir(targets_dir):
         raise IOError("Root folder should have a 'targets' subfolder !")
 
-    # if not os.path.isdir(target_weights_dir):
-    #     raise IOError("Root folder should have a 'target_weights' subfolder !")
+    if not os.path.isdir(target_weights_dir):
+        raise IOError("Root folder should have a 'target_weights' subfolder !")
 
     for _, _, fnames in sorted(os.walk(samples_dir)):
         for fname in sorted(fnames):
             if has_file_allowed_extension(fname, extensions):
                 sample_path = os.path.join(samples_dir, fname)
                 target_path = os.path.join(targets_dir, fname)
-                # target_weight_path = os.path.join(target_weights_dir,
-                #                                   fname.replace(".bmp", ".npy"))
+                target_weight_path = os.path.join(target_weights_dir,
+                                                  fname.replace(".bmp", ".npy"))
 
                 if not os.path.isfile(target_path):
                     raise IOError("No file found in 'targets' subfolder"
                                   " for image name {} !".format(fname))
 
-                # if not os.path.isfile(target_weight_path):
-                #     raise IOError("No file found in 'target_weights' subfolder"
-                #                   " for image name {} !".format(fname))
+                if not os.path.isfile(target_weight_path):
+                    raise IOError("No file found in 'target_weights' subfolder"
+                                  " for image name {} !".format(fname))
 
-                item = (sample_path, target_path)
+                item = (sample_path, target_path, target_weight_path)
                 images.append(item)
 
     return images
@@ -208,10 +208,10 @@ class RegressionDatasetFolder(data.Dataset):
         Returns:
             tuple: (sample, target) the sample and target images.
         """
-        path, target_path = self.samples[index]
+        path, target_path, target_weights_path = self.samples[index]
         sample = self.loader(path)
         target = self.loader(target_path, grayscale=True)
-        # target_weights = self.loader(target_weights_path, weights=True)
+        target_weights = self.loader(target_weights_path, weights=True)
 
         if self.transform is not None:
             random_seed = np.random.randint(2147483647)
@@ -222,24 +222,24 @@ class RegressionDatasetFolder(data.Dataset):
             random.seed(random_seed)
             target = self.transform(target)
 
-            # random.seed(random_seed)
-            # target_weights = Image.fromarray(np.uint8(
-            #     cm.gist_earth(target_weights)*255))
-            # target_weights = self.transform(target_weights)
+            random.seed(random_seed)
+            target_weights = Image.fromarray(np.uint8(
+                cm.gist_earth(target_weights)*255))
+            target_weights = self.transform(target_weights)
 
         if self.input_only_transform is not None:
             sample = self.input_only_transform(sample)
 
         target[target > 0.5] = 1
         target[target <= 0.5] = 0
-        # target_weights[target_weights == 0] = 0.5
+        target_weights[target_weights <= 0] = 0.5
         # target = target.unsqueeze(1)
         # one_hot = torch.FloatTensor(target.size(
         #     0), 2, target.size(2), target.size(3)).zero_()
         # target = one_hot.scatter_(1, target.long(), 1)
         # target = target.squeeze(0)
 
-        return sample, target, target_path
+        return sample, (target, target_path)
 
     def __len__(self):
         return len(self.samples)
