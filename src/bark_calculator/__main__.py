@@ -37,26 +37,21 @@ if __name__ == "__main__":
                                                      RandomResizedCrop(256),
                                                      ToTensor()]
                                                 ))
-    # for sample in iter(dataset):
-    #     target = sample[1]
-    #     target_name = sample[2].split('/')[-1]
-    #     target_name = target_name.replace(".bmp", ".npy")
-    #     target_weight = make_weight_map(target.numpy())
-    #     np.save("/mnt/storage/mgodbout/Ecorcage/Images/nn/target_weights/" + target_name, target_weight)
 
-    # for sample, augmented_sample in zip(iter(dataset), iter(augmented_dataset)):
-    #     _,  axs = plt.subplots(2, 2)
+    for sample, augmented_sample in zip(iter(dataset), iter(augmented_dataset)):
+        _,  axs = plt.subplots(2, 2)
 
-    #     sample += augmented_sample
+        sample += augmented_sample
 
-    #     for ax, img in zip(axs.flatten(), sample):
-    #         ax.imshow(img)
-    #         ax.axis('off')
+        for ax, img in zip(axs.flatten(), sample):
+            img = ToPILImage()(img)
+            ax.imshow(img)
+            ax.axis('off')
 
-    #     figManager = plt.get_current_fig_manager()
-    #     figManager.window.showMaximized()
-    #     plt.tight_layout()
-    #     plt.show()
+        figManager = plt.get_current_fig_manager()
+        figManager.window.showMaximized()
+        plt.tight_layout()
+        plt.show()
 
     train_sampler, valid_sampler = get_train_valid_samplers(dataset,
                                                             train_percent=0.8)
