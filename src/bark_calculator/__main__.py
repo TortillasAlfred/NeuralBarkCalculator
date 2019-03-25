@@ -38,20 +38,18 @@ if __name__ == "__main__":
                                                      ToTensor()]
                                                 ))
 
-    for sample, augmented_sample in zip(iter(dataset), iter(augmented_dataset)):
-        _,  axs = plt.subplots(2, 2)
+    # for sample, augmented_sample in zip(iter(dataset), iter(augmented_dataset)):
+    #     _,  axs = plt.subplots(2, 2)
 
-        sample += augmented_sample
+    #     sample += augmented_sample
 
-        for ax, img in zip(axs.flatten(), sample):
-            img = ToPILImage()(img)
-            ax.imshow(img)
-            ax.axis('off')
+    #     for ax, img in zip(axs.flatten(), sample):
+    #         img = ToPILImage()(img)
+    #         ax.imshow(img)
+    #         ax.axis('off')
 
-        figManager = plt.get_current_fig_manager()
-        figManager.window.showMaximized()
-        plt.tight_layout()
-        plt.show()
+    #     plt.tight_layout()
+    #     plt.show()
 
     train_sampler, valid_sampler = get_train_valid_samplers(dataset,
                                                             train_percent=0.8)
