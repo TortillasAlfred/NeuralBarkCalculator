@@ -141,7 +141,7 @@ IMG_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.ppm',
 def pil_loader(path, grayscale=False, weights=False):
     # open path as file to avoid ResourceWarning (https://github.com/python-pillow/Pillow/issues/835)
     if weights:
-        return np.load(path)
+        return torch.from_numpy(np.load(path))
     else:
         with open(path, 'rb') as f:
             img = Image.open(f)
@@ -239,7 +239,7 @@ class RegressionDatasetFolder(data.Dataset):
         # target = one_hot.scatter_(1, target.long(), 1)
         # target = target.squeeze(0)
 
-        return sample, (target, target_path)
+        return sample, (target, target_weights)
 
     def __len__(self):
         return len(self.samples)
