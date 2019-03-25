@@ -27,7 +27,7 @@ if __name__ == "__main__":
                                                     [Normalize(mean, std)]
                                                 ),
                                                 transform=Compose(
-                                                    [RandomRotation(180, expand=True),
+                                                    [RandomRotation(180, expand=False),
                                                      RandomResizedCrop(1024),
                                                      ToTensor()]
                                                 ))
