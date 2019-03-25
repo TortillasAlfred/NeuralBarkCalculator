@@ -54,7 +54,7 @@ if __name__ == "__main__":
     optim = torch.optim.Adam(module.parameters(), lr=1e-4)
     exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/aug_unet/",
                      module=module,
-                     device=torch.device("cuda:0"),
+                     device=torch.device("cuda:1"),
                      optimizer=optim,
                      type="reg",
                      loss_function=MixedLoss(),

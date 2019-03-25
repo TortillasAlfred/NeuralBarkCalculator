@@ -210,4 +210,4 @@ def vanilla_unet():
     net = UnetGenerator(3, 2, 7, 64,
                         norm_layer=norm_layer, use_dropout=True)
 
-    return init_net(net, "xavier", gpu_ids=[0])
+    return init_net(net, "xavier", gpu_ids=[1])
