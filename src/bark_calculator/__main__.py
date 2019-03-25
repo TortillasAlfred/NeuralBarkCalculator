@@ -18,7 +18,8 @@ if __name__ == "__main__":
                                           [Normalize(mean, std)]
                                       ),
                                       transform=Compose(
-                                          [ToTensor()]
+                                          [Resize(1024),
+                                           ToTensor()]
                                       ))
     augmented_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/nn",
                                                 input_only_transform=Compose(
@@ -46,9 +47,9 @@ if __name__ == "__main__":
 
     train_sampler, valid_sampler = get_train_valid_samplers(dataset,
                                                             train_percent=0.8)
-    train_loader = DataLoader(dataset, batch_size=2,
+    train_loader = DataLoader(dataset, batch_size=1,
                               sampler=train_sampler)
-    valid_loader = DataLoader(dataset, batch_size=2,
+    valid_loader = DataLoader(dataset, batch_size=1,
                               sampler=valid_sampler)
     exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/raw_unet/",
                      module=vanilla_unet(),
