@@ -62,8 +62,7 @@ if __name__ == "__main__":
                      device=torch.device("cuda:0"),
                      optimizer="adam",
                      type="reg",
-                     loss_function=BCEWithLogitsLoss(),
-                     metrics=["mse", "l1"])
+                     loss_function=MixedLoss())
 
     exp.train(train_loader=train_loader,
               valid_loader=valid_loader,

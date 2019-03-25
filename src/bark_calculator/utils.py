@@ -6,6 +6,7 @@ from torch.utils.data import DataLoader, SubsetRandomSampler
 from math import ceil
 import numpy as np
 import torch
+from torch import nn
 
 
 def get_train_valid_samplers(dataset, train_percent):
@@ -57,3 +58,32 @@ def get_mean_std():
     std = [0.229, 0.224, 0.225]
 
     return mean, std
+
+
+class SoftDiceLoss(nn.Module):
+    def __init__(self, weight=None, size_average=True):
+        super(SoftDiceLoss, self).__init__()
+
+    def forward(self, logits, targets):
+        smooth = 1
+        num = targets.size(0)
+        probs = torch.sigmoid(logits)
+        m1 = probs.view(num, -1)
+        m2 = targets.view(num, -1)
+        intersection = (m1 * m2)
+
+        score = 2. * (intersection.sum(1) + smooth) / \
+            (m1.sum(1) + m2.sum(1) + smooth)
+        score = 1 - score.sum() / num
+        return score
+
+
+class MixedLoss(nn.Module):
+
+    def __init__(self):
+        super(MixedLoss, self).__init__()
+        self.dice = SoftDiceLoss()
+        self.bce = nn.modules.loss.BCEWithLogitsLoss()
+
+    def forward(self, predict, true):
+        return self.dice(predict, true) + self.bce(predict, true)
