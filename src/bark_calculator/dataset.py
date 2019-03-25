@@ -142,7 +142,6 @@ def pil_loader(path, grayscale=False, weights=False):
     # open path as file to avoid ResourceWarning (https://github.com/python-pillow/Pillow/issues/835)
     if weights:
         target_weights = torch.from_numpy(np.load(path))
-        print(target_weights.shape)
         return target_weights
     else:
         with open(path, 'rb') as f:
@@ -214,7 +213,6 @@ class RegressionDatasetFolder(data.Dataset):
         sample = self.loader(path)
         target = self.loader(target_path, grayscale=True)
         target_weights = self.loader(target_weights_path, weights=True)
-        print(target_weights.shape)
 
         if self.transform is not None:
             random_seed = np.random.randint(2147483647)
@@ -225,7 +223,6 @@ class RegressionDatasetFolder(data.Dataset):
             random.seed(random_seed)
             target = self.transform(target)
 
-            print(target_weights.shape)
             random.seed(random_seed)
             target_weights = Image.fromarray(np.uint8(
                 cm.gist_earth(target_weights)*255)).convert('F')
@@ -234,7 +231,6 @@ class RegressionDatasetFolder(data.Dataset):
         if self.input_only_transform is not None:
             sample = self.input_only_transform(sample)
 
-        print(target_weights.shape)
         target[target > 0.5] = 1
         target[target <= 0.5] = 0
         target_weights[target_weights <= 0] = 0.5
