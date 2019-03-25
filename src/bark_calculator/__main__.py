@@ -22,7 +22,13 @@ if __name__ == "__main__":
                                       ))
     augmented_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/nn",
                                                 input_only_transform=Compose(
-                                                    [Normalize(mean, std)]
+                                                    [Normalize(mean, std),
+                                                     ToPILImage(),
+                                                     ColorJitter(brightness=0.05,
+                                                                 contrast=0.05,
+                                                                 saturation=0.05,
+                                                                 hue=0.05),
+                                                     ToTensor()]
                                                 ),
                                                 transform=Compose(
                                                     [RandomRotation(180, expand=True),
