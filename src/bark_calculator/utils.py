@@ -62,7 +62,7 @@ def get_mean_std():
 
 
 def get_pos_weight():
-    return torch.FloatTensor([1./0.34019524])
+    return torch.FloatTensor([1./0.34019524 - 1.])
 
 
 class SoftDiceLoss(nn.Module):
