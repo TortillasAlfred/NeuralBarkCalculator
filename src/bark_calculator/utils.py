@@ -87,7 +87,10 @@ class MixedLoss(nn.Module):
     def forward(self, predict, true):
         target = true[0]
         weights = true[1]
-        bce_loss = torch.nn.functional.binary_cross_entropy_with_logits(input,
+        print(target.shape)
+        print(weights.shape)
+        print(predict.shape)
+        bce_loss = torch.nn.functional.binary_cross_entropy_with_logits(predict,
                                                                         target,
                                                                         weights)
         return self.dice(predict, target) + bce_loss
