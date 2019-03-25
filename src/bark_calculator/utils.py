@@ -9,7 +9,8 @@ import torch
 from torch import nn
 
 
-def get_train_valid_samplers(dataset, train_percent):
+def get_train_valid_samplers(dataset, train_percent, seed=42):
+    np.random.seed(seed)
     n_items = len(dataset)
 
     all_idx = np.arange(n_items)
@@ -60,9 +61,14 @@ def get_mean_std():
     return mean, std
 
 
+def get_pos_weight():
+    return torch.FloatTensor([1./0.34019524])
+
+
 class SoftDiceLoss(nn.Module):
     def __init__(self, weight=None, size_average=True):
         super(SoftDiceLoss, self).__init__()
+        self.__name__ = "dice_loss"
 
     def forward(self, logits, targets):
         smooth = 1
@@ -83,7 +89,8 @@ class MixedLoss(nn.Module):
     def __init__(self):
         super(MixedLoss, self).__init__()
         self.dice = SoftDiceLoss()
-        self.bce = nn.modules.loss.BCEWithLogitsLoss()
+        self.bce = nn.modules.loss.BCEWithLogitsLoss(
+            pos_weight=get_pos_weight())
 
     def forward(self, predict, true):
         return self.dice(predict, true) + self.bce(predict, true)

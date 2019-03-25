@@ -20,21 +20,15 @@ if __name__ == "__main__":
                                           [Normalize(mean, std)]
                                       ),
                                       transform=Compose(
-                                          [Resize(256), ToTensor()]
+                                          [ToTensor()]
                                       ))
     augmented_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/nn",
                                                 input_only_transform=Compose(
-                                                    [Normalize(mean, std),
-                                                     ToPILImage(),
-                                                     ColorJitter(brightness=0.05,
-                                                                 contrast=0.05,
-                                                                 saturation=0.05,
-                                                                 hue=0.05),
-                                                     ToTensor()]
+                                                    [Normalize(mean, std)]
                                                 ),
                                                 transform=Compose(
                                                     [RandomRotation(180, expand=True),
-                                                     RandomResizedCrop(256),
+                                                     RandomResizedCrop(1024),
                                                      ToTensor()]
                                                 ))
 
@@ -50,19 +44,21 @@ if __name__ == "__main__":
 
     #     plt.tight_layout()
     #     plt.show()
-
     train_sampler, valid_sampler = get_train_valid_samplers(dataset,
                                                             train_percent=0.8)
-    train_loader = DataLoader(dataset, batch_size=1,
+    train_loader = DataLoader(augmented_dataset, batch_size=2,
                               sampler=train_sampler)
-    valid_loader = DataLoader(dataset, batch_size=1,
+    valid_loader = DataLoader(dataset, batch_size=2,
                               sampler=valid_sampler)
-    exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/raw_unet/",
-                     module=vanilla_unet(),
+    module = vanilla_unet()
+    optim = torch.optim.Adam(module.parameters(), lr=1e-4)
+    exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/aug_unet/",
+                     module=module,
                      device=torch.device("cuda:0"),
-                     optimizer="adam",
+                     optimizer=optim,
                      type="reg",
-                     loss_function=MixedLoss())
+                     loss_function=MixedLoss(),
+                     metrics=[SoftDiceLoss()])
 
     exp.train(train_loader=train_loader,
               valid_loader=valid_loader,
