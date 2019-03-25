@@ -20,7 +20,7 @@ if __name__ == "__main__":
                                           [Normalize(mean, std)]
                                       ),
                                       transform=Compose(
-                                          [ToTensor()]
+                                          [Resize(256), ToTensor()]
                                       ))
     augmented_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/nn",
                                                 input_only_transform=Compose(
@@ -34,7 +34,7 @@ if __name__ == "__main__":
                                                 ),
                                                 transform=Compose(
                                                     [RandomRotation(180, expand=True),
-                                                     RandomResizedCrop(1024),
+                                                     RandomResizedCrop(256),
                                                      ToTensor()]
                                                 ))
     for sample in iter(dataset):

@@ -128,7 +128,7 @@ def make_dataset(dir, extensions):
                 #     raise IOError("No file found in 'target_weights' subfolder"
                 #                   " for image name {} !".format(fname))
 
-                item = (sample_path, target_path, target_weight_path)
+                item = (sample_path, target_path)
                 images.append(item)
 
     return images
