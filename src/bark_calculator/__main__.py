@@ -1,4 +1,4 @@
-from dataset import RegressionDatasetFolder
+from dataset import RegressionDatasetFolder, make_weight_map
 from utils import *
 from models import vanilla_unet
 
@@ -10,6 +10,8 @@ import matplotlib.pyplot as plt
 from torch.nn.modules.loss import BCEWithLogitsLoss
 import torch
 
+import numpy as np
+
 
 if __name__ == "__main__":
     mean, std = get_mean_std()
@@ -18,8 +20,7 @@ if __name__ == "__main__":
                                           [Normalize(mean, std)]
                                       ),
                                       transform=Compose(
-                                          [Resize(1024),
-                                           ToTensor()]
+                                          [ToTensor()]
                                       ))
     augmented_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/nn",
                                                 input_only_transform=Compose(
@@ -36,6 +37,12 @@ if __name__ == "__main__":
                                                      RandomResizedCrop(1024),
                                                      ToTensor()]
                                                 ))
+    for sample in iter(dataset):
+        target = sample[1]
+        target_name = sample[2].split('/')[-1]
+        target_name = target_name.replace(".bmp", ".npy")
+        target_weight = make_weight_map(target.numpy())
+        np.save("/mnt/storage/mgodbout/Ecorcage/Images/nn/target_weights/" + target_name, target_weight)
 
     # for sample, augmented_sample in zip(iter(dataset), iter(augmented_dataset)):
     #     _,  axs = plt.subplots(2, 2)
