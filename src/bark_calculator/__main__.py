@@ -34,28 +34,6 @@ if __name__ == "__main__":
                                                      RandomResizedCrop(256)]
                                                 ), Resize(256), ToTensor()]))
 
-    # module = vanilla_unet()
-    # module.load_state_dict(torch.load(
-    #     "/mnt/storage/mgodbout/Ecorcage/best_no_rot.ckpt", map_location='cpu'))
-
-    # to_pil = ToPILImage()
-
-    # for sample in iter(dataset):
-    #     output = module(sample[0])
-    #     output[output > 0.5] = 1
-    #     output[output <= 0.5] = 0
-    #     sample.append(output)
-
-    #     _, axs = plt.subplots(1, 3)
-
-    #     for ax, arr in zip(axs.flatten(), sample):
-    #         img = to_pil(arr)
-    #         ax.imshow(img)
-    #         ax.axis('off')
-
-    #     plt.tight_layout()
-    #     plt.show()
-
     # for sample, augmented_sample in zip(iter(dataset), iter(augmented_dataset)):
     #     _,  axs = plt.subplots(2, 2)
 
@@ -75,11 +53,33 @@ if __name__ == "__main__":
     valid_loader = DataLoader(dataset, batch_size=4)
     module = vanilla_unet()
     optim = torch.optim.Adam(module.parameters(), lr=1e-4)
-    exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/aug_unet/",
+    exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/mix_unet/",
                      module=module,
                      device=torch.device("cuda:0"),
                      optimizer=optim,
-                     loss_function=SoftDiceLoss())
+                     loss_function=MixedLoss())
+
+    # exp.load_best_checkpoint()
+    # module = exp.model.model
+
+    # to_pil = ToPILImage()
+
+    # for batch in valid_loader:
+    #     outputs = module(batch[0].to(torch.device("cuda:0")))
+    #     outputs[outputs > 0.5] = 1
+    #     outputs[outputs <= 0.5] = 0
+    #     batch.append(outputs.detach().cpu())
+
+    #     for i in range(batch[0].size(2)):
+    #         _, axs = plt.subplots(1, 3)
+
+    #         for j, ax in enumerate(axs.flatten()):
+    #             img = to_pil(batch[j][i])
+    #             ax.imshow(img)
+    #             ax.axis('off')
+
+    #         plt.tight_layout()
+    #         plt.show()
 
     exp.train(train_loader=train_loader,
               valid_loader=valid_loader,
