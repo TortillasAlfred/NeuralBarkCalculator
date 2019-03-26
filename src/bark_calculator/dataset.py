@@ -128,7 +128,8 @@ def make_dataset(dir, extensions):
                     raise IOError("No file found in 'targets' subfolder"
                                   " for image name {} !".format(fname))
 
-                item = (sample_path, target_path)
+                fname = fname.replace("bmp", "png")
+                item = (sample_path, target_path, fname)
                 images.append(item)
 
     return images
@@ -205,7 +206,7 @@ class RegressionDatasetFolder(data.Dataset):
         Returns:
             tuple: (sample, target) the sample and target images.
         """
-        path, target_path = self.samples[index]
+        path, target_path, fname = self.samples[index]
         sample = self.loader(path)
         target = self.loader(target_path, grayscale=True)
 
@@ -225,7 +226,7 @@ class RegressionDatasetFolder(data.Dataset):
         target[target <= 0.5] = 0
         # target = make_one_hot(target)
 
-        return sample, target
+        return sample, target, fname
 
     def __len__(self):
         return len(self.samples)

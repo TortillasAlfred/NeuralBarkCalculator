@@ -15,7 +15,7 @@ import numpy as np
 
 if __name__ == "__main__":
     mean, std = get_mean_std()
-    dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/nn",
+    dataset = RegressionDatasetFolder("./Images/nn",
                                       input_only_transform=Compose(
                                           [Normalize(mean, std)]
                                       ),
@@ -25,7 +25,9 @@ if __name__ == "__main__":
                                            RandomVerticalFlip(),
                                            ToTensor()]
                                       ))
-    augmented_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/nn",
+    pure_dataset = RegressionDatasetFolder("./Images/nn",
+                                           transform=ToTensor())
+    augmented_dataset = RegressionDatasetFolder("./Images/nn",
                                                 input_only_transform=Compose(
                                                     [Normalize(mean, std)]
                                                 ),
@@ -51,37 +53,49 @@ if __name__ == "__main__":
                                                             train_percent=0.6)
     train_loader = DataLoader(augmented_dataset, batch_size=4, shuffle=True)
     valid_loader = DataLoader(dataset, batch_size=4)
+    pure_loader = DataLoader(pure_dataset, batch_size=4)
     module = vanilla_unet()
     optim = torch.optim.Adam(module.parameters(), lr=1e-4)
-    exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/mix_unet/",
+    exp = Experiment(directory="./mix_unet/",
                      module=module,
-                     device=torch.device("cuda:0"),
+                     device=torch.device("cpu"),
                      optimizer=optim,
                      loss_function=MixedLoss())
 
-    # exp.load_best_checkpoint()
-    # module = exp.model.model
+    exp.load_checkpoint(1784)
+    module = exp.model.model
+    module.to(torch.device("cuda:0"))
 
-    # to_pil = ToPILImage()
+    to_pil = ToPILImage()
 
-    # for batch in valid_loader:
-    #     outputs = module(batch[0].to(torch.device("cuda:0")))
-    #     outputs[outputs > 0.5] = 1
-    #     outputs[outputs <= 0.5] = 0
-    #     batch.append(outputs.detach().cpu())
+    for batch, pure_batch in zip(valid_loader, pure_loader):
+        outputs = module(batch[0].to(torch.device("cuda:0")))
+        torch.sigmoid(outputs)
+        outputs[outputs > 0.5] = 1
+        outputs[outputs <= 0.5] = 0
+        batch.append(outputs.detach().cpu())
+        batch[0] = pure_batch[0]
+        tmp = batch[2]
+        batch[2] = batch[3]
+        batch[3] = tmp
 
-    #     for i in range(batch[0].size(2)):
-    #         _, axs = plt.subplots(1, 3)
+        names = ["Input", "Target", "Generated image"]
 
-    #         for j, ax in enumerate(axs.flatten()):
-    #             img = to_pil(batch[j][i])
-    #             ax.imshow(img)
-    #             ax.axis('off')
+        for i in range(batch[1].size(0)):
+            _, axs = plt.subplots(1, 3)
 
-    #         plt.tight_layout()
-    #         plt.show()
+            for j, ax in enumerate(axs.flatten()):
+                img = to_pil(batch[j][i])
+                ax.imshow(img)
+                ax.set_title(names[j])
+                ax.axis('off')
 
-    lr_schedulers = [ReduceLROnPlateau(factor=0.5, min_lr=1e-6)]
+            plt.tight_layout()
+            plt.savefig("Images/results/nn_mix/{}".format(batch[3][i]),
+                        format="png",
+                        dpi=900)
+
+    lr_schedulers = [ReduceLROnPlateau(factor=0.5, min_lr=1e-7)]
     exp.train(train_loader=train_loader,
               valid_loader=valid_loader,
               epochs=1000,
