@@ -32,8 +32,8 @@ class DisplayProcessor(Processor):
             ax.imshow(image, cmap=plt.get_cmap('binary'))
             ax.axis('off')
 
-        figManager = plt.get_current_fig_manager()
-        figManager.window.showMaximized()
+        # imshow(treated_images)
+
         plt.tight_layout()
         plt.show()
 
@@ -62,9 +62,9 @@ class Saver(Processor):
         #             format="png",
         #             dpi=900)
 
-        imsave("Images/nn/targets/{}".format(image_name), treated_images[2])
+        imsave("Images/nn_cut/targets/{}".format(image_name), treated_images[2])
 
-        imsave("Images/nn/samples/{}".format(image_name), treated_images[3])
+        imsave("Images/nn_cut/samples/{}".format(image_name), treated_images[3])
 
 
 class DataViewing(Processor):

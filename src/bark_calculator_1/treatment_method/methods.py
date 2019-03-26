@@ -201,6 +201,21 @@ class BlackMask(TreatmentMethod):
         return black_mask
 
 
+class BlackTrimmer(TreatmentMethod):
+
+    def make_trimmer(self, image):
+        image = rescale(image, 1/4)
+        summed_image = np.sum(image, axis=-1)
+        summed_image = summed_image > 1e-3
+
+        clear_enough_lines_idx = np.mean(summed_image, axis=-1) > 0.99
+
+        first_idx = np.argmax(clear_enough_lines_idx)
+        last_idx = np.argmax(clear_enough_lines_idx[::-1])
+
+        return first_idx, last_idx
+
+
 class ColorFilter(TreatmentMethod):
 
     def treat_image(self, image, image_type):
@@ -282,6 +297,8 @@ class V2(TreatmentMethod):
     def treat_image(self, image, image_type):
         h, l, h_2, l_2 = self.threshold_dict[image_type]
 
+        first_idx, last_idx = BlackTrimmer().make_trimmer(image)
+
         big_image = np.copy(image)
         big_black_mask = self.black_masker.make_mask(image)
         big_image[~big_black_mask] = [1, 1, 1]
@@ -322,11 +339,11 @@ class V2(TreatmentMethod):
 
         ws_copy = np.repeat(ws_image, 16, axis=0).repeat(16, axis=1)
         ws_1 = np.repeat(ws_image, 4, axis=0).repeat(4, axis=1)
-        treated_images.append(ws_1)
+        treated_images.append(ws_1[first_idx:-last_idx])
         big_image_2 = np.copy(big_image)
         big_image[ws_copy == 1] = [0, 0, 0]
         big_image_2[~(ws_copy == 1)] = [0, 0, 0]
-        treated_images.append(rescale(image, 1/4))
+        treated_images.append(rescale(image, 1/4)[first_idx:-last_idx])
         treated_images.append(big_image)
         treated_images.append(big_image_2)
 

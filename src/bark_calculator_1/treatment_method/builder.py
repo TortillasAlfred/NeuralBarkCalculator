@@ -37,3 +37,6 @@ def build_from_treatment_method_arg(treatment_method):
 
     if treatment_method == "eq":
         return Equalizer()
+
+    if treatment_method == "black_trim":
+        return BlackTrimmer()
