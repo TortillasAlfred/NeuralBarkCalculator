@@ -81,6 +81,8 @@ if __name__ == "__main__":
     #         plt.tight_layout()
     #         plt.show()
 
+    lr_schedulers = [ReduceLROnPlateau(factor=0.5, min_lr=1e-6)]
     exp.train(train_loader=train_loader,
               valid_loader=valid_loader,
-              epochs=1000)
+              epochs=1000,
+              lr_schedulers=lr_schedulers)
