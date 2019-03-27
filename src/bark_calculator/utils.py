@@ -1,6 +1,7 @@
 from dataset import RegressionDatasetFolder
 
-from torchvision.transforms import Compose, Resize, ToTensor
+from torchvision.transforms import Compose, Resize, ToTensor, ToPILImage
+from torchvision.transforms.functional import pad, resize
 from torch.utils.data import DataLoader, SubsetRandomSampler
 
 from math import ceil, floor, sin, cos
@@ -138,3 +139,32 @@ class WeightedMSELoss(nn.Module):
         weights = torch.ones_like(true)
         weights[true > 0.5] = self.pos_weight
         return torch.mean(weights * l2)
+
+
+TO_PIL = ToPILImage()
+TO_TENSOR = ToTensor()
+
+
+def pad_resize(image, width, height):
+    image = pad(image,
+                (ceil((width - image.width)/2),
+                 ceil((height - image.height)/2)),
+                padding_mode='reflect')
+
+    return resize(image, (height, width))
+
+
+def pad_to_biggest_image(tensor_data):
+    images = [[TO_PIL(t_i) for t_i in t] for t in tensor_data]
+    width = max([img[0].width for img in images])
+    height = max([img[0].height for img in images])
+
+    def resizer(img): return pad_resize(img, width, height)
+
+    for i, (sample, target) in enumerate(images):
+        sample = resizer(sample)
+        target = resizer(target)
+        tensor_data[i] = (TO_TENSOR(sample), TO_TENSOR(target))
+
+    return torch.stack([t[0] for t in tensor_data]), \
+        torch.stack([t[1] for t in tensor_data])
