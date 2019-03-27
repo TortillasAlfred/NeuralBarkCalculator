@@ -136,3 +136,4 @@ venv.bak/
 *.optim
 *.epoch
 *.god
+*.lrsched
