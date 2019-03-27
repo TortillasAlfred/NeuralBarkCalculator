@@ -83,8 +83,8 @@ def compute_mean_std(working_dir: str):
 def get_mean_std():
     # Util function to not have to recalculate them
     # every single time
-    mean = [0.771, 0.649, 0.486]
-    std = [0.110, 0.14, 0.160]
+    mean = [0.485, 0.456, 0.406]
+    std = [0.229, 0.224, 0.225]
 
     return mean, std
 
@@ -119,6 +119,24 @@ class MixedLoss(nn.Module):
         self.dice = SoftDiceLoss()
         self.bce = nn.modules.loss.BCEWithLogitsLoss(
             pos_weight=get_pos_weight())
+        self.mse = WeightedMSELoss()
 
     def forward(self, predict, true):
-        return 0.5 * self.dice(predict, true) + 0.5 * self.bce(predict, true)
+        return 0.25 * self.dice(predict, true) + \
+            0.5 * self.bce(predict, true) + \
+            0.25 * self.mse(predict, true)
+
+
+class WeightedMSELoss(nn.Module):
+
+    def __init__(self):
+        super(WeightedMSELoss, self).__init__()
+        self.__name__ = "weighted_mse"
+        self.pos_weight = get_pos_weight()
+
+    def forward(self, predict, true):
+        logits = torch.sigmoid(predict)
+        l2 = (logits - true) ** 2
+        weights = torch.ones_like(true)
+        weights[true > 0.5] = self.pos_weight
+        return torch.mean(weights * l2)
