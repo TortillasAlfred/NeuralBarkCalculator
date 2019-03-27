@@ -70,18 +70,18 @@ def show_dataset():
 
 if __name__ == "__main__":
     mean, std = get_mean_std()
-    dataset = RegressionDatasetFolder("./Images/nn_cut",
+    dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/nn_cut",
                                       input_only_transform=Compose(
                                           [Normalize(mean, std)]
                                       ),
                                       transform=Compose(
                                           [Resize((256, 256)), ToTensor()]
                                       ))
-    pure_dataset = RegressionDatasetFolder("./Images/nn_cut",
+    pure_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/nn_cut",
                                            transform=Compose(
                                                [Resize((256, 256)), ToTensor()]
                                            ))
-    augmented_dataset = RegressionDatasetFolder("./Images/nn_cut",
+    augmented_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/nn_cut",
                                                 input_only_transform=Compose(
                                                     [Normalize(mean, std)]
                                                 ),
@@ -99,14 +99,16 @@ if __name__ == "__main__":
 
     train_sampler, valid_sampler = get_train_valid_samplers(dataset,
                                                             train_percent=0.8)
-    train_loader = DataLoader(augmented_dataset, batch_size=1,
+    train_loader = DataLoader(augmented_dataset, batch_size=4,
                               sampler=train_sampler)
-    valid_loader = DataLoader(dataset, batch_size=1, sampler=valid_sampler)
-    pure_loader = DataLoader(pure_dataset, batch_size=1, sampler=valid_sampler)
+    valid_loader = DataLoader(dataset, batch_size=4,
+                              sampler=valid_sampler)
+    pure_loader = DataLoader(pure_dataset, batch_size=4,
+                             sampler=valid_sampler)
     module = FCDenseNet57(1)
     optim = torch.optim.RMSprop(
         module.parameters(), lr=1e-3, weight_decay=1e-4)
-    exp = Experiment(directory="./fcd_aug/",
+    exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/lkr_aug/",
                      module=module,
                      device=torch.device("cuda:1"),
                      optimizer=optim,
