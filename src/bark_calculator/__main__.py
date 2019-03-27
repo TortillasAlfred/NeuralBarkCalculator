@@ -18,6 +18,7 @@ def load_best_and_show(exp, pure_loader, valid_loader):
     exp.load_best_checkpoint()
     module = exp.model.model
     module.to(torch.device("cuda:0"))
+    module.eval()
 
     to_pil = ToPILImage()
 
@@ -36,6 +37,7 @@ def load_best_and_show(exp, pure_loader, valid_loader):
 
         for i in range(batch[1].size(0)):
             _, axs = plt.subplots(1, 3)
+            acc = (batch[2][i] == batch[1][i]).sum().item()/(256 * 256)
 
             for j, ax in enumerate(axs.flatten()):
                 img = to_pil(batch[j][i])
@@ -43,6 +45,7 @@ def load_best_and_show(exp, pure_loader, valid_loader):
                 ax.set_title(names[j])
                 ax.axis('off')
 
+            plt.suptitle("Overall accuracy : {:.3f}".format(acc))
             plt.tight_layout()
             plt.show()
             # plt.savefig("Images/results/nn_cut_mix/{}".format(batch[3][i]),
@@ -67,18 +70,18 @@ def show_dataset():
 
 if __name__ == "__main__":
     mean, std = get_mean_std()
-    dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/nn_cut",
+    dataset = RegressionDatasetFolder("./Images/nn_cut",
                                       input_only_transform=Compose(
                                           [Normalize(mean, std)]
                                       ),
                                       transform=Compose(
                                           [Resize((256, 256)), ToTensor()]
                                       ))
-    pure_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/nn_cut",
+    pure_dataset = RegressionDatasetFolder("./Images/nn_cut",
                                            transform=Compose(
                                                [Resize((256, 256)), ToTensor()]
                                            ))
-    augmented_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/nn_cut",
+    augmented_dataset = RegressionDatasetFolder("./Images/nn_cut",
                                                 input_only_transform=Compose(
                                                     [Normalize(mean, std)]
                                                 ),
@@ -96,22 +99,20 @@ if __name__ == "__main__":
 
     train_sampler, valid_sampler = get_train_valid_samplers(dataset,
                                                             train_percent=0.8)
-    train_loader = DataLoader(augmented_dataset, batch_size=2,
+    train_loader = DataLoader(augmented_dataset, batch_size=1,
                               sampler=train_sampler)
-    valid_loader = DataLoader(dataset, batch_size=2,
-                              sampler=valid_sampler)
-    pure_loader = DataLoader(pure_dataset, batch_size=2,
-                             sampler=valid_sampler)
-    module = FCDenseNet103(1)
+    valid_loader = DataLoader(dataset, batch_size=1)
+    pure_loader = DataLoader(pure_dataset, batch_size=1)
+    module = FCDenseNet57(1)
     optim = torch.optim.RMSprop(
         module.parameters(), lr=1e-3, weight_decay=1e-4)
-    exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/fcd_mix/",
+    exp = Experiment(directory="./fcd57_mse/",
                      module=module,
                      device=torch.device("cuda:1"),
                      optimizer=optim,
                      loss_function=MixedLoss())
 
-    # load_best_and_show(exp, pure_loader, valid_loader)
+    load_best_and_show(exp, pure_loader, valid_loader)
 
     lr_schedulers = [ExponentialLR(gamma=0.995)]
     exp.train(train_loader=train_loader,
