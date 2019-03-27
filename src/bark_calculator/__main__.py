@@ -1,10 +1,10 @@
 from dataset import RegressionDatasetFolder, make_weight_map
 from utils import *
-from models import vanilla_unet, AttU_Net
+from models import vanilla_unet, FCDenseNet103
 
 from torchvision.transforms import *
 
-from poutyne.framework import Experiment, ReduceLROnPlateau
+from poutyne.framework import Experiment, ExponentialLR
 from torch.utils.data import DataLoader
 import matplotlib.pyplot as plt
 from torch.nn.modules.loss import BCEWithLogitsLoss
@@ -87,6 +87,7 @@ if __name__ == "__main__":
                                                 transform=Compose([
                                                     RandomHorizontalFlip(),
                                                     RandomVerticalFlip(),
+                                                    RandomSizedCrop()
                                                     Resize((256, 256)),
                                                     ToTensor()]))
 
@@ -100,8 +101,9 @@ if __name__ == "__main__":
                               sampler=valid_sampler)
     pure_loader = DataLoader(pure_dataset, batch_size=6,
                              sampler=valid_sampler)
-    module = AttU_Net()
-    optim = torch.optim.Adam(module.parameters(), lr=1e-3)
+    module = FCDenseNet103()
+    optim = torch.optim.RMSprop(
+        module.parameters(), lr=1e-3, weight_decay=1e-4)
     exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/mix_attn/",
                      module=module,
                      device=torch.device("cuda:1"),
@@ -110,7 +112,7 @@ if __name__ == "__main__":
 
     # load_best_and_show(exp, pure_loader, valid_loader)
 
-    lr_schedulers = [ReduceLROnPlateau(factor=0.2, patience=10, min_lr=1e-8)]
+    lr_schedulers = [ExponentialLR(gamma=0.995)]
     exp.train(train_loader=train_loader,
               valid_loader=valid_loader,
               epochs=250,
