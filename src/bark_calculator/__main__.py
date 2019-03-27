@@ -101,12 +101,12 @@ if __name__ == "__main__":
                                                             train_percent=0.8)
     train_loader = DataLoader(augmented_dataset, batch_size=1,
                               sampler=train_sampler)
-    valid_loader = DataLoader(dataset, batch_size=1)
-    pure_loader = DataLoader(pure_dataset, batch_size=1)
+    valid_loader = DataLoader(dataset, batch_size=1, sampler=valid_sampler)
+    pure_loader = DataLoader(pure_dataset, batch_size=1, sampler=valid_sampler)
     module = FCDenseNet57(1)
     optim = torch.optim.RMSprop(
         module.parameters(), lr=1e-3, weight_decay=1e-4)
-    exp = Experiment(directory="./fcd57_mse/",
+    exp = Experiment(directory="./fcd_aug/",
                      module=module,
                      device=torch.device("cuda:1"),
                      optimizer=optim,
