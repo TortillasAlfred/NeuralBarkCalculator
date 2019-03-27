@@ -129,7 +129,7 @@ def make_dataset(dir, extensions):
                                   " for image name {} !".format(fname))
 
                 fname = fname.replace("bmp", "png")
-                item = (sample_path, target_path, fname)
+                item = (sample_path, target_path)
                 images.append(item)
 
     return images
@@ -206,7 +206,7 @@ class RegressionDatasetFolder(data.Dataset):
         Returns:
             tuple: (sample, target) the sample and target images.
         """
-        path, target_path, fname = self.samples[index]
+        path, target_path = self.samples[index]
         sample = self.loader(path)
         target = self.loader(target_path, grayscale=True)
 
@@ -226,7 +226,7 @@ class RegressionDatasetFolder(data.Dataset):
         target[target <= 0.5] = 0
         # target = make_one_hot(target)
 
-        return sample, target, fname
+        return sample, target
 
     def __len__(self):
         return len(self.samples)
