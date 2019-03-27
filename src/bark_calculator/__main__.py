@@ -104,10 +104,7 @@ if __name__ == "__main__":
     valid_loader = DataLoader(dataset, batch_size=4,
                               sampler=valid_sampler)
     pure_loader = DataLoader(pure_dataset, batch_size=4,
-                             sampler=valid_sampler)
-    module = FCDenseNet57(1)
-    optim = torch.optim.RMSprop(
-        module.parameters(), lr=1e-3, weight_decay=1e-4)
+    optim = torch.optim.SGD(module.parameters(), lr=1e-3, weight_decay=1e-5)
     exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/lkr_aug/",
                      module=module,
                      device=torch.device("cuda:1"),
