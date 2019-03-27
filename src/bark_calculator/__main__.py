@@ -86,13 +86,9 @@ if __name__ == "__main__":
                                                     [Normalize(mean, std)]
                                                 ),
                                                 transform=Compose([
-                                                    Lambda(lambda img:
-                                                           Pad((378 - img.width,
-                                                                378 - img.height),
-                                                               padding_mode='reflect')(img)),
                                                     RandomHorizontalFlip(),
                                                     RandomVerticalFlip(),
-                                                    RandomCrop(256),
+                                                    Resize((256, 256)),
                                                     ToTensor()]))
 
     # show_dataset()
@@ -107,7 +103,7 @@ if __name__ == "__main__":
                              sampler=valid_sampler)
     module = FCDenseNet103(1)
     optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-5)
-    exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/pad/",
+    exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/big/",
                      module=module,
                      device=torch.device("cuda:1"),
                      optimizer=optim,
