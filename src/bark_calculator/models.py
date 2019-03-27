@@ -309,6 +309,8 @@ class AttU_Net(nn.Module):
         self.Conv_1x1 = nn.Conv2d(
             64, output_ch, kernel_size=1, stride=1, padding=0)
 
+        init_net(self, "xavier")
+
     def forward(self, x):
         # encoding path
         x1 = self.Conv1(x)
