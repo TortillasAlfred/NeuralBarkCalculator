@@ -76,7 +76,7 @@ if __name__ == "__main__":
                                       ))
     pure_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/nn_cut",
                                            transform=Compose(
-                                               [Resize((256, 256)), TToTensor()]
+                                               [Resize((256, 256)), ToTensor()]
                                            ))
     augmented_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/nn_cut",
                                                 input_only_transform=Compose(
