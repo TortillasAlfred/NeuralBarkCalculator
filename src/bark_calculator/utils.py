@@ -28,8 +28,8 @@ def get_train_valid_samplers(dataset, train_percent, seed=42):
     return SubsetRandomSampler(train_idx), SubsetRandomSampler(valid_idx)
 
 
-def rotate_crop(image):
-    angle = random.random() * 360 - 180
+def rotate_crop(image, angle_range=5):
+    angle = random.random() * angle_range * 2 - angle_range
 
     size, _ = image.size
 
@@ -61,7 +61,7 @@ def rotatedRectWithMaxArea(size, angle):
 def compute_mean_std(working_dir: str):
     train_dataset = RegressionDatasetFolder(working_dir,
                                             transform=Compose(
-                                                [Resize((224, 224)), ToTensor()]))
+                                                [Resize((256, 256)), ToTensor()]))
     loader = DataLoader(train_dataset, batch_size=100)
 
     mean = 0.
@@ -83,18 +83,14 @@ def compute_mean_std(working_dir: str):
 def get_mean_std():
     # Util function to not have to recalculate them
     # every single time
-    # mean = [0.5495320558547974, 0.46154847741127014, 0.34539610147476196]
-    # std = [0.35342904925346375, 0.3120446503162384,
-    # 0.25366029143333435]
-
-    mean = [0.485, 0.456, 0.406]
-    std = [0.229, 0.224, 0.225]
+    mean = [0.771, 0.649, 0.486]
+    std = [0.110, 0.14, 0.160]
 
     return mean, std
 
 
 def get_pos_weight():
-    return torch.FloatTensor([1./0.34019524 - 1.])
+    return torch.FloatTensor([1./0.42667 - 1.])
 
 
 class SoftDiceLoss(nn.Module):
