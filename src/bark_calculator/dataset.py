@@ -222,6 +222,7 @@ class RegressionDatasetFolder(data.Dataset):
         if self.input_only_transform is not None:
             sample = self.input_only_transform(sample)
 
+        target /= 255
         target[target > 0.5] = 1
         target[target <= 0.5] = 0
         # target = make_one_hot(target)
