@@ -108,7 +108,7 @@ if __name__ == "__main__":
                      optimizer=optim,
                      loss_function=MixedLoss())
 
-    load_best_and_show(exp, pure_loader, valid_loader)
+    # load_best_and_show(exp, pure_loader, valid_loader)
 
     lr_schedulers = [ReduceLROnPlateau(factor=0.2, patience=10, min_lr=1e-8)]
     exp.train(train_loader=train_loader,
