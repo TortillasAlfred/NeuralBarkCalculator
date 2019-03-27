@@ -99,13 +99,15 @@ if __name__ == "__main__":
 
     train_sampler, valid_sampler = get_train_valid_samplers(dataset,
                                                             train_percent=0.8)
-    train_loader = DataLoader(augmented_dataset, batch_size=4,
-                              sampler=train_sampler)
+    train_loader = DataLoader(dataset, batch_size=4,
+                              sampler=train_sampler, collate_fn=pad_to_biggest_image)
     valid_loader = DataLoader(dataset, batch_size=4,
-                              sampler=valid_sampler)
+                              sampler=valid_sampler, collate_fn=pad_to_biggest_image)
     pure_loader = DataLoader(pure_dataset, batch_size=4,
+                             sampler=valid_sampler, collate_fn=pad_to_biggest_image)
+    module = FCDenseNet103(1)
     optim = torch.optim.SGD(module.parameters(), lr=1e-3, weight_decay=1e-5)
-    exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/lkr_aug/",
+    exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/pad/",
                      module=module,
                      device=torch.device("cuda:1"),
                      optimizer=optim,
