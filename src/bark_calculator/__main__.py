@@ -1,6 +1,6 @@
 from dataset import RegressionDatasetFolder, make_weight_map
 from utils import *
-from models import vanilla_unet, FCDenseNet103
+from models import vanilla_unet, FCDenseNet103, FCDenseNet57
 
 from torchvision.transforms import *
 
@@ -72,39 +72,40 @@ if __name__ == "__main__":
                                           [Normalize(mean, std)]
                                       ),
                                       transform=Compose(
-                                          [Resize((256, 256)),
-                                           ToTensor()]
+                                          [ToTensor()]
                                       ))
     pure_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/nn_cut",
                                            transform=Compose(
-                                               [Resize((256, 256)),
-                                                ToTensor()]
+                                               [ToTensor()]
                                            ))
     augmented_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/nn_cut",
                                                 input_only_transform=Compose(
                                                     [Normalize(mean, std)]
                                                 ),
                                                 transform=Compose([
+                                                    Lambda(lambda img:
+                                                           Pad((378 - img.width,
+                                                                378 - img.height),
+                                                               padding_mode='reflect')(img)),
                                                     RandomHorizontalFlip(),
                                                     RandomVerticalFlip(),
-                                                    RandomSizedCrop()
-                                                    Resize((256, 256)),
+                                                    RandomCrop(256),
                                                     ToTensor()]))
 
     # show_dataset()
 
     train_sampler, valid_sampler = get_train_valid_samplers(dataset,
                                                             train_percent=0.8)
-    train_loader = DataLoader(augmented_dataset, batch_size=6,
+    train_loader = DataLoader(augmented_dataset, batch_size=2,
                               sampler=train_sampler)
-    valid_loader = DataLoader(dataset, batch_size=6,
+    valid_loader = DataLoader(dataset, batch_size=2,
                               sampler=valid_sampler)
-    pure_loader = DataLoader(pure_dataset, batch_size=6,
+    pure_loader = DataLoader(pure_dataset, batch_size=2,
                              sampler=valid_sampler)
-    module = FCDenseNet103()
+    module = FCDenseNet57(1)
     optim = torch.optim.RMSprop(
         module.parameters(), lr=1e-3, weight_decay=1e-4)
-    exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/mix_attn/",
+    exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/fcd57_mix/",
                      module=module,
                      device=torch.device("cuda:1"),
                      optimizer=optim,
@@ -115,5 +116,5 @@ if __name__ == "__main__":
     lr_schedulers = [ExponentialLR(gamma=0.995)]
     exp.train(train_loader=train_loader,
               valid_loader=valid_loader,
-              epochs=250,
+              epochs=1000,
               lr_schedulers=lr_schedulers)
