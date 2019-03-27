@@ -3,10 +3,12 @@ from dataset import RegressionDatasetFolder
 from torchvision.transforms import Compose, Resize, ToTensor
 from torch.utils.data import DataLoader, SubsetRandomSampler
 
-from math import ceil
+from math import ceil, floor, sin, cos
 import numpy as np
 import torch
 from torch import nn
+from torchvision.transforms.functional import rotate, center_crop
+import random
 
 
 def get_train_valid_samplers(dataset, train_percent, seed=42):
@@ -24,6 +26,36 @@ def get_train_valid_samplers(dataset, train_percent, seed=42):
     valid_idx = all_idx[-n_valid:]
 
     return SubsetRandomSampler(train_idx), SubsetRandomSampler(valid_idx)
+
+
+def rotate_crop(image):
+    angle = random.random() * 360 - 180
+
+    size, _ = image.size
+
+    image = rotate(image, angle)
+
+    cropped_size = rotatedRectWithMaxArea(size, (angle + 180)/(180*np.pi))
+
+    return center_crop(image, cropped_size)
+
+
+def rotatedRectWithMaxArea(size, angle):
+    """
+    Given a rectangle of size wxh that has been rotated by 'angle' (in
+    radians), computes the width and height of the largest possible
+    axis-aligned rectangle (maximal area) within the rotated rectangle.
+    """
+    sin_a, cos_a = abs(sin(angle)), abs(cos(angle))
+    if 1 <= 2.*sin_a*cos_a or abs(sin_a-cos_a) < 1e-10:
+        x = 0.5*size
+        wr, hr = (x/sin_a, x/cos_a)
+    else:
+        cos_2a = cos_a*cos_a - sin_a*sin_a
+        wr, hr = (size*cos_a - size*sin_a)/cos_2a, \
+            (size*cos_a - size*sin_a)/cos_2a
+
+    return floor(wr/2), floor(hr/2)
 
 
 def compute_mean_std(working_dir: str):
