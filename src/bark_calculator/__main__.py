@@ -72,11 +72,11 @@ if __name__ == "__main__":
                                           [Normalize(mean, std)]
                                       ),
                                       transform=Compose(
-                                          [ToTensor()]
+                                          [Resize((256, 256)), ToTensor()]
                                       ))
     pure_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/nn_cut",
                                            transform=Compose(
-                                               [ToTensor()]
+                                               [Resize((256, 256)), TToTensor()]
                                            ))
     augmented_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/nn_cut",
                                                 input_only_transform=Compose(
