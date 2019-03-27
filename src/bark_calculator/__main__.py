@@ -106,7 +106,7 @@ if __name__ == "__main__":
     pure_loader = DataLoader(pure_dataset, batch_size=4,
                              sampler=valid_sampler)
     module = FCDenseNet103(1)
-    optim = torch.optim.SGD(module.parameters(), lr=1e-3, weight_decay=1e-5)
+    optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-5)
     exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/pad/",
                      module=module,
                      device=torch.device("cuda:1"),
