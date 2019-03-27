@@ -102,10 +102,10 @@ if __name__ == "__main__":
                               sampler=valid_sampler)
     pure_loader = DataLoader(pure_dataset, batch_size=2,
                              sampler=valid_sampler)
-    module = FCDenseNet103(1)
+    module = FCDenseNet57(1)
     optim = torch.optim.RMSprop(
         module.parameters(), lr=1e-3, weight_decay=1e-4)
-    exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/fcd_mix/",
+    exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/fcd_aug/",
                      module=module,
                      device=torch.device("cuda:1"),
                      optimizer=optim,
