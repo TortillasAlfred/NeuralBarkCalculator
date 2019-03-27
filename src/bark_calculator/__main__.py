@@ -114,7 +114,7 @@ if __name__ == "__main__":
                      optimizer=optim,
                      loss_function=MixedLoss())
 
-    load_best_and_show(exp, pure_loader, valid_loader)
+    # load_best_and_show(exp, pure_loader, valid_loader)
 
     lr_schedulers = [ExponentialLR(gamma=0.995)]
     exp.train(train_loader=train_loader,
