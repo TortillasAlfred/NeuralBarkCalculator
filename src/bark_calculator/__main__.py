@@ -117,5 +117,5 @@ if __name__ == "__main__":
     lr_schedulers = [ExponentialLR(gamma=0.95)]
     exp.train(train_loader=train_loader,
               valid_loader=valid_loader,
-              epochs=500,
+              epochs=100,
               lr_schedulers=lr_schedulers)
