@@ -88,7 +88,10 @@ if __name__ == "__main__":
                                                 transform=Compose([
                                                     RandomHorizontalFlip(),
                                                     RandomVerticalFlip(),
-                                                    Resize((256, 256)),
+                                                    Lambda(lambda img:
+                                                           rotate_crop(img)),
+                                                    RandomResizedCrop(
+                                                        256, scale=(0.5, 1.0)),
                                                     ToTensor()]))
 
     # show_dataset()
@@ -114,5 +117,5 @@ if __name__ == "__main__":
     lr_schedulers = [ExponentialLR(gamma=0.995)]
     exp.train(train_loader=train_loader,
               valid_loader=valid_loader,
-              epochs=1000,
+              epochs=2000,
               lr_schedulers=lr_schedulers)
