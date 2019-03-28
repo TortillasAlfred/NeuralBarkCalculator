@@ -75,11 +75,11 @@ if __name__ == "__main__":
                                           [Normalize(mean, std)]
                                       ),
                                       transform=Compose(
-                                          [Resize((256, 256)), ToTensor()]
+                                          [Resize((128, 128)), ToTensor()]
                                       ))
     pure_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/nn_cut",
                                            transform=Compose(
-                                               [Resize((256, 256)), ToTensor()]
+                                               [Resize((128, 128)), ToTensor()]
                                            ))
     augmented_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/nn_cut",
                                                 input_only_transform=Compose(
@@ -88,19 +88,18 @@ if __name__ == "__main__":
                                                 transform=Compose([
                                                     RandomHorizontalFlip(),
                                                     RandomVerticalFlip(),
-                                                    RandomResizedCrop(
-                                                        256, scale=(0.5, 1.0)),
+                                                    Resize((128, 128)),
                                                     ToTensor()]))
 
     # show_dataset()
 
     train_sampler, valid_sampler = get_train_valid_samplers(dataset,
                                                             train_percent=0.8)
-    train_loader = DataLoader(augmented_dataset, batch_size=2,
+    train_loader = DataLoader(augmented_dataset, batch_size=8,
                               sampler=train_sampler)
-    valid_loader = DataLoader(dataset, batch_size=2,
+    valid_loader = DataLoader(dataset, batch_size=8,
                               sampler=valid_sampler)
-    pure_loader = DataLoader(pure_dataset, batch_size=2,
+    pure_loader = DataLoader(pure_dataset, batch_size=8,
                              sampler=valid_sampler)
     module = FCDenseNet103(1)
     optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-5)
