@@ -103,7 +103,7 @@ if __name__ == "__main__":
                              sampler=valid_sampler)
     module = FCDenseNet103(1)
     optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-5)
-    exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/big_aug/",
+    exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/128_flips/",
                      module=module,
                      device=torch.device("cuda:1"),
                      optimizer=optim,
@@ -114,5 +114,5 @@ if __name__ == "__main__":
     lr_schedulers = [ExponentialLR(gamma=0.99)]
     exp.train(train_loader=train_loader,
               valid_loader=valid_loader,
-              epochs=2000,
+              epochs=500,
               lr_schedulers=lr_schedulers)
