@@ -88,8 +88,7 @@ if __name__ == "__main__":
                                                 transform=Compose([
                                                     RandomHorizontalFlip(),
                                                     RandomVerticalFlip(),
-                                                    Lambda(lambda img:
-                                                           pad_resize(img, 256, 256)),
+                                                    Resize((256, 256)),
                                                     ToTensor()]))
 
     # show_dataset()
