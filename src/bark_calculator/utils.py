@@ -84,8 +84,8 @@ def compute_mean_std(working_dir: str):
 def get_mean_std():
     # Util function to not have to recalculate them
     # every single time
-    mean = [0.485, 0.456, 0.406]
-    std = [0.229, 0.224, 0.225]
+    mean = [0.773, 0.650, 0.487]
+    std = [0.112, 0.146, 0.161]
 
     return mean, std
 
