@@ -103,7 +103,7 @@ if __name__ == "__main__":
                              sampler=valid_sampler)
     module = FCDenseNet103(1)
     optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-5)
-    exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/256_aug/",
+    exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/256_res/",
                      module=module,
                      device=torch.device("cuda:1"),
                      optimizer=optim,
