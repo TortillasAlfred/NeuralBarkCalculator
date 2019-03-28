@@ -75,7 +75,9 @@ if __name__ == "__main__":
                                           [Normalize(mean, std)]
                                       ),
                                       transform=Compose(
-                                          [Resize((256, 256)), ToTensor()]
+                                          [Lambda(lambda img:
+                                                  pad_resize(img, 256, 256)),
+                                           ToTensor()]
                                       ))
     pure_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/nn_cut",
                                            transform=Compose(
@@ -88,7 +90,8 @@ if __name__ == "__main__":
                                                 transform=Compose([
                                                     RandomHorizontalFlip(),
                                                     RandomVerticalFlip(),
-                                                    Resize((256, 256)),
+                                                    Lambda(lambda img:
+                                                           pad_resize(img, 256, 256)),
                                                     ToTensor()]))
 
     # show_dataset()
@@ -103,7 +106,7 @@ if __name__ == "__main__":
                              sampler=valid_sampler)
     module = FCDenseNet103(1)
     optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-5)
-    exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/256_res/",
+    exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/256_pad/",
                      module=module,
                      device=torch.device("cuda:1"),
                      optimizer=optim,
