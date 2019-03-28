@@ -88,8 +88,6 @@ if __name__ == "__main__":
                                                 transform=Compose([
                                                     RandomHorizontalFlip(),
                                                     RandomVerticalFlip(),
-                                                    Lambda(lambda img:
-                                                           rotate_crop(img)),
                                                     RandomResizedCrop(
                                                         256, scale=(0.5, 1.0)),
                                                     ToTensor()]))
