@@ -92,6 +92,7 @@ if __name__ == "__main__":
                                                     RandomVerticalFlip(),
                                                     Lambda(lambda img:
                                                            pad_resize(img, 256, 256)),
+                                                    RandomResizedCrop(256, scale=(0.7, 1.0)),
                                                     ToTensor()]))
 
     # show_dataset()
