@@ -114,8 +114,8 @@ if __name__ == "__main__":
 
     # load_best_and_show(exp, pure_loader, valid_loader)
 
-    lr_schedulers = [ExponentialLR(gamma=0.95)]
+    lr_schedulers = [ExponentialLR(gamma=0.99)]
     exp.train(train_loader=train_loader,
               valid_loader=valid_loader,
-              epochs=150,
+              epochs=1000,
               lr_schedulers=lr_schedulers)
