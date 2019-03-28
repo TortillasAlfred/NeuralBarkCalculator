@@ -29,7 +29,7 @@ def get_train_valid_samplers(dataset, train_percent, seed=42):
     return SubsetRandomSampler(train_idx), SubsetRandomSampler(valid_idx)
 
 
-def rotate_crop(image, angle_range=5):
+def rotate_crop(image, angle_range=25):
     angle = random.random() * angle_range * 2 - angle_range
 
     size, _ = image.size
