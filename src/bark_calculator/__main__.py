@@ -92,17 +92,19 @@ if __name__ == "__main__":
                                                     RandomVerticalFlip(),
                                                     Lambda(lambda img:
                                                            pad_resize(img, 256, 256)),
+                                                    RandomResizedCrop(
+                                                        (256, 256)),
                                                     ToTensor()]))
 
     # show_dataset()
 
     train_sampler, valid_sampler = get_train_valid_samplers(dataset,
                                                             train_percent=0.8)
-    train_loader = DataLoader(augmented_dataset, batch_size=3,
+    train_loader = DataLoader(augmented_dataset, batch_size=8,
                               sampler=train_sampler)
-    valid_loader = DataLoader(dataset, batch_size=3,
+    valid_loader = DataLoader(dataset, batch_size=8,
                               sampler=valid_sampler)
-    pure_loader = DataLoader(pure_dataset, batch_size=3,
+    pure_loader = DataLoader(pure_dataset, batch_size=8,
                              sampler=valid_sampler)
     module = vanilla_unet()
     optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-5)
