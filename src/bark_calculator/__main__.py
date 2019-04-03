@@ -92,23 +92,21 @@ if __name__ == "__main__":
                                                     RandomVerticalFlip(),
                                                     Lambda(lambda img:
                                                            pad_resize(img, 256, 256)),
-                                                    RandomResizedCrop(
-                                                        (256, 256)),
                                                     ToTensor()]))
 
     # show_dataset()
 
     train_sampler, valid_sampler = get_train_valid_samplers(dataset,
                                                             train_percent=0.8)
-    train_loader = DataLoader(augmented_dataset, batch_size=8,
+    train_loader = DataLoader(augmented_dataset, batch_size=1,
                               sampler=train_sampler)
-    valid_loader = DataLoader(dataset, batch_size=8,
+    valid_loader = DataLoader(dataset, batch_size=1,
                               sampler=valid_sampler)
-    pure_loader = DataLoader(pure_dataset, batch_size=8,
+    pure_loader = DataLoader(pure_dataset, batch_size=1,
                              sampler=valid_sampler)
-    module = vanilla_unet()
+    module = B2B()
     optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-5)
-    exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/256_unet/",
+    exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/b2b/",
                      module=module,
                      device=torch.device("cuda:1"),
                      optimizer=optim,

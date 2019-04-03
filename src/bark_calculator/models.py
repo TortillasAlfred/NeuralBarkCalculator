@@ -558,11 +558,11 @@ def FCDenseNet103(n_classes):
 class B2B(nn.Module):
     def __init__(self):
         super().__init__()
-        self.m1 = vanilla_unet()
-        self.m2 = vanilla_unet()
-        self.m3 = vanilla_unet()
-        self.m4 = vanilla_unet()
-        self.m5 = vanilla_unet()
+        self.m1 = FCDenseNet57(1)
+        self.m2 = FCDenseNet57(1)
+        self.m3 = FCDenseNet57(1)
+        self.m4 = FCDenseNet57(1)
+        self.m5 = FCDenseNet57(1)
 
     def forward(self, x):
         res = []
