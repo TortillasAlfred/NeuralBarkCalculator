@@ -104,9 +104,9 @@ if __name__ == "__main__":
                               sampler=valid_sampler)
     pure_loader = DataLoader(pure_dataset, batch_size=3,
                              sampler=valid_sampler)
-    module = B2B()
+    module = vanilla_unet()
     optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-5)
-    exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/256_flips/",
+    exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/256_unet/",
                      module=module,
                      device=torch.device("cuda:1"),
                      optimizer=optim,
