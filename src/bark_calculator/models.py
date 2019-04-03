@@ -552,3 +552,26 @@ def FCDenseNet103(n_classes):
         in_channels=3, down_blocks=(4, 5, 7, 10, 12),
         up_blocks=(12, 10, 7, 5, 4), bottleneck_layers=15,
         growth_rate=16, out_chans_first_conv=48, n_classes=n_classes)
+
+
+class B2B(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.m1 = FCDenseNet57(1)
+        self.m2 = FCDenseNet57(1)
+        self.m3 = FCDenseNet57(1)
+        self.m4 = FCDenseNet57(1)
+        self.m5 = FCDenseNet57(1)
+
+    def forward(self, x):
+        res = []
+
+        res.append(self.m1(x))
+        res.append(self.m2(x))
+        res.append(self.m3(x))
+        res.append(self.m4(x))
+        res.append(self.m5(x))
+
+        res = torch.stack(res)
+
+        return torch.mean(res, 0)
