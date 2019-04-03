@@ -106,8 +106,6 @@ if __name__ == "__main__":
                              sampler=valid_sampler)
     module = torch.nn.Sequential(FCDenseNet57(3),
                                  FCDenseNet57(3),
-                                 FCDenseNet57(3),
-                                 FCDenseNet57(3),
                                  FCDenseNet57(1))
     optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-5)
     exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/256_flips/",
