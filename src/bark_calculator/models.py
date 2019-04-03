@@ -207,7 +207,7 @@ def vanilla_unet():
     net = UnetGenerator(3, 1, 8, 64,
                         norm_layer=norm_layer, use_dropout=True)
 
-    return init_net(net, "xavier")
+    return init_net(net, "kaiming")
 
 
 class conv_block(nn.Module):
