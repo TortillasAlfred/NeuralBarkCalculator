@@ -104,19 +104,22 @@ if __name__ == "__main__":
                               sampler=valid_sampler)
     pure_loader = DataLoader(pure_dataset, batch_size=3,
                              sampler=valid_sampler)
-    module = FCDenseNet57(1)
-    module.to(torch.device("cuda:1"))
-    # optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-5)
-    # exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/256_flips/",
-    #                  module=module,
-    #                  device=torch.device("cuda:1"),
-    #                  optimizer=optim,
-    #                  loss_function=MixedLoss())
+    module = torch.nn.Sequential(FCDenseNet57(1),
+                                 FCDenseNet57(1),
+                                 FCDenseNet57(1),
+                                 FCDenseNet57(1),
+                                 FCDenseNet57(1))
+    optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-5)
+    exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/256_flips/",
+                     module=module,
+                     device=torch.device("cuda:1"),
+                     optimizer=optim,
+                     loss_function=MixedLoss())
 
-    # # load_best_and_show(exp, pure_loader, valid_loader)
+    # load_best_and_show(exp, pure_loader, valid_loader)
 
-    # lr_schedulers = [ExponentialLR(gamma=0.98)]
-    # exp.train(train_loader=train_loader,
-    #           valid_loader=valid_loader,
-    #           epochs=500,
-    #           lr_schedulers=lr_schedulers)
+    lr_schedulers = [ExponentialLR(gamma=0.98)]
+    exp.train(train_loader=train_loader,
+              valid_loader=valid_loader,
+              epochs=500,
+              lr_schedulers=lr_schedulers)
