@@ -92,7 +92,6 @@ if __name__ == "__main__":
                                                     RandomVerticalFlip(),
                                                     Lambda(lambda img:
                                                            pad_resize(img, 256, 256)),
-                                                    RandomResizedCrop(256, scale=(0.7, 1.0)),
                                                     ToTensor()]))
 
     # show_dataset()
@@ -107,7 +106,7 @@ if __name__ == "__main__":
                              sampler=valid_sampler)
     module = FCDenseNet103(1)
     optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-5)
-    exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/256_norm/",
+    exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/256_flips/",
                      module=module,
                      device=torch.device("cuda:1"),
                      optimizer=optim,
@@ -115,8 +114,8 @@ if __name__ == "__main__":
 
     # load_best_and_show(exp, pure_loader, valid_loader)
 
-    lr_schedulers = [ExponentialLR(gamma=0.99)]
+    lr_schedulers = [ExponentialLR(gamma=0.98)]
     exp.train(train_loader=train_loader,
               valid_loader=valid_loader,
-              epochs=1000,
+              epochs=500,
               lr_schedulers=lr_schedulers)
