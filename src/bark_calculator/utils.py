@@ -123,7 +123,7 @@ class MixedLoss(nn.Module):
         self.mse = WeightedMSELoss()
 
     def forward(self, predict, true):
-        return 0.5 * self.dice(predict, true) + 0.5 * self.bce(predict, true)
+        return self.dice(predict, true) + self.bce(predict, true)
 
 
 class WeightedMSELoss(nn.Module):
