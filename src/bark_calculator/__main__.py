@@ -170,11 +170,11 @@ def new_main():
                          metrics=['mse'],
                          loss_function=MixedLoss())
 
-        lr_schedulers = [ExponentialLR(gamma=0.95)]
-        callbacks = [EarlyStopping(patience=20)]
+        lr_schedulers = [ExponentialLR(gamma=0.90)]
+        callbacks = [EarlyStopping(patience=12)]
         exp.train(train_loader=train_loader,
                   valid_loader=valid_loader,
-                  epochs=250,
+                  epochs=100,
                   lr_schedulers=lr_schedulers,
                   callbacks=callbacks)
         exp.test(test_loader)
