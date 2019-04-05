@@ -135,7 +135,7 @@ def new_main():
                                                     Lambda(lambda img:
                                                            pad_resize(img, 256, 256)),
                                                     RandomResizedCrop(
-                                                        (256, 256), scale=(0.75, 1.0))
+                                                        (256, 256), scale=(0.75, 1.0)),
                                                     ToTensor()]),
                                                 k=k,
                                                 mode="train")
