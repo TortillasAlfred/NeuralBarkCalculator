@@ -196,7 +196,7 @@ def new_main():
     module = pickle.load(
         open("/mnt/storage/mgodbout/Ecorcage/b2b/ensemble.pck", "rb"))
 
-    module.to(torch.device("cpu"))
+    module.to(torch.device("cuda:1"))
     module.eval()
 
     to_pil = ToPILImage()
@@ -221,11 +221,10 @@ def new_main():
     pure_loader = DataLoader(pure_dataset, batch_size=1)
 
     for batch, pure_batch in zip(valid_loader, pure_loader):
-        outputs = module(batch[0].to(torch.device("cpu")))
+        outputs = module(batch[0].to(torch.device("cuda:1")))
         torch.sigmoid(outputs)
-        outputs[outputs > 0.5] = 1
-        outputs[outputs <= 0.5] = 0
-        batch.append(outputs)
+        outputs.round_()
+        batch.append(outputs.detach().cpu())
         batch[0] = pure_batch[0]
         tmp = batch[2]
         batch[2] = batch[3]
