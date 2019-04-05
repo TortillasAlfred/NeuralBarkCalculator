@@ -181,6 +181,7 @@ def new_main():
 
     test_loader = DataLoader(test_dataset, batch_size=1)
     module = B2B("/mnt/storage/mgodbout/Ecorcage/b2b/", 5)
+    from utils import MixedLoss
     exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/b2b/",
                      module=module,
                      device=torch.device("cuda:1"),
