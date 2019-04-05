@@ -127,15 +127,17 @@ def new_main():
     for k in range(1, 6):
         train_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/nn_cut",
                                                 input_only_transform=Compose(
-                                                    [Normalize(mean, std)]
+                                                    [Normalize(mean, std),
+                                                     ToPILImage(),
+                                                     ColorJitter(brightness=0.05,
+                                                                 contrast=0.05),
+                                                     ToTensor()]
                                                 ),
                                                 transform=Compose([
                                                     RandomHorizontalFlip(),
                                                     RandomVerticalFlip(),
                                                     Lambda(lambda img:
                                                            pad_resize(img, 256, 256)),
-                                                    Lambda(lambda img:
-                                                           rotate_crop(img)),
                                                     ToTensor()]),
                                                 k=k,
                                                 mode="train")
