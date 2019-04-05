@@ -8,6 +8,8 @@ from torch.nn import init
 import functools
 from torch.optim import lr_scheduler
 import numpy as np
+from os.path import join
+from poutyne.framework import Experiment
 
 
 ###############################################################################
@@ -556,23 +558,20 @@ def FCDenseNet103(n_classes):
 
 
 class B2B(nn.Module):
-    def __init__(self):
+    def __init__(self, root_dir, num_modules):
         super().__init__()
-        self.m1 = FCDenseNet57(1)
-        self.m2 = FCDenseNet57(1)
-        self.m3 = FCDenseNet57(1)
-        self.m4 = FCDenseNet57(1)
-        self.m5 = FCDenseNet57(1)
+        self.modules = nn.ModuleList([])
+
+        for k in range(1, num_modules + 1):
+            exp = Experiment(directory=join(root_dir, str(k)),
+                             module=FCDenseNet57(1),
+                             device=torch.device("cuda:1"),
+                             optimizer="adam",
+                             loss_function=MixedLoss())
+            exp.load_best_checkpoint()
+            self.modules.append(exp.model.model)
 
     def forward(self, x):
-        res = []
-
-        res.append(self.m1(x))
-        res.append(self.m2(x))
-        res.append(self.m3(x))
-        res.append(self.m4(x))
-        res.append(self.m5(x))
-
-        res = torch.stack(res)
+        res = torch.stack([m(x) for m in self.modules])
 
         return torch.mean(res, 0)
