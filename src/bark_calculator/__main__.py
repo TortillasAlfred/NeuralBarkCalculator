@@ -180,18 +180,18 @@ def new_main():
     #               callbacks=callbacks)
     #     exp.test(test_loader)
 
-    test_loader = DataLoader(test_dataset, batch_size=1)
-    module = B2B("/mnt/storage/mgodbout/Ecorcage/b2b/", 5)
-    exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/b2b/",
-                     module=module,
-                     device=torch.device("cuda:1"),
-                     metrics=['mse'],
-                     loss_function=MixedLoss())
-    exp.test(test_loader, load_best_checkpoint=False)
+    # test_loader = DataLoader(test_dataset, batch_size=1)
+    # module = B2B("/mnt/storage/mgodbout/Ecorcage/b2b/", 5)
+    # exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/b2b/",
+    #                  module=module,
+    #                  device=torch.device("cuda:1"),
+    #                  metrics=['mse'],
+    #                  loss_function=MixedLoss())
+    # exp.test(test_loader, load_best_checkpoint=False)
 
-    with open("/mnt/storage/mgodbout/Ecorcage/b2b/ensemble.pck", "wb") as f:
-        pickle.dump(exp.model.model, f,
-        pickle.HIGHEST_PROTOCOL)
+    # with open("/mnt/storage/mgodbout/Ecorcage/b2b/ensemble.pck", "wb") as f:
+    #     pickle.dump(exp.model.model, f,
+    #     pickle.HIGHEST_PROTOCOL)
 
     module = pickle.load(
         open("/mnt/storage/mgodbout/Ecorcage/b2b/ensemble.pck", "rb"))
