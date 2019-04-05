@@ -186,7 +186,7 @@ def new_main():
                      device=torch.device("cuda:1"),
                      metrics=['mse'],
                      loss_function=MixedLoss())
-    exp.test(test_loader)
+    exp.test(test_loader, load_best_checkpoint=False)
 
 
 if __name__ == "__main__":
