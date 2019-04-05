@@ -196,7 +196,7 @@ def new_main():
     module = pickle.load(
         open("/mnt/storage/mgodbout/Ecorcage/b2b/ensemble.pck", "rb"))
 
-    module.to(torch.device("cuda:0"))
+    module.to(torch.device("cuda:1"))
     module.eval()
 
     to_pil = ToPILImage()
@@ -221,8 +221,7 @@ def new_main():
     pure_loader = DataLoader(pure_dataset, batch_size=1)
 
     for batch, pure_batch in zip(valid_loader, pure_loader):
-        print("Doing one")
-        outputs = module(batch[0].to(torch.device("cuda:0")))
+        outputs = module(batch[0].to(torch.device("cuda:1")))
         torch.sigmoid(outputs)
         outputs.round_()
         batch.append(outputs.detach().cpu())
@@ -230,9 +229,6 @@ def new_main():
         tmp = batch[2]
         batch[2] = batch[3]
         batch[3] = tmp
-
-        del tmp
-        del pure_batch
 
         names = ["Input", "Target", "Generated image"]
 
@@ -252,8 +248,6 @@ def new_main():
             plt.savefig("/mnt/storage/mgodbout/Ecorcage/Images/results/nn_cut/{}".format(batch[3][i]),
                         format="png",
                         dpi=900)
-
-        del batch
 
 
 if __name__ == "__main__":
