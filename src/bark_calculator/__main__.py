@@ -253,6 +253,8 @@ def new_main():
                         format="png",
                         dpi=900)
 
+        del batch
+
 
 if __name__ == "__main__":
     new_main()
