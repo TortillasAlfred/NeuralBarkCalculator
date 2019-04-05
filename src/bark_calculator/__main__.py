@@ -196,7 +196,7 @@ def new_main():
     module = pickle.load(
         open("/mnt/storage/mgodbout/Ecorcage/b2b/ensemble.pck", "rb"))
 
-    module.to(torch.device("cuda:1"))
+    module.to(torch.device("cpu"))
     module.eval()
 
     to_pil = ToPILImage()
