@@ -105,10 +105,13 @@ def make_one_hot(target):
     return target
 
 
-def make_dataset(dir, extensions):
-    images = []
-    dir = os.path.expanduser(dir)
+def make_dataset_for_k(dir, extensions, k):
+    dir = os.path.join(dir, str(k))
 
+    return make_dataset_for_dir(dir, extensions)
+
+
+def make_dataset_for_dir(dir, extensions):
     samples_dir = os.path.join(dir, "samples")
     targets_dir = os.path.join(dir, "targets")
 
@@ -117,6 +120,8 @@ def make_dataset(dir, extensions):
 
     if not os.path.isdir(targets_dir):
         raise IOError("Root folder should have a 'targets' subfolder !")
+
+    images = []
 
     for _, _, fnames in sorted(os.walk(samples_dir)):
         for fname in sorted(fnames):
@@ -133,6 +138,32 @@ def make_dataset(dir, extensions):
                 images.append(item)
 
     return images
+
+
+def make_dataset(dir, extensions, mode, k):
+    dir = os.path.expanduser(dir)
+
+    if mode in ["train", "valid"]:
+        dir = os.path.join(dir, "train")
+
+        if not k:
+            raise EnvironmentError(
+                "If mode is train or valid, k should be specified !")
+
+        if mode == "train":
+            images = []
+
+            for k_i in range(1, 6):
+                if k_i != k:
+                    images.extend(make_dataset_for_k(dir, extensions, k))
+
+            return images
+        else:
+            return make_dataset_for_k(dir, extensions, k)
+    elif mode == "test":
+        dir = os.path.join(dir, "test")
+
+        return make_dataset_for_dir(dir, extensions)
 
 
 IMG_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.ppm',
@@ -185,8 +216,9 @@ class RegressionDatasetFolder(data.Dataset):
     """
 
     def __init__(self, root, extensions=IMG_EXTENSIONS, loader=pil_loader,
-                 transform=None, input_only_transform=None):
-        samples = make_dataset(root, extensions)
+                 transform=None, input_only_transform=None,
+                 mode="train", k=None):
+        samples = make_dataset(root, extensions, mode, k)
         if len(samples) == 0:
             raise(RuntimeError("Found 0 files in subfolders of: " + root + "\n"
                                "Supported extensions are: " + ",".join(extensions)))

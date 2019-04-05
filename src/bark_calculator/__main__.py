@@ -68,7 +68,7 @@ def show_dataset(dataset, pure_dataset, augmented_dataset):
         plt.show()
 
 
-if __name__ == "__main__":
+def old_main():
     mean, std = get_mean_std()
     dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/nn_cut",
                                       input_only_transform=Compose(
@@ -119,3 +119,64 @@ if __name__ == "__main__":
               valid_loader=valid_loader,
               epochs=500,
               lr_schedulers=lr_schedulers)
+
+
+def new_main():
+    mean, std = get_mean_std()
+
+    for k in range(1, 6):
+        train_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/nn_cut",
+                                                input_only_transform=Compose(
+                                                    [Normalize(mean, std)]
+                                                ),
+                                                transform=Compose([
+                                                    RandomHorizontalFlip(),
+                                                    RandomVerticalFlip(),
+                                                    Lambda(lambda img:
+                                                           pad_resize(img, 256, 256)),
+                                                    ToTensor()]),
+                                                k=k,
+                                                mode="train")
+        valid_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/nn_cut",
+                                                input_only_transform=Compose(
+                                                    [Normalize(mean, std)]
+                                                ),
+                                                transform=Compose([
+                                                    Lambda(lambda img:
+                                                           pad_resize(img, 256, 256)),
+                                                    ToTensor()]),
+                                                k=k,
+                                                mode="valid")
+        test_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/nn_cut",
+                                               input_only_transform=Compose(
+                                                   [Normalize(mean, std)]
+                                               ),
+                                               transform=Compose([
+                                                   Lambda(lambda img:
+                                                          pad_resize(img, 256, 256)),
+                                                   ToTensor()]),
+                                               mode="test")
+        train_loader = DataLoader(train_dataset, batch_size=1, shuffle=True)
+        valid_loader = DataLoader(valid_dataset, batch_size=1)
+        test_loader = DataLoader(test_dataset, batch_size=1)
+
+        module = FCDenseNet57(1)
+        optim = torch.optim.Adam(
+            module.parameters(), lr=1e-3, weight_decay=1e-5)
+        exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/b2b/{}/".format(k),
+                         module=module,
+                         device=torch.device("cuda:1"),
+                         optimizer=optim,
+                         metrics=['mse'],
+                         loss_function=MixedLoss())
+
+        lr_schedulers = [ExponentialLR(gamma=0.98)]
+        exp.train(train_loader=train_loader,
+                  valid_loader=valid_loader,
+                  epochs=250,
+                  lr_schedulers=lr_schedulers)
+        exp.test(test_loader)
+
+
+if __name__ == "__main__":
+    new_main()
