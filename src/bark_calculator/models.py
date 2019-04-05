@@ -563,6 +563,7 @@ class B2B(nn.Module):
         self.modules = nn.ModuleList([])
 
         for k in range(1, num_modules + 1):
+            print(self.modules)
             exp = Experiment(directory=join(root_dir, str(k)),
                              module=FCDenseNet57(1),
                              device=torch.device("cuda:1"),
