@@ -565,21 +565,12 @@ class B2B(nn.Module):
         for k in range(1, num_modules + 1):
             exp = Experiment(directory=join(root_dir, str(k)),
                              module=FCDenseNet57(1),
-                             device=torch.device("cuda:1"),
+                             device=torch.device("cuda:0"),
                              type="reg")
             exp.load_best_checkpoint()
             self.fcd_modules.append(exp.model.model)
 
     def forward(self, x):
-        [m.to(torch.device("cpu")) for m in self.fcd_modules]
-
-        res = []
-
-        for m in self.fcd_modules:
-            m.to(torch.device("cuda:1"))
-            res.append(m(x))
-            m.to(torch.device("cpu"))
-
-        res = torch.stack(res)
+        res = torch.stack([m(x) for m in self.fcd_modules])
 
         return torch.mean(res, 0)
