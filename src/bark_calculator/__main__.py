@@ -53,7 +53,7 @@ def load_best_and_show(exp, pure_loader, valid_loader):
             #             dpi=900)
 
 
-def show_dataset():
+def show_dataset(dataset, pure_dataset, augmented_dataset):
     for sample, augmented_sample in zip(iter(pure_dataset), iter(augmented_dataset)):
         _,  axs = plt.subplots(2, 2)
 
@@ -94,7 +94,7 @@ if __name__ == "__main__":
                                                            pad_resize(img, 256, 256)),
                                                     ToTensor()]))
 
-    # show_dataset()
+    # show_dataset(dataset, pure_dataset, augmented_dataset)
 
     train_sampler, valid_sampler = get_train_valid_samplers(dataset,
                                                             train_percent=0.8)
