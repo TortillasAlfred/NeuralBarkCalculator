@@ -98,11 +98,11 @@ def old_main():
 
     train_sampler, valid_sampler = get_train_valid_samplers(dataset,
                                                             train_percent=0.8)
-    train_loader = DataLoader(augmented_dataset, batch_size=1,
+    train_loader = DataLoader(augmented_dataset, batch_size=4,
                               sampler=train_sampler)
-    valid_loader = DataLoader(dataset, batch_size=1,
+    valid_loader = DataLoader(dataset, batch_size=4,
                               sampler=valid_sampler)
-    pure_loader = DataLoader(pure_dataset, batch_size=1,
+    pure_loader = DataLoader(pure_dataset, batch_size=4,
                              sampler=valid_sampler)
     module = B2B()
     optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-5)
