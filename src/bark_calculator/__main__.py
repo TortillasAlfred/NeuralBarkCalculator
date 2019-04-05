@@ -130,7 +130,7 @@ def new_main():
                                                     [Normalize(mean, std),
                                                      ToPILImage(),
                                                      ColorJitter(
-                                                         brightness=0.01),
+                                                         brightness=0.001),
                                                      ToTensor()]
                                                 ),
                                                 transform=Compose([
