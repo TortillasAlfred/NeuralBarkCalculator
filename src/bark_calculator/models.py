@@ -566,8 +566,7 @@ class B2B(nn.Module):
             exp = Experiment(directory=join(root_dir, str(k)),
                              module=FCDenseNet57(1),
                              device=torch.device("cuda:1"),
-                             optimizer="adam",
-                             loss_function=MixedLoss())
+                             type="reg")
             exp.load_best_checkpoint()
             self.modules.append(exp.model.model)
 
