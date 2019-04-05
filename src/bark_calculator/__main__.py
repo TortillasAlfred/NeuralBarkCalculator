@@ -230,6 +230,9 @@ def new_main():
         batch[2] = batch[3]
         batch[3] = tmp
 
+        del tmp
+        del pure_batch
+
         names = ["Input", "Target", "Generated image"]
 
         for i in range(batch[1].size(0)):
