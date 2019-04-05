@@ -170,10 +170,10 @@ def new_main():
                          metrics=['mse'],
                          loss_function=MixedLoss())
 
-        lr_schedulers = [ExponentialLR(gamma=0.90)]
+        lr_schedulers = [ExponentialLR(gamma=0.85)]
         exp.train(train_loader=train_loader,
                   valid_loader=valid_loader,
-                  epochs=50,
+                  epochs=25,
                   lr_schedulers=lr_schedulers)
         exp.test(test_loader)
 
