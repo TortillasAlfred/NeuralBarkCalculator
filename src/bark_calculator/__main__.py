@@ -129,8 +129,8 @@ def new_main():
                                                 input_only_transform=Compose(
                                                     [Normalize(mean, std),
                                                      ToPILImage(),
-                                                     ColorJitter(brightness=0.05,
-                                                                 contrast=0.05),
+                                                     ColorJitter(
+                                                         brightness=0.01),
                                                      ToTensor()]
                                                 ),
                                                 transform=Compose([
