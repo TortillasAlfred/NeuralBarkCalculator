@@ -217,15 +217,15 @@ def new_main():
                                                ToTensor()]),
                                            mode="all")
 
-    valid_loader = DataLoader(valid_dataset)
-    pure_loader = DataLoader(pure_dataset)
+    valid_loader = DataLoader(valid_dataset, batch_size=1)
+    pure_loader = DataLoader(pure_dataset, batch_size=1)
 
     for batch, pure_batch in zip(valid_loader, pure_loader):
-        outputs = module(batch[0].to(torch.device("cuda:1")))
+        outputs = module(batch[0].to(torch.device("cpu")))
         torch.sigmoid(outputs)
         outputs[outputs > 0.5] = 1
         outputs[outputs <= 0.5] = 0
-        batch.append(outputs.detach().cpu())
+        batch.append(outputs)
         batch[0] = pure_batch[0]
         tmp = batch[2]
         batch[2] = batch[3]
