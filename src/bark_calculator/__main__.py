@@ -127,11 +127,7 @@ def new_main():
     for k in range(1, 6):
         train_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/nn_cut",
                                                 input_only_transform=Compose(
-                                                    [Normalize(mean, std),
-                                                     ToPILImage(),
-                                                     ColorJitter(
-                                                         brightness=0.001),
-                                                     ToTensor()]
+                                                    [Normalize(mean, std)]
                                                 ),
                                                 transform=Compose([
                                                     RandomHorizontalFlip(),
