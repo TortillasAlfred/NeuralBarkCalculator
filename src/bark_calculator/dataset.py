@@ -262,8 +262,7 @@ class RegressionDatasetFolder(data.Dataset):
         if sample.max() > 200:
             sample /= 255
 
-        target[target > 0.5] = 1
-        target[target <= 0.5] = 0
+        target.round_()
         # target = make_one_hot(target)
 
         return sample, target, fname
