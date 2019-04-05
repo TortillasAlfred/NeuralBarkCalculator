@@ -117,6 +117,7 @@ class MixedLoss(nn.Module):
 
     def __init__(self):
         super(MixedLoss, self).__init__()
+        self.__name__ = "MixedLoss"
         self.dice = SoftDiceLoss()
         self.bce = nn.modules.loss.BCEWithLogitsLoss(
             pos_weight=get_pos_weight())
