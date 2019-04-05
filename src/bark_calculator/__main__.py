@@ -180,17 +180,75 @@ def new_main():
     #               callbacks=callbacks)
     #     exp.test(test_loader)
 
-    test_loader = DataLoader(test_dataset, batch_size=1)
-    module = B2B("/mnt/storage/mgodbout/Ecorcage/b2b/", 5)
-    exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/b2b/",
-                     module=module,
-                     device=torch.device("cuda:1"),
-                     metrics=['mse'],
-                     loss_function=MixedLoss())
-    exp.test(test_loader, load_best_checkpoint=False)
+    # test_loader = DataLoader(test_dataset, batch_size=1)
+    # module = B2B("/mnt/storage/mgodbout/Ecorcage/b2b/", 5)
+    # exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/b2b/",
+    #                  module=module,
+    #                  device=torch.device("cuda:1"),
+    #                  metrics=['mse'],
+    #                  loss_function=MixedLoss())
+    # exp.test(test_loader, load_best_checkpoint=False)
 
-    with open("/mnt/storage/mgodbout/Ecorcage/b2b/ensemble.pck", "wb") as f:
-        pickle.dump(exp.model.model, f, pickle.HIGHEST_PROTOCOL)
+    # with open("/mnt/storage/mgodbout/Ecorcage/b2b/ensemble.pck", "wb") as f:
+    #     pickle.dump(exp.model.model, f,
+    #     pickle.HIGHEST_PROTOCOL)
+
+    module = pickle.load(
+        open("/mnt/storage/mgodbout/Ecorcage/b2b/ensemble.pck", "rb"))
+
+    module.to(torch.device("cuda:1"))
+    module.eval()
+
+    to_pil = ToPILImage()
+
+    valid_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/nn_cut",
+                                            input_only_transform=Compose(
+                                                [Normalize(mean, std)]
+                                            ),
+                                            transform=Compose([
+                                                Lambda(lambda img:
+                                                       pad_resize(img, 256, 256)),
+                                                ToTensor()]),
+                                            mode="all")
+    pure_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/nn_cut",
+                                           transform=Compose([
+                                               Lambda(lambda img:
+                                                      pad_resize(img, 256, 256)),
+                                               ToTensor()]),
+                                           mode="all")
+
+    valid_loader = DataLoader(valid_dataset)
+    pure_loader = DataLoader(pure_dataset)
+
+    for batch, pure_batch in zip(valid_loader, pure_loader):
+        outputs = module(batch[0].to(torch.device("cuda:1")))
+        torch.sigmoid(outputs)
+        outputs[outputs > 0.5] = 1
+        outputs[outputs <= 0.5] = 0
+        batch.append(outputs.detach().cpu())
+        batch[0] = pure_batch[0]
+        tmp = batch[2]
+        batch[2] = batch[3]
+        batch[3] = tmp
+
+        names = ["Input", "Target", "Generated image"]
+
+        for i in range(batch[1].size(0)):
+            _, axs = plt.subplots(1, 3)
+            acc = (batch[2][i] == batch[1][i]).sum().item()/(256 * 256)
+
+            for j, ax in enumerate(axs.flatten()):
+                img = to_pil(batch[j][i])
+                ax.imshow(img)
+                ax.set_title(names[j])
+                ax.axis('off')
+
+            plt.suptitle("Overall accuracy : {:.3f}".format(acc))
+            plt.tight_layout()
+            # plt.show()
+            plt.savefig("/mnt/storage/mgodbout/Ecorcage/Images/results/nn_cut/{}".format(batch[3][i]),
+                        format="png",
+                        dpi=900)
 
 
 if __name__ == "__main__":

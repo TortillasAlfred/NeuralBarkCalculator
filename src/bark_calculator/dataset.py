@@ -164,6 +164,8 @@ def make_dataset(dir, extensions, mode, k):
         dir = os.path.join(dir, "test")
 
         return make_dataset_for_dir(dir, extensions)
+    elif mode == "all":
+        return make_dataset_for_dir(dir, extensions)
 
 
 IMG_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.ppm',
