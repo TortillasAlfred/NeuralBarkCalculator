@@ -12,6 +12,7 @@ import torch
 
 from math import ceil
 import numpy as np
+import pickle
 
 
 def load_best_and_show(exp, pure_loader, valid_loader):
@@ -187,6 +188,9 @@ def new_main():
                      metrics=['mse'],
                      loss_function=MixedLoss())
     exp.test(test_loader, load_best_checkpoint=False)
+
+    with open("/mnt/storage/mgodbout/Ecorcage/b2b/ensemble.pck", "wb") as f:
+        pickle.dump(exp.model.model, f, pickle.HIGHEST_PROTOCOL)
 
 
 if __name__ == "__main__":
