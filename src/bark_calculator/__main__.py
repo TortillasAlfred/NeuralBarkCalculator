@@ -134,6 +134,8 @@ def new_main():
                                                     RandomVerticalFlip(),
                                                     Lambda(lambda img:
                                                            pad_resize(img, 256, 256)),
+                                                    Lambda(lambda img:
+                                                           rotate_crop(img)),
                                                     ToTensor()]),
                                                 k=k,
                                                 mode="train")
@@ -170,10 +172,10 @@ def new_main():
                          metrics=['mse'],
                          loss_function=MixedLoss())
 
-        lr_schedulers = [ExponentialLR(gamma=0.85)]
+        lr_schedulers = [ExponentialLR(gamma=0.98)]
         exp.train(train_loader=train_loader,
                   valid_loader=valid_loader,
-                  epochs=25,
+                  epochs=250,
                   lr_schedulers=lr_schedulers)
         exp.test(test_loader)
 
