@@ -222,7 +222,7 @@ def new_main():
 
     for batch, pure_batch in zip(valid_loader, pure_loader):
         outputs = module(batch[0].to(torch.device("cpu")))
-        torch.sigmoid(outputs)
+        outputs = torch.sigmoid(outputs)
         outputs.round_()
         batch.append(outputs.detach().cpu())
         batch[0] = pure_batch[0]
