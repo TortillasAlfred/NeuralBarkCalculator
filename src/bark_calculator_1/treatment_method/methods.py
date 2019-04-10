@@ -290,6 +290,7 @@ class V2(TreatmentMethod):
     def __init__(self):
         super().__init__()
         self.threshold_dict = {"epn_gele": [0.50, 0.65, 0.4, 0.6],
+                               "epn_javel": [0.50, 0.65, 0.4, 0.6],
                                "epn_non-gele": [0.4, 0.58, 0.5, 1.0],
                                "sap_gele": [0.52, 0.64, 0.5, 0.7]}
         self.black_masker = BlackMask()

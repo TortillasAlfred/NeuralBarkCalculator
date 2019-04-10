@@ -40,7 +40,7 @@ class FolderLoader(Loader):
     def __init__(self, folder_path):
         super().__init__()
         self.wood_types = ["epn_gele", "epn_non-gele",
-                           "sap_gele"]
+                           "sap_gele", "epn_javel"]
 
         self.image_paths = []
         for wood_type in self.wood_types:
