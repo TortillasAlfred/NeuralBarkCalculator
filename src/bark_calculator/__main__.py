@@ -174,7 +174,7 @@ def new_main():
             module.parameters(), lr=1e-3, weight_decay=1e-5)
         exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/1024_unet/{}/".format(k),
                          module=module,
-                         device=torch.device("cuda:1"),
+                         device=torch.device("cuda:0"),
                          optimizer=optim,
                          metrics=['mse'],
                          loss_function=MixedLoss())
@@ -192,7 +192,7 @@ def new_main():
     module = B2B("/mnt/storage/mgodbout/Ecorcage/1024_unet/", 5)
     exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/1024_unet/",
                      module=module,
-                     device=torch.device("cuda:1"),
+                     device=torch.device("cuda:0"),
                      metrics=['mse'],
                      loss_function=MixedLoss())
     exp.test(test_loader, load_best_checkpoint=False)
@@ -207,7 +207,7 @@ def new_main():
 
     module = vanilla_unet()
 
-    module.to(torch.device("cuda:1"))
+    module.to(torch.device("cuda:0"))
     module.eval()
 
     to_pil = ToPILImage()
@@ -234,7 +234,7 @@ def new_main():
     pure_loader = DataLoader(pure_dataset, batch_size=1)
 
     for batch, pure_batch in zip(valid_loader, pure_loader):
-        outputs = module(batch[0].to(torch.device("cuda:1")))
+        outputs = module(batch[0].to(torch.device("cuda:0")))
         outputs = torch.sigmoid(outputs)
         outputs.round_()
         batch.append(outputs.detach().cpu())
