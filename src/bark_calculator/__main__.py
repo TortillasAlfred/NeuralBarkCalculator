@@ -182,7 +182,7 @@ def new_main():
         callbacks = [EarlyStopping(patience=12, min_delta=1e-3)]
         exp.train(train_loader=train_loader,
                   valid_loader=valid_loader,
-                  epochs=250,
+                  epochs=150,
                   lr_schedulers=lr_schedulers,
                   callbacks=callbacks)
         exp.test(test_loader)
