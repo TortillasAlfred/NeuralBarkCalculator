@@ -170,7 +170,7 @@ def new_main():
 
         module = vanilla_unet()
         optim = torch.optim.Adam(
-            module.parameters(), lr=1e-2, weight_decay=1e-5)
+            module.parameters(), lr=1e-3, weight_decay=1e-5)
         exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/cut_unet/{}/".format(k),
                          module=module,
                          device=torch.device("cuda:0"),
