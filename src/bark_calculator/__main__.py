@@ -177,7 +177,7 @@ def new_main():
                          device=torch.device("cuda:1"),
                          optimizer=optim,
                          metrics=['mse'],
-                         loss_function='bcewithlogits')
+                         loss_function=MixedLoss())
 
         lr_schedulers = [ExponentialLR(gamma=0.95)]
         callbacks = [EarlyStopping(patience=5, min_delta=1e-3)]
@@ -194,7 +194,7 @@ def new_main():
                      module=module,
                      device=torch.device("cuda:1"),
                      metrics=['mse'],
-                     loss_function='bcewithlogits')
+                     loss_function=MixedLoss())
     exp.test(test_loader, load_best_checkpoint=False)
 
     with open("/mnt/storage/mgodbout/Ecorcage/1024_unet/ensemble.pck", "wb") as f:

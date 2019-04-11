@@ -119,7 +119,8 @@ class MixedLoss(nn.Module):
         super(MixedLoss, self).__init__()
         self.__name__ = "MixedLoss"
         self.dice = SoftDiceLoss()
-        self.bce = nn.modules.loss.BCEWithLogitsLoss()
+        self.bce = nn.modules.loss.BCEWithLogitsLoss(
+            pos_weight=get_pos_weight())
 
     def forward(self, predict, true):
         return self.dice(predict, true) + self.bce(predict, true)
