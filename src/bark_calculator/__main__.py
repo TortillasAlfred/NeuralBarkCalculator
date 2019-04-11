@@ -247,7 +247,7 @@ def new_main():
 
         for i in range(batch[1].size(0)):
             _, axs = plt.subplots(1, 3)
-            acc = (batch[2][i] == batch[1][i]).sum().item()/(256 * 256)
+            acc = (batch[2][i] == batch[1][i]).sum().item()/(1024 * 1024)
 
             for j, ax in enumerate(axs.flatten()):
                 img = to_pil(batch[j][i])
