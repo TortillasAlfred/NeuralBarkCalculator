@@ -165,13 +165,13 @@ def new_main():
                                                     ToTensor()]),
                                                 k=k,
                                                 mode="valid")
-        train_loader = DataLoader(train_dataset, batch_size=4, shuffle=True)
-        valid_loader = DataLoader(valid_dataset, batch_size=4)
-        test_loader = DataLoader(test_dataset, batch_size=4)
+        train_loader = DataLoader(train_dataset, batch_size=8, shuffle=True)
+        valid_loader = DataLoader(valid_dataset, batch_size=8)
+        test_loader = DataLoader(test_dataset, batch_size=8)
 
         module = vanilla_unet()
         optim = torch.optim.Adam(
-            module.parameters(), lr=1e-3, weight_decay=1e-5)
+            module.parameters(), lr=1e-2, weight_decay=1e-5)
         exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/1024_unet/{}/".format(k),
                          module=module,
                          device=torch.device("cuda:1"),
@@ -180,7 +180,7 @@ def new_main():
                          loss_function='bcewithlogits')
 
         lr_schedulers = [ExponentialLR(gamma=0.95)]
-        callbacks = [EarlyStopping(patience=20)]
+        callbacks = [EarlyStopping(patience=10)]
         exp.train(train_loader=train_loader,
                   valid_loader=valid_loader,
                   epochs=200,
