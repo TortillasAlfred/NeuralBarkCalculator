@@ -197,7 +197,7 @@ class UnetSkipConnectionBlock(nn.Module):
 
 
 def vanilla_unet():
-    net = UnetGenerator(3, 1, 10, 32, use_dropout=True)
+    net = UnetGenerator(3, 1, 10, 16, use_dropout=True)
 
     return init_net(net, "kaiming")
 
