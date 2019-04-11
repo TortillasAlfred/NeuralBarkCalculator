@@ -71,7 +71,7 @@ def show_dataset(dataset, pure_dataset, augmented_dataset):
 
 def old_main():
     mean, std = get_mean_std()
-    dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/nn",
+    dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/nn_cut",
                                       input_only_transform=Compose(
                                           [Normalize(mean, std)]
                                       ),
@@ -81,13 +81,13 @@ def old_main():
                                            ToTensor()]
                                       ),
                                       mode='all')
-    pure_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/nn",
+    pure_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/nn_cut",
                                            transform=Compose(
                                                [Resize((1024, 1024)),
                                                 ToTensor()]
                                            ),
                                            mode='all')
-    augmented_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/nn",
+    augmented_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/nn_cut",
                                                 input_only_transform=Compose(
                                                     [Normalize(mean, std)]
                                                 ),
@@ -113,7 +113,7 @@ def old_main():
                              sampler=valid_sampler)
     module = vanilla_unet()
     optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-5)
-    exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/1024_unet/",
+    exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/cut_unet/",
                      module=module,
                      device=torch.device("cuda:0"),
                      optimizer=optim,
@@ -130,7 +130,7 @@ def old_main():
 
 def new_main():
     mean, std = get_mean_std()
-    test_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/nn",
+    test_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/nn_cut",
                                            input_only_transform=Compose(
                                                [Normalize(mean, std)]
                                            ),
@@ -141,7 +141,7 @@ def new_main():
                                            mode="test")
 
     # for k in range(1, 6):
-    #     train_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/nn",
+    #     train_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/nn_cut",
     #                                             input_only_transform=Compose(
     #                                                 [Normalize(mean, std)]
     #                                             ),
@@ -155,7 +155,7 @@ def new_main():
     #                                                 ToTensor()]),
     #                                             k=k,
     #                                             mode="train")
-    #     valid_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/nn",
+    #     valid_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/nn_cut",
     #                                             input_only_transform=Compose(
     #                                                 [Normalize(mean, std)]
     #                                             ),
@@ -172,7 +172,7 @@ def new_main():
     #     module = vanilla_unet()
     #     optim = torch.optim.Adam(
     #         module.parameters(), lr=1e-3, weight_decay=1e-5)
-    #     exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/1024_unet/{}/".format(k),
+    #     exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/cut_unet/{}/".format(k),
     #                      module=module,
     #                      device=torch.device("cuda:0"),
     #                      optimizer=optim,
@@ -189,20 +189,20 @@ def new_main():
     #     exp.test(test_loader)
 
     test_loader = DataLoader(test_dataset, batch_size=1)
-    module = B2B("/mnt/storage/mgodbout/Ecorcage/1024_unet/", 5)
-    exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/1024_unet/",
+    module = B2B("/mnt/storage/mgodbout/Ecorcage/cut_unet/", 5)
+    exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/cut_unet/",
                      module=module,
                      device=torch.device("cuda:0"),
                      metrics=['mse'],
                      loss_function=MixedLoss())
     exp.test(test_loader, load_best_checkpoint=False)
 
-    with open("/mnt/storage/mgodbout/Ecorcage/1024_unet/ensemble.pck", "wb") as f:
+    with open("/mnt/storage/mgodbout/Ecorcage/cut_unet/ensemble.pck", "wb") as f:
         pickle.dump(exp.model.model, f,
                     pickle.HIGHEST_PROTOCOL)
 
     module = pickle.load(
-        open("/mnt/storage/mgodbout/Ecorcage/1024_unet/ensemble.pck",
+        open("/mnt/storage/mgodbout/Ecorcage/cut_unet/ensemble.pck",
              "rb"))
 
     module = vanilla_unet()
@@ -212,7 +212,7 @@ def new_main():
 
     to_pil = ToPILImage()
 
-    valid_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/nn",
+    valid_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/nn_cut",
                                             input_only_transform=Compose(
                                                 [Normalize(mean, std)]
                                             ),
@@ -222,7 +222,7 @@ def new_main():
                                                 ToTensor()]),
                                             mode="all",
                                             include_fname=True)
-    pure_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/nn",
+    pure_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/nn_cut",
                                            transform=Compose([
                                                Lambda(lambda img:
                                                       pad_resize(img, 1024, 1024)),
@@ -258,7 +258,7 @@ def new_main():
             plt.suptitle("Overall accuracy : {:.3f}".format(acc))
             plt.tight_layout()
             # plt.show()
-            plt.savefig("/mnt/storage/mgodbout/Ecorcage/Images/results/nn/{}".format(batch[3][i]),
+            plt.savefig("/mnt/storage/mgodbout/Ecorcage/Images/results/nn_cut/{}".format(batch[3][i]),
                         format="png",
                         dpi=900)
 
