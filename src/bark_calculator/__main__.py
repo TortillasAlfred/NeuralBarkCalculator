@@ -143,13 +143,17 @@ def new_main():
     for k in range(1, 6):
         train_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/nn",
                                                 input_only_transform=Compose(
-                                                    [Normalize(mean, std)]
+                                                    [Normalize(mean, std),
+                                                     ToPILImage(),
+                                                     ColorJitter(
+                                                         brightness=0.05, hue=0.05),
+                                                     ToTensor()]
                                                 ),
                                                 transform=Compose([
                                                     RandomHorizontalFlip(),
                                                     RandomVerticalFlip(),
                                                     RandomResizedCrop(
-                                                        1024, scale=(0.6, 1.0)),
+                                                        1024, scale=(0.3, 1.0)),
                                                     Lambda(lambda img:
                                                            pad_resize(img, 1024, 1024)),
                                                     ToTensor()]),
@@ -172,7 +176,7 @@ def new_main():
         module = vanilla_unet()
         optim = torch.optim.Adam(
             module.parameters(), lr=1e-3, weight_decay=1e-5)
-        exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/1024_unet/{}/".format(k),
+        exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/unet_jit/{}/".format(k),
                          module=module,
                          device=torch.device("cuda:0"),
                          optimizer=optim,
@@ -189,20 +193,20 @@ def new_main():
         exp.test(test_loader)
 
     test_loader = DataLoader(test_dataset, batch_size=1)
-    module = B2B("/mnt/storage/mgodbout/Ecorcage/1024_unet/", 5)
-    exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/1024_unet/",
+    module = B2B("/mnt/storage/mgodbout/Ecorcage/unet_jit/", 5)
+    exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/unet_jit/",
                      module=module,
                      device=torch.device("cuda:0"),
                      metrics=['mse'],
                      loss_function=MixedLoss())
     exp.test(test_loader, load_best_checkpoint=False)
 
-    with open("/mnt/storage/mgodbout/Ecorcage/1024_unet/ensemble.pck", "wb") as f:
+    with open("/mnt/storage/mgodbout/Ecorcage/unet_jit/ensemble.pck", "wb") as f:
         pickle.dump(exp.model.model, f,
                     pickle.HIGHEST_PROTOCOL)
 
     module = pickle.load(
-        open("/mnt/storage/mgodbout/Ecorcage/1024_unet/ensemble.pck",
+        open("/mnt/storage/mgodbout/Ecorcage/unet_jit/ensemble.pck",
              "rb"))
 
     module = vanilla_unet()
