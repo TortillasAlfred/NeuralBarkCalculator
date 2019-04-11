@@ -554,8 +554,8 @@ class B2B(nn.Module):
 
         for k in range(1, num_modules + 1):
             exp = Experiment(directory=join(root_dir, str(k)),
-                             module=FCDenseNet57(1),
-                             device=torch.device("cpu"),
+                             module=vanilla_unet(),
+                             device=torch.device("cuda:1"),
                              type="reg")
             exp.load_best_checkpoint()
             self.fcd_modules.append(exp.model.model)

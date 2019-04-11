@@ -219,7 +219,7 @@ class RegressionDatasetFolder(data.Dataset):
 
     def __init__(self, root, extensions=IMG_EXTENSIONS, loader=pil_loader,
                  transform=None, input_only_transform=None,
-                 mode="train", k=None):
+                 mode="train", k=None, include_fname=False):
         samples = make_dataset(root, extensions, mode, k)
         if len(samples) == 0:
             raise(RuntimeError("Found 0 files in subfolders of: " + root + "\n"
@@ -230,6 +230,7 @@ class RegressionDatasetFolder(data.Dataset):
         self.extensions = extensions
         self.transform = transform
         self.input_only_transform = input_only_transform
+        self.include_fname = include_fname
 
         self.samples = samples
 
@@ -265,7 +266,10 @@ class RegressionDatasetFolder(data.Dataset):
         target.round_()
         # target = make_one_hot(target)
 
-        return sample, target, fname
+        if self.include_fname:
+            return sample, target, fname
+        else:
+            return sample, target
 
     def __len__(self):
         return len(self.samples)

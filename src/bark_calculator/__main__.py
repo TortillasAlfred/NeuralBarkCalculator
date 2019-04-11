@@ -130,101 +130,105 @@ def old_main():
 
 def new_main():
     mean, std = get_mean_std()
-    test_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/nn_cut",
+    test_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/nn",
                                            input_only_transform=Compose(
                                                [Normalize(mean, std)]
                                            ),
                                            transform=Compose([
                                                Lambda(lambda img:
-                                                      pad_resize(img, 256, 256)),
+                                                      pad_resize(img, 1024, 1024)),
                                                ToTensor()]),
                                            mode="test")
 
-    # for k in range(1, 6):
-    #     train_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/nn_cut",
-    #                                             input_only_transform=Compose(
-    #                                                 [Normalize(mean, std)]
-    #                                             ),
-    #                                             transform=Compose([
-    #                                                 RandomHorizontalFlip(),
-    #                                                 RandomVerticalFlip(),
-    #                                                 Lambda(lambda img:
-    #                                                        pad_resize(img, 256, 256)),
-    #                                                 ToTensor()]),
-    #                                             k=k,
-    #                                             mode="train")
-    #     valid_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/nn_cut",
-    #                                             input_only_transform=Compose(
-    #                                                 [Normalize(mean, std)]
-    #                                             ),
-    #                                             transform=Compose([
-    #                                                 Lambda(lambda img:
-    #                                                        pad_resize(img, 256, 256)),
-    #                                                 ToTensor()]),
-    #                                             k=k,
-    #                                             mode="valid")
-    #     train_loader = DataLoader(train_dataset, batch_size=8, shuffle=True)
-    #     valid_loader = DataLoader(valid_dataset, batch_size=8)
-    #     test_loader = DataLoader(test_dataset, batch_size=8)
+    for k in range(1, 6):
+        train_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/nn",
+                                                input_only_transform=Compose(
+                                                    [Normalize(mean, std)]
+                                                ),
+                                                transform=Compose([
+                                                    RandomHorizontalFlip(),
+                                                    RandomVerticalFlip(),
+                                                    RandomResizedCrop(
+                                                        1024, scale=(0.8, 1.0)),
+                                                    Lambda(lambda img:
+                                                           pad_resize(img, 1024, 1024)),
+                                                    ToTensor()]),
+                                                k=k,
+                                                mode="train")
+        valid_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/nn",
+                                                input_only_transform=Compose(
+                                                    [Normalize(mean, std)]
+                                                ),
+                                                transform=Compose([
+                                                    Lambda(lambda img:
+                                                           pad_resize(img, 1024, 1024)),
+                                                    ToTensor()]),
+                                                k=k,
+                                                mode="valid")
+        train_loader = DataLoader(train_dataset, batch_size=8, shuffle=True)
+        valid_loader = DataLoader(valid_dataset, batch_size=8)
+        test_loader = DataLoader(test_dataset, batch_size=8)
 
-    #     module = FCDenseNet57(1)
-    #     optim = torch.optim.Adam(
-    #         module.parameters(), lr=1e-3, weight_decay=1e-5)
-    #     exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/b2b/{}/".format(k),
-    #                      module=module,
-    #                      device=torch.device("cpu"),
-    #                      optimizer=optim,
-    #                      metrics=['mse'],
-    #                      loss_function=MixedLoss())
+        module = vanilla_unet()
+        optim = torch.optim.Adam(
+            module.parameters(), lr=1e-3, weight_decay=1e-5)
+        exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/1024_unet/{}/".format(k),
+                         module=module,
+                         device=torch.device("cuda:1"),
+                         optimizer=optim,
+                         metrics=['mse'],
+                         loss_function='bcewithlogits')
 
-    #     lr_schedulers = [ExponentialLR(gamma=0.90)]
-    #     callbacks = [EarlyStopping(patience=12)]
-    #     exp.train(train_loader=train_loader,
-    #               valid_loader=valid_loader,
-    #               epochs=100,
-    #               lr_schedulers=lr_schedulers,
-    #               callbacks=callbacks)
-    #     exp.test(test_loader)
+        lr_schedulers = [ExponentialLR(gamma=0.90)]
+        callbacks = [EarlyStopping(patience=20)]
+        exp.train(train_loader=train_loader,
+                  valid_loader=valid_loader,
+                  epochs=200,
+                  lr_schedulers=lr_schedulers,
+                  callbacks=callbacks)
+        exp.test(test_loader)
 
-    # test_loader = DataLoader(test_dataset, batch_size=1)
-    # module = B2B("/mnt/storage/mgodbout/Ecorcage/b2b/", 5)
-    # exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/b2b/",
-    #                  module=module,
-    #                  device=torch.device("cpu"),
-    #                  metrics=['mse'],
-    #                  loss_function=MixedLoss())
-    # exp.test(test_loader, load_best_checkpoint=False)
+    test_loader = DataLoader(test_dataset, batch_size=1)
+    module = B2B("/mnt/storage/mgodbout/Ecorcage/1024_unet/", 5)
+    exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/1024_unet/",
+                     module=module,
+                     device=torch.device("cuda:1"),
+                     metrics=['mse'],
+                     loss_function='bcewithlogits')
+    exp.test(test_loader, load_best_checkpoint=False)
 
-    # with open("/mnt/storage/mgodbout/Ecorcage/b2b/ensemble.pck", "wb") as f:
-    #     pickle.dump(exp.model.model, f,
-    #     pickle.HIGHEST_PROTOCOL)
+    with open("/mnt/storage/mgodbout/Ecorcage/1024_unet/ensemble.pck", "wb") as f:
+        pickle.dump(exp.model.model, f,
+                    pickle.HIGHEST_PROTOCOL)
 
-    # module = pickle.load(
-    #     open("/mnt/storage/mgodbout/Ecorcage/b2b/ensemble.pck",
-    #     "rb"))
+    module = pickle.load(
+        open("/mnt/storage/mgodbout/Ecorcage/1024_unet/ensemble.pck",
+             "rb"))
 
     module = vanilla_unet()
 
-    module.to(torch.device("cpu"))
+    module.to(torch.device("cuda:1"))
     module.eval()
 
     to_pil = ToPILImage()
 
-    valid_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/nn_cut",
+    valid_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/nn",
                                             input_only_transform=Compose(
                                                 [Normalize(mean, std)]
                                             ),
                                             transform=Compose([
                                                 Lambda(lambda img:
-                                                       pad_resize(img, 256, 256)),
+                                                       pad_resize(img, 1024, 1024)),
                                                 ToTensor()]),
-                                            mode="all")
-    pure_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/nn_cut",
+                                            mode="all",
+                                            include_fname=True)
+    pure_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/nn",
                                            transform=Compose([
                                                Lambda(lambda img:
-                                                      pad_resize(img, 256, 256)),
+                                                      pad_resize(img, 1024, 1024)),
                                                ToTensor()]),
-                                           mode="all")
+                                           mode="all",
+                                           include_fname=True)
 
     valid_loader = DataLoader(valid_dataset, batch_size=1)
     pure_loader = DataLoader(pure_dataset, batch_size=1)
@@ -254,7 +258,7 @@ def new_main():
             plt.suptitle("Overall accuracy : {:.3f}".format(acc))
             plt.tight_layout()
             # plt.show()
-            plt.savefig("/mnt/storage/mgodbout/Ecorcage/Images/results/nn_cut/{}".format(batch[3][i]),
+            plt.savefig("/mnt/storage/mgodbout/Ecorcage/Images/results/nn/{}".format(batch[3][i]),
                         format="png",
                         dpi=900)
 
