@@ -61,8 +61,8 @@ def rotatedRectWithMaxArea(size, angle):
 
 def compute_mean_std(working_dir: str):
     train_dataset = RegressionDatasetFolder(working_dir,
-                                            transform=Compose(
-                                                [Resize((256, 256)), ToTensor()]))
+                                            mode='all',
+                                            transform=ToTensor())
     loader = DataLoader(train_dataset, batch_size=100)
 
     mean = 0.
@@ -119,27 +119,10 @@ class MixedLoss(nn.Module):
         super(MixedLoss, self).__init__()
         self.__name__ = "MixedLoss"
         self.dice = SoftDiceLoss()
-        self.bce = nn.modules.loss.BCEWithLogitsLoss(
-            pos_weight=get_pos_weight())
-        self.mse = WeightedMSELoss()
+        self.bce = nn.modules.loss.BCEWithLogitsLoss()
 
     def forward(self, predict, true):
         return self.dice(predict, true) + self.bce(predict, true)
-
-
-class WeightedMSELoss(nn.Module):
-
-    def __init__(self):
-        super(WeightedMSELoss, self).__init__()
-        self.__name__ = "weighted_mse"
-        self.pos_weight = get_pos_weight()
-
-    def forward(self, predict, true):
-        logits = torch.sigmoid(predict)
-        l2 = (logits - true) ** 2
-        weights = torch.ones_like(true)
-        weights[true > 0.5] = self.pos_weight
-        return torch.mean(weights * l2)
 
 
 TO_PIL = ToPILImage()
