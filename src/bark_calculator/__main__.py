@@ -71,29 +71,35 @@ def show_dataset(dataset, pure_dataset, augmented_dataset):
 
 def old_main():
     mean, std = get_mean_std()
-    dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/nn_cut",
+    dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/nn",
                                       input_only_transform=Compose(
                                           [Normalize(mean, std)]
                                       ),
                                       transform=Compose(
                                           [Lambda(lambda img:
-                                                  pad_resize(img, 256, 256)),
+                                                  pad_resize(img, 1024, 1024)),
                                            ToTensor()]
-                                      ))
-    pure_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/nn_cut",
+                                      ),
+                                      mode='all')
+    pure_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/nn",
                                            transform=Compose(
-                                               [Resize((256, 256)), ToTensor()]
-                                           ))
-    augmented_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/nn_cut",
+                                               [Resize((1024, 1024)),
+                                                ToTensor()]
+                                           ),
+                                           mode='all')
+    augmented_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/nn",
                                                 input_only_transform=Compose(
                                                     [Normalize(mean, std)]
                                                 ),
                                                 transform=Compose([
                                                     RandomHorizontalFlip(),
                                                     RandomVerticalFlip(),
+                                                    RandomResizedCrop(
+                                                        1024, scale=(0.8, 1.0)),
                                                     Lambda(lambda img:
-                                                           pad_resize(img, 256, 256)),
-                                                    ToTensor()]))
+                                                           pad_resize(img, 1024, 1024)),
+                                                    ToTensor()]),
+                                                mode='all')
 
     # show_dataset(dataset, pure_dataset, augmented_dataset)
 
@@ -105,11 +111,11 @@ def old_main():
                               sampler=valid_sampler)
     pure_loader = DataLoader(pure_dataset, batch_size=8,
                              sampler=valid_sampler)
-    module = B2B()
+    module = vanilla_unet()
     optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-5)
-    exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/b2b/",
+    exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/1024_unet/",
                      module=module,
-                     device=torch.device("cpu"),
+                     device=torch.device("cuda:0"),
                      optimizer=optim,
                      loss_function=MixedLoss())
 
@@ -193,8 +199,11 @@ def new_main():
     #     pickle.dump(exp.model.model, f,
     #     pickle.HIGHEST_PROTOCOL)
 
-    module = pickle.load(
-        open("/mnt/storage/mgodbout/Ecorcage/b2b/ensemble.pck", "rb"))
+    # module = pickle.load(
+    #     open("/mnt/storage/mgodbout/Ecorcage/b2b/ensemble.pck",
+    #     "rb"))
+
+    module = vanilla_unet()
 
     module.to(torch.device("cpu"))
     module.eval()
