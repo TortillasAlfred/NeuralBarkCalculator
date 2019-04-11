@@ -171,7 +171,7 @@ def new_main():
 
         module = vanilla_unet()
         optim = torch.optim.SGD(
-            module.parameters(), lr=1e-2, weight_decay=1e-5)
+            module.parameters(), lr=5e-2, weight_decay=1e-5)
         exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/1024_unet/{}/".format(k),
                          module=module,
                          device=torch.device("cuda:1"),
