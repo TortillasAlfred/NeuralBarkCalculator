@@ -149,7 +149,7 @@ def new_main():
                                                     RandomHorizontalFlip(),
                                                     RandomVerticalFlip(),
                                                     RandomResizedCrop(
-                                                        1024, scale=(0.8, 1.0)),
+                                                        1024, scale=(0.6, 1.0)),
                                                     Lambda(lambda img:
                                                            pad_resize(img, 1024, 1024)),
                                                     ToTensor()]),
@@ -165,9 +165,9 @@ def new_main():
                                                     ToTensor()]),
                                                 k=k,
                                                 mode="valid")
-        train_loader = DataLoader(train_dataset, batch_size=8, shuffle=True)
-        valid_loader = DataLoader(valid_dataset, batch_size=8)
-        test_loader = DataLoader(test_dataset, batch_size=8)
+        train_loader = DataLoader(train_dataset, batch_size=4, shuffle=True)
+        valid_loader = DataLoader(valid_dataset, batch_size=4)
+        test_loader = DataLoader(test_dataset, batch_size=4)
 
         module = vanilla_unet()
         optim = torch.optim.Adam(
@@ -179,7 +179,7 @@ def new_main():
                          metrics=['mse'],
                          loss_function='bcewithlogits')
 
-        lr_schedulers = [ExponentialLR(gamma=0.90)]
+        lr_schedulers = [ExponentialLR(gamma=0.95)]
         callbacks = [EarlyStopping(patience=20)]
         exp.train(train_loader=train_loader,
                   valid_loader=valid_loader,
