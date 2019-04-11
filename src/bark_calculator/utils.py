@@ -90,8 +90,21 @@ def get_mean_std():
     return mean, std
 
 
+def compute_pos_weight(working_dir: str):
+    train_dataset = RegressionDatasetFolder(working_dir,
+                                            mode='all',
+                                            transform=ToTensor())
+    loader = DataLoader(train_dataset, batch_size=100)
+
+    for _, targets in loader:
+        targets.round_()
+        mean = targets.mean()
+
+    return mean
+
+
 def get_pos_weight():
-    return torch.FloatTensor([1./0.42667 - 1.])
+    return torch.FloatTensor([1./0.2236 - 1.])
 
 
 class SoftDiceLoss(nn.Module):
