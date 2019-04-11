@@ -170,8 +170,8 @@ def new_main():
         test_loader = DataLoader(test_dataset, batch_size=8)
 
         module = vanilla_unet()
-        optim = torch.optim.Adam(
-            module.parameters(), lr=1e-2, weight_decay=1e-5)
+        optim = torch.optim.SGD(
+            module.parameters(), lr=1e-3, weight_decay=1e-5)
         exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/1024_unet/{}/".format(k),
                          module=module,
                          device=torch.device("cuda:1"),
@@ -180,10 +180,10 @@ def new_main():
                          loss_function=MixedLoss())
 
         lr_schedulers = [ExponentialLR(gamma=0.95)]
-        callbacks = [EarlyStopping(patience=5, min_delta=1e-3)]
+        callbacks = [EarlyStopping(patience=12, min_delta=1e-3)]
         exp.train(train_loader=train_loader,
                   valid_loader=valid_loader,
-                  epochs=100,
+                  epochs=150,
                   lr_schedulers=lr_schedulers,
                   callbacks=callbacks)
         exp.test(test_loader)
