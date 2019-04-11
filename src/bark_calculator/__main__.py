@@ -234,7 +234,7 @@ def new_main():
     pure_loader = DataLoader(pure_dataset, batch_size=1)
 
     for batch, pure_batch in zip(valid_loader, pure_loader):
-        outputs = module(batch[0].to(torch.device("cpu")))
+        outputs = module(batch[0].to(torch.device("cuda:1")))
         outputs = torch.sigmoid(outputs)
         outputs.round_()
         batch.append(outputs.detach().cpu())
