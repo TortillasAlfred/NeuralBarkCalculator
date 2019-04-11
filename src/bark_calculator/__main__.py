@@ -148,8 +148,6 @@ def new_main():
                                                 transform=Compose([
                                                     RandomHorizontalFlip(),
                                                     RandomVerticalFlip(),
-                                                    RandomResizedCrop(
-                                                        1024, scale=(0.6, 1.0)),
                                                     Lambda(lambda img:
                                                            pad_resize(img, 1024, 1024)),
                                                     ToTensor()]),
@@ -165,6 +163,7 @@ def new_main():
                                                     ToTensor()]),
                                                 k=k,
                                                 mode="valid")
+                                                
         train_loader = DataLoader(train_dataset, batch_size=8, shuffle=True)
         valid_loader = DataLoader(valid_dataset, batch_size=8)
         test_loader = DataLoader(test_dataset, batch_size=8)
