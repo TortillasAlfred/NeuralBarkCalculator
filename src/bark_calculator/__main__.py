@@ -180,10 +180,10 @@ def new_main():
                          loss_function='bcewithlogits')
 
         lr_schedulers = [ExponentialLR(gamma=0.95)]
-        callbacks = [EarlyStopping(patience=10, min_delta=1e-3)]
+        callbacks = [EarlyStopping(patience=5, min_delta=1e-3)]
         exp.train(train_loader=train_loader,
                   valid_loader=valid_loader,
-                  epochs=200,
+                  epochs=100,
                   lr_schedulers=lr_schedulers,
                   callbacks=callbacks)
         exp.test(test_loader)
