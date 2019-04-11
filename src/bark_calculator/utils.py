@@ -104,7 +104,7 @@ def compute_pos_weight(working_dir: str):
 
 
 def get_pos_weight():
-    return torch.FloatTensor([1./0.2236 - 1.])
+    return torch.FloatTensor([1./0.42667 - 1.])
 
 
 class SoftDiceLoss(nn.Module):
