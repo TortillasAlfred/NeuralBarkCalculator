@@ -204,8 +204,6 @@ def new_main():
         open("/mnt/storage/mgodbout/Ecorcage/cut_unet/ensemble.pck",
              "rb"))
 
-    module = vanilla_unet()
-
     module.to(torch.device("cuda:0"))
     module.eval()
 
