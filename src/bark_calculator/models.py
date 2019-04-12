@@ -12,32 +12,6 @@ from os.path import join
 from poutyne.framework import Experiment
 
 
-###############################################################################
-# Helper Functions
-###############################################################################
-def get_norm_layer(norm_type='instance'):
-    """Return a normalization layer
-
-    Parameters:
-        norm_type (str) -- the name of the normalization layer: batch | instance | none
-
-    For BatchNorm, we use learnable affine parameters and track running statistics (mean/stddev).
-    For InstanceNorm, we do not use learnable affine parameters. We do not track running statistics.
-    """
-    if norm_type == 'batch':
-        norm_layer = functools.partial(
-            nn.BatchNorm2d, affine=True, track_running_stats=True)
-    elif norm_type == 'instance':
-        norm_layer = functools.partial(
-            nn.InstanceNorm2d, affine=False, track_running_stats=False)
-    elif norm_type == 'none':
-        norm_layer = None
-    else:
-        raise NotImplementedError(
-            'normalization layer [%s] is not found' % norm_type)
-    return norm_layer
-
-
 def init_weights(net, init_type='normal', init_gain=0.02):
     """Initialize network weights.
 
@@ -86,11 +60,6 @@ def init_net(net, init_type='normal', init_gain=0.02):
     """
     init_weights(net, init_type, init_gain=init_gain)
     return net
-
-
-##############################################################################
-# Classes
-##############################################################################
 
 
 class UnetGenerator(nn.Module):
@@ -158,7 +127,7 @@ class UnetSkipConnectionBlock(nn.Module):
             input_nc = outer_nc
         downconv = nn.Conv2d(input_nc, inner_nc, kernel_size=4,
                              stride=2, padding=1)
-        downrelu = nn.LeakyReLU(0.2, True)
+        downrelu = nn.ReLU(True)
         uprelu = nn.ReLU(True)
 
         if outermost:
