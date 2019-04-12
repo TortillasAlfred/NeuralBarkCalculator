@@ -175,7 +175,6 @@ def new_main():
                          module=module,
                          device=torch.device("cuda:0"),
                          optimizer=optim,
-                         metrics=['mse'],
                          loss_function=MixedLoss())
 
         lr_schedulers = [ExponentialLR(gamma=0.99)]
@@ -192,7 +191,6 @@ def new_main():
     exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/cut_unet/",
                      module=module,
                      device=torch.device("cuda:0"),
-                     metrics=['mse'],
                      loss_function=MixedLoss())
     exp.test(test_loader, load_best_checkpoint=False)
 
