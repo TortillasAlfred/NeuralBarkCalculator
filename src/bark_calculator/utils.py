@@ -3,12 +3,16 @@ from dataset import RegressionDatasetFolder
 from torchvision.transforms import Compose, Resize, ToTensor, ToPILImage
 from torchvision.transforms.functional import pad, resize
 from torch.utils.data import DataLoader, SubsetRandomSampler
+from scipy.ndimage.interpolation import map_coordinates
+from scipy.ndimage.filters import gaussian_filter
 
 from math import ceil, floor, sin, cos
+import elasticdeform
 import numpy as np
 import torch
 from torch import nn
 from torchvision.transforms.functional import rotate, center_crop
+from PIL import Image
 import random
 
 
@@ -57,6 +61,21 @@ def rotatedRectWithMaxArea(size, angle):
             (size*cos_a - size*sin_a)/cos_2a
 
     return floor(wr/2), floor(hr/2)
+
+
+def elastic_transform(image):
+    """Elastic deformation of image as described in [Simard2003]_.
+    .. [Simard2003] Simard, Steinkraus and Platt, "Best Practices for
+       Convolutional Neural Networks applied to Visual Document Analysis", in
+       Proc. of the International Conference on Document Analysis and
+       Recognition, 2003.
+    """
+    image = np.array(image)
+
+    image_deformed = elasticdeform.deform_random_grid(
+        image, sigma=10, axis=(0, 1))
+
+    return Image.fromarray(image_deformed)
 
 
 def compute_mean_std(working_dir: str):
