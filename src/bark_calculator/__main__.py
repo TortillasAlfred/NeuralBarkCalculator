@@ -178,7 +178,7 @@ def new_main():
                          loss_function=MixedLoss())
 
         lr_schedulers = [ExponentialLR(gamma=0.98)]
-        callbacks = [EarlyStopping(patience=12, min_delta=1e-3)]
+        callbacks = [EarlyStopping(patience=20, min_delta=1e-5)]
         exp.train(train_loader=train_loader,
                   valid_loader=valid_loader,
                   epochs=500,
