@@ -155,7 +155,7 @@ class MixedLoss(nn.Module):
             pos_weight=get_pos_weight())
 
     def forward(self, predict, true):
-        return self.dice(predict, true) + self.bce(predict, true)
+        return self.bce(predict, true)
 
 
 TO_PIL = ToPILImage()
