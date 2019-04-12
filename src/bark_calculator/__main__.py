@@ -247,6 +247,7 @@ def new_main():
         for i in range(batch[1].size(0)):
             _, axs = plt.subplots(1, 3)
             acc = (batch[2][i] == batch[1][i]).sum().item()/(1024 * 1024)
+            loss = MixedLoss()(batch[2][i], batch[1][i])
 
             for j, ax in enumerate(axs.flatten()):
                 img = to_pil(batch[j][i])
@@ -254,7 +255,8 @@ def new_main():
                 ax.set_title(names[j])
                 ax.axis('off')
 
-            plt.suptitle("Overall accuracy : {:.3f}".format(acc))
+            plt.suptitle(
+                "Overall accuracy : {:.3f}\n Loss : {:.3f}".format(acc, loss))
             plt.tight_layout()
             # plt.show()
             plt.savefig("/mnt/storage/mgodbout/Ecorcage/Images/results/nn_cut/{}".format(batch[3][i]),
