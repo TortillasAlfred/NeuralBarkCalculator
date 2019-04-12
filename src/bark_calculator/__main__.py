@@ -113,7 +113,7 @@ def old_main():
                              sampler=valid_sampler)
     module = vanilla_unet()
     optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-5)
-    exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/cut_unet/",
+    exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/weighted_unet/",
                      module=module,
                      device=torch.device("cuda:0"),
                      optimizer=optim,
@@ -171,13 +171,13 @@ def new_main():
         module = vanilla_unet()
         optim = torch.optim.Adam(
             module.parameters(), lr=1e-2, weight_decay=1e-5)
-        exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/cut_unet/{}/".format(k),
+        exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/weighted_unet/{}/".format(k),
                          module=module,
                          device=torch.device("cuda:0"),
                          optimizer=optim,
                          loss_function=MixedLoss())
 
-        lr_schedulers = [ExponentialLR(gamma=0.99)]
+        lr_schedulers = [ExponentialLR(gamma=0.98)]
         callbacks = [EarlyStopping(patience=12, min_delta=1e-3)]
         exp.train(train_loader=train_loader,
                   valid_loader=valid_loader,
@@ -187,19 +187,19 @@ def new_main():
         exp.test(test_loader)
 
     test_loader = DataLoader(test_dataset, batch_size=1)
-    module = B2B("/mnt/storage/mgodbout/Ecorcage/cut_unet/", 5)
-    exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/cut_unet/",
+    module = B2B("/mnt/storage/mgodbout/Ecorcage/weighted_unet/", 5)
+    exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/weighted_unet/",
                      module=module,
                      device=torch.device("cuda:0"),
                      loss_function=MixedLoss())
     exp.test(test_loader, load_best_checkpoint=False)
 
-    with open("/mnt/storage/mgodbout/Ecorcage/cut_unet/ensemble.pck", "wb") as f:
+    with open("/mnt/storage/mgodbout/Ecorcage/weighted_unet/ensemble.pck", "wb") as f:
         pickle.dump(exp.model.model, f,
                     pickle.HIGHEST_PROTOCOL)
 
     module = pickle.load(
-        open("/mnt/storage/mgodbout/Ecorcage/cut_unet/ensemble.pck",
+        open("/mnt/storage/mgodbout/Ecorcage/weighted_unet/ensemble.pck",
              "rb"))
 
     module.to(torch.device("cuda:0"))
@@ -255,7 +255,7 @@ def new_main():
                 "Overall accuracy : {:.3f}\n Loss : {:.3f}".format(acc, loss))
             plt.tight_layout()
             # plt.show()
-            plt.savefig("/mnt/storage/mgodbout/Ecorcage/Images/results/nn_cut/{}".format(batch[3][i]),
+            plt.savefig("/mnt/storage/mgodbout/Ecorcage/Images/results/weighted_unet/{}".format(batch[3][i]),
                         format="png",
                         dpi=900)
 
