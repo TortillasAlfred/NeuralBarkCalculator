@@ -217,14 +217,16 @@ def new_main():
                                                 Lambda(lambda img:
                                                        pad_resize(img, 1024, 1024)),
                                                 ToTensor()]),
-                                            mode="all",
+                                            mode="valid",
+                                            k=2,
                                             include_fname=True)
     pure_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/nn_cut",
                                            transform=Compose([
                                                Lambda(lambda img:
                                                       pad_resize(img, 1024, 1024)),
                                                ToTensor()]),
-                                           mode="all",
+                                           mode="valid",
+                                           k=2,
                                            include_fname=True)
 
     valid_loader = DataLoader(valid_dataset, batch_size=1)
