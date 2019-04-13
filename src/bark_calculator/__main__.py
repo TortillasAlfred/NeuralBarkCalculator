@@ -184,7 +184,7 @@ def new_main():
                   epochs=500,
                   lr_schedulers=lr_schedulers,
                   callbacks=callbacks)
-        # exp.test(test_loader)
+        exp.test(test_loader)
 
     test_loader = DataLoader(test_dataset, batch_size=1)
     module = B2B("/mnt/storage/mgodbout/Ecorcage/weighted_unet/", 5)
@@ -192,7 +192,7 @@ def new_main():
                      module=module,
                      device=torch.device("cuda:0"),
                      loss_function=MixedLoss())
-    # exp.test(test_loader, load_best_checkpoint=False)
+    exp.test(test_loader, load_best_checkpoint=False)
 
     with open("/mnt/storage/mgodbout/Ecorcage/weighted_unet/ensemble.pck", "wb") as f:
         pickle.dump(exp.model.model, f,
