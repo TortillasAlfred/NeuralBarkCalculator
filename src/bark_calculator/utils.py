@@ -152,10 +152,10 @@ class MixedLoss(nn.Module):
         self.__name__ = "MixedLoss"
         self.dice = SoftDiceLoss()
         self.bce = nn.modules.loss.BCEWithLogitsLoss(
-            pos_weight=get_pos_weight(), reduce=False)
+            pos_weight=get_pos_weight())
 
     def forward(self, predict, true):
-        return (true[1] * self.bce(predict, true[0]).mean(-1).mean(-1).squeeze()).mean()
+        return self.bce(predict, true)
 
 
 TO_PIL = ToPILImage()

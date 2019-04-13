@@ -240,7 +240,7 @@ def new_main():
 
         names = ["Input", "Target", "Generated image"]
 
-        for i in range(batch[1][1].size(0)):
+        for i in range(batch[1].size(0)):
             _, axs = plt.subplots(1, 3)
             acc = (batch[2][i] == batch[1][i]).sum().item()/(1024 * 1024)
             loss = MixedLoss()(batch[2][i], batch[1][i])

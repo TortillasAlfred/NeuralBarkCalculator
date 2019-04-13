@@ -133,12 +133,8 @@ def make_dataset_for_dir(dir, extensions):
                     raise IOError("No file found in 'targets' subfolder"
                                   " for image name {} !".format(fname))
 
-                if fname in ["28.bmp", "89.bmp", "94.bmp"]:
-                    target_weight = np.float32(31/6)
-                else:
-                    target_weight = np.float32(31/56)
                 fname = fname.replace("bmp", "png")
-                item = (sample_path, target_path, target_weight, fname)
+                item = (sample_path, target_path, fname)
                 images.append(item)
 
     return images
@@ -245,7 +241,7 @@ class RegressionDatasetFolder(data.Dataset):
         Returns:
             tuple: (sample, target) the sample and target images.
         """
-        path, target_path, target_weight, fname = self.samples[index]
+        path, target_path, fname = self.samples[index]
         sample = self.loader(path)
         target = self.loader(target_path, grayscale=True)
 
@@ -271,9 +267,9 @@ class RegressionDatasetFolder(data.Dataset):
         # target = make_one_hot(target)
 
         if self.include_fname:
-            return sample, [target, target_weight], fname
+            return sample, target, fname
         else:
-            return sample, [target, target_weight]
+            return sample, target
 
     def __len__(self):
         return len(self.samples)
