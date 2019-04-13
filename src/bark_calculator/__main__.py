@@ -225,8 +225,8 @@ def new_main():
                                            mode="all",
                                            include_fname=True)
 
-    valid_loader = DataLoader(valid_dataset, batch_size=1)
-    pure_loader = DataLoader(pure_dataset, batch_size=1)
+    valid_loader = DataLoader(valid_dataset, batch_size=2)
+    pure_loader = DataLoader(pure_dataset, batch_size=2)
 
     for batch, pure_batch in zip(valid_loader, pure_loader):
         outputs = module(batch[0].to(torch.device("cuda:0")))
