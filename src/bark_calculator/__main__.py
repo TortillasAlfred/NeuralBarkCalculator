@@ -140,63 +140,63 @@ def new_main():
                                                ToTensor()]),
                                            mode="test")
 
-    for k in range(1, 6):
-        train_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/nn_cut",
-                                                input_only_transform=Compose(
-                                                    [Normalize(mean, std)]
-                                                ),
-                                                transform=Compose([
-                                                    RandomHorizontalFlip(),
-                                                    RandomVerticalFlip(),
-                                                    Lambda(lambda img:
-                                                           pad_resize(img, 1024, 1024)),
-                                                    ToTensor()]),
-                                                k=k,
-                                                mode="train")
-        valid_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/nn_cut",
-                                                input_only_transform=Compose(
-                                                    [Normalize(mean, std)]
-                                                ),
-                                                transform=Compose([
-                                                    Lambda(lambda img:
-                                                           pad_resize(img, 1024, 1024)),
-                                                    ToTensor()]),
-                                                k=k,
-                                                mode="valid")
+    # for k in range(1, 6):
+    #     train_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/nn_cut",
+    #                                             input_only_transform=Compose(
+    #                                                 [Normalize(mean, std)]
+    #                                             ),
+    #                                             transform=Compose([
+    #                                                 RandomHorizontalFlip(),
+    #                                                 RandomVerticalFlip(),
+    #                                                 Lambda(lambda img:
+    #                                                        pad_resize(img, 1024, 1024)),
+    #                                                 ToTensor()]),
+    #                                             k=k,
+    #                                             mode="train")
+    #     valid_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/nn_cut",
+    #                                             input_only_transform=Compose(
+    #                                                 [Normalize(mean, std)]
+    #                                             ),
+    #                                             transform=Compose([
+    #                                                 Lambda(lambda img:
+    #                                                        pad_resize(img, 1024, 1024)),
+    #                                                 ToTensor()]),
+    #                                             k=k,
+    #                                             mode="valid")
 
-        train_loader = DataLoader(train_dataset, batch_size=8, shuffle=True)
-        valid_loader = DataLoader(valid_dataset, batch_size=8)
-        test_loader = DataLoader(test_dataset, batch_size=8)
+    #     train_loader = DataLoader(train_dataset, batch_size=8, shuffle=True)
+    #     valid_loader = DataLoader(valid_dataset, batch_size=8)
+    #     test_loader = DataLoader(test_dataset, batch_size=8)
 
-        module = vanilla_unet()
-        optim = torch.optim.Adam(
-            module.parameters(), lr=1e-2, weight_decay=1e-5)
-        exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/weighted_unet/{}/".format(k),
-                         module=module,
-                         device=torch.device("cuda:0"),
-                         optimizer=optim,
-                         loss_function=MixedLoss())
+    #     module = vanilla_unet()
+    #     optim = torch.optim.Adam(
+    #         module.parameters(), lr=1e-2, weight_decay=1e-5)
+    #     exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/weighted_unet/{}/".format(k),
+    #                      module=module,
+    #                      device=torch.device("cuda:0"),
+    #                      optimizer=optim,
+    #                      loss_function=MixedLoss())
 
-        lr_schedulers = [ExponentialLR(gamma=0.98)]
-        callbacks = [EarlyStopping(patience=20, min_delta=1e-5)]
-        exp.train(train_loader=train_loader,
-                  valid_loader=valid_loader,
-                  epochs=500,
-                  lr_schedulers=lr_schedulers,
-                  callbacks=callbacks)
-        # exp.test(test_loader)
+    #     lr_schedulers = [ExponentialLR(gamma=0.98)]
+    #     callbacks = [EarlyStopping(patience=20, min_delta=1e-5)]
+    #     exp.train(train_loader=train_loader,
+    #               valid_loader=valid_loader,
+    #               epochs=500,
+    #               lr_schedulers=lr_schedulers,
+    #               callbacks=callbacks)
+    #     # exp.test(test_loader)
 
-    test_loader = DataLoader(test_dataset, batch_size=1)
-    module = B2B("/mnt/storage/mgodbout/Ecorcage/weighted_unet/", 5)
-    exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/weighted_unet/",
-                     module=module,
-                     device=torch.device("cuda:0"),
-                     loss_function=MixedLoss())
-    # exp.test(test_loader, load_best_checkpoint=False)
+    # test_loader = DataLoader(test_dataset, batch_size=1)
+    # module = B2B("/mnt/storage/mgodbout/Ecorcage/weighted_unet/", 5)
+    # exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/weighted_unet/",
+    #                  module=module,
+    #                  device=torch.device("cuda:0"),
+    #                  loss_function=MixedLoss())
+    # # exp.test(test_loader, load_best_checkpoint=False)
 
-    with open("/mnt/storage/mgodbout/Ecorcage/weighted_unet/ensemble.pck", "wb") as f:
-        pickle.dump(exp.model.model, f,
-                    pickle.HIGHEST_PROTOCOL)
+    # with open("/mnt/storage/mgodbout/Ecorcage/weighted_unet/ensemble.pck", "wb") as f:
+    #     pickle.dump(exp.model.model, f,
+    #                 pickle.HIGHEST_PROTOCOL)
 
     module = pickle.load(
         open("/mnt/storage/mgodbout/Ecorcage/weighted_unet/ensemble.pck",
@@ -240,7 +240,7 @@ def new_main():
 
         names = ["Input", "Target", "Generated image"]
 
-        for i in range(batch[1].size(0)):
+        for i in range(batch[1][1].size(0)):
             _, axs = plt.subplots(1, 3)
             acc = (batch[2][i] == batch[1][i]).sum().item()/(1024 * 1024)
             loss = MixedLoss()(batch[2][i], batch[1][i])
