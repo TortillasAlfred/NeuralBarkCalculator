@@ -251,7 +251,7 @@ def new_main():
                 "Overall accuracy : {:.3f}\n Loss : {:.3f}".format(acc, loss))
             plt.tight_layout()
             # plt.show()
-            plt.savefig("/mnt/storage/mgodbout/Ecorcage/Images/results/weighted_unet/{}".format(batch[3][i]),
+            plt.savefig("/mnt/storage/mgodbout/Ecorcage/Images/results/raw_unet/{}".format(batch[3][i]),
                         format="png",
                         dpi=900)
 
