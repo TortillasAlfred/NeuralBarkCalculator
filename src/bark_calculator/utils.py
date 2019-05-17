@@ -80,9 +80,8 @@ def elastic_transform(image):
 
 def compute_mean_std(working_dir: str):
     train_dataset = RegressionDatasetFolder(working_dir,
-                                            mode='all',
                                             transform=ToTensor())
-    loader = DataLoader(train_dataset, batch_size=100)
+    loader = DataLoader(train_dataset, batch_size=1)
 
     mean = 0.
     std = 0.
@@ -103,27 +102,54 @@ def compute_mean_std(working_dir: str):
 def get_mean_std():
     # Util function to not have to recalculate them
     # every single time
-    mean = [0.773, 0.650, 0.487]
-    std = [0.112, 0.146, 0.161]
+    mean = [0.778, 0.658, 0.503]
+    std = [0.095, 0.121, 0.130]
 
     return mean, std
 
 
 def compute_pos_weight(working_dir: str):
     train_dataset = RegressionDatasetFolder(working_dir,
-                                            mode='all',
                                             transform=ToTensor())
-    loader = DataLoader(train_dataset, batch_size=100)
+    loader = DataLoader(train_dataset, batch_size=1)
+
+    class_counts = [0, 0, 0]
 
     for _, targets in loader:
-        targets.round_()
-        mean = targets.mean()
+        targets = targets.flatten()
 
-    return mean
+        for y in range(3):
+            class_counts[y] += (targets == y).sum().item()
+
+    total_samples = sum(class_counts)
+
+    class_weights = [0, 0, 0]
+
+    for y in range(3):
+        class_weights[y] = total_samples/(3 * class_counts[y])
+
+    return torch.tensor(class_weights)
 
 
 def get_pos_weight():
-    return torch.FloatTensor([1./0.42667 - 1.])
+    return torch.FloatTensor([0.42, 1.6585, 63.1298])
+
+
+def get_splits(dataset):
+    train_percent = 0.7
+    valid_percent = 0.15
+    test_percent = 0.15
+    n_data = len(dataset)
+
+    idxs = np.arange(n_data)
+    np.random.shuffle(idxs)
+
+    n_train = int(ceil(train_percent * n_data))
+    n_valid = int(floor(valid_percent * n_data))
+
+    return idxs[:n_train], \
+        idxs[n_train:n_train + n_valid], \
+        idxs[n_train + n_valid:]
 
 
 class SoftDiceLoss(nn.Module):

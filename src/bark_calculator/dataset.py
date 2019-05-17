@@ -3,6 +3,7 @@ Copy-pasta from torchvision.
 """
 import torch.utils.data as data
 import torch
+import torchvision
 
 from PIL import Image
 
@@ -96,24 +97,14 @@ def is_image_file(filename):
 
 
 def make_one_hot(target):
-    target = target.unsqueeze(1)
-    one_hot = torch.FloatTensor(target.size(
-        0), 2, target.size(2), target.size(3)).zero_()
-    target = one_hot.scatter_(1, target.long(), 1)
-    target = target.squeeze(0)
+    y = torch.eye(3)
 
-    return target
-
-
-def make_dataset_for_k(dir, extensions, k):
-    dir = os.path.join(dir, str(k))
-
-    return make_dataset_for_dir(dir, extensions)
+    return y[target.long()]
 
 
 def make_dataset_for_dir(dir, extensions):
     samples_dir = os.path.join(dir, "samples")
-    targets_dir = os.path.join(dir, "targets")
+    targets_dir = os.path.join(dir, "duals")
 
     if not os.path.isdir(samples_dir):
         raise IOError("Root folder should have a 'samples' subfolder !")
@@ -127,45 +118,23 @@ def make_dataset_for_dir(dir, extensions):
         for fname in sorted(fnames):
             if has_file_allowed_extension(fname, extensions):
                 sample_path = os.path.join(samples_dir, fname)
+                fname = fname.replace("bmp", "png")
                 target_path = os.path.join(targets_dir, fname)
 
                 if not os.path.isfile(target_path):
                     raise IOError("No file found in 'targets' subfolder"
                                   " for image name {} !".format(fname))
 
-                fname = fname.replace("bmp", "png")
                 item = (sample_path, target_path, fname)
                 images.append(item)
 
     return images
 
 
-def make_dataset(dir, extensions, mode, k):
+def make_dataset(dir, extensions):
     dir = os.path.expanduser(dir)
 
-    if mode in ["train", "valid"]:
-        dir = os.path.join(dir, "train")
-
-        if not k:
-            raise EnvironmentError(
-                "If mode is train or valid, k should be specified !")
-
-        if mode == "train":
-            images = []
-
-            for k_i in range(1, 6):
-                if k_i != k:
-                    images.extend(make_dataset_for_k(dir, extensions, k))
-
-            return images
-        else:
-            return make_dataset_for_k(dir, extensions, k)
-    elif mode == "test":
-        dir = os.path.join(dir, "test")
-
-        return make_dataset_for_dir(dir, extensions)
-    elif mode == "all":
-        return make_dataset_for_dir(dir, extensions)
+    return make_dataset_for_dir(dir, extensions)
 
 
 IMG_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.ppm',
@@ -176,7 +145,7 @@ def pil_loader(path, grayscale=False):
     # open path as file to avoid ResourceWarning (https://github.com/python-pillow/Pillow/issues/835)
     with open(path, 'rb') as f:
         img = Image.open(f)
-        target_format = 'F' if grayscale else 'RGB'
+        target_format = 'L' if grayscale else 'RGB'
         return img.convert(target_format)
 
 
@@ -218,9 +187,8 @@ class RegressionDatasetFolder(data.Dataset):
     """
 
     def __init__(self, root, extensions=IMG_EXTENSIONS, loader=pil_loader,
-                 transform=None, input_only_transform=None,
-                 mode="train", k=None, include_fname=False):
-        samples = make_dataset(root, extensions, mode, k)
+                 transform=None, input_only_transform=None, include_fname=False):
+        samples = make_dataset(root, extensions)
         if len(samples) == 0:
             raise(RuntimeError("Found 0 files in subfolders of: " + root + "\n"
                                "Supported extensions are: " + ",".join(extensions)))
@@ -263,8 +231,12 @@ class RegressionDatasetFolder(data.Dataset):
         if sample.max() > 200:
             sample /= 255
 
+        target = target * 2
         target.round_()
+
+        target = target.long().squeeze()
         # target = make_one_hot(target)
+        # target = target.squeeze().permute(2, 0, 1)
 
         if self.include_fname:
             return sample, target, fname

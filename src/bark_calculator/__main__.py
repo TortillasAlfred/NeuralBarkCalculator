@@ -1,18 +1,21 @@
-from dataset import RegressionDatasetFolder, make_weight_map
+from dataset import RegressionDatasetFolder, make_weight_map, pil_loader
 from utils import *
 from models import vanilla_unet, FCDenseNet103, FCDenseNet57, B2B
 
 from torchvision.transforms import *
 
 from poutyne.framework import Experiment, ExponentialLR, EarlyStopping
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, Subset
 import matplotlib.pyplot as plt
-from torch.nn.modules.loss import BCEWithLogitsLoss
+from torch.nn.modules.loss import CrossEntropyLoss
 import torch
 
 from math import ceil
 import numpy as np
+import io
 import pickle
+from PIL import Image
+import os
 
 
 def load_best_and_show(exp, pure_loader, valid_loader):
@@ -94,10 +97,10 @@ def old_main():
                                                 transform=Compose([
                                                     RandomHorizontalFlip(),
                                                     RandomVerticalFlip(),
-                                                    RandomResizedCrop(
-                                                        1024, scale=(0.8, 1.0)),
                                                     Lambda(lambda img:
                                                            pad_resize(img, 1024, 1024)),
+                                                    RandomResizedCrop(
+                                                        1024, scale=(0.8, 1.0)),
                                                     ToTensor()]),
                                                 mode='all')
 
@@ -128,8 +131,32 @@ def old_main():
               lr_schedulers=lr_schedulers)
 
 
+def make_dual_images():
+    barks_dir = "/mnt/storage/mgodbout/Ecorcage/Images/dual_exp/bark"
+    nodes_dir = "/mnt/storage/mgodbout/Ecorcage/Images/dual_exp/nodes"
+    duals_dir = "/mnt/storage/mgodbout/Ecorcage/Images/dual_exp/duals"
+    duals_png_dir = "/mnt/storage/mgodbout/Ecorcage/Images/dual_exp/duals_png"
+
+    for _, _, fnames in sorted(os.walk(barks_dir)):
+        for fname in sorted(fnames):
+            bark_path = os.path.join(barks_dir, fname)
+            node_path = os.path.join(nodes_dir, fname)
+
+            bark_image = np.asarray(pil_loader(bark_path, grayscale=True))/255
+            node_image = np.asarray(pil_loader(node_path, grayscale=True))/255
+
+            dual_png = np.zeros((bark_image.shape[0], bark_image.shape[1]), dtype=np.uint8)
+            dual_png[bark_image == 1.0] = 127
+            dual_png[node_image == 1.0] = 255
+
+            dual = Image.fromarray(dual_png, mode='L')
+            dual.save(os.path.join(duals_dir, fname.replace("bmp", "png")))
+
+
 def new_main():
+    # make_dual_images()
     mean, std = get_mean_std()
+    pos_weights = get_pos_weights()
     test_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/nn_cut",
                                            input_only_transform=Compose(
                                                [Normalize(mean, std)]
@@ -137,8 +164,7 @@ def new_main():
                                            transform=Compose([
                                                Lambda(lambda img:
                                                       pad_resize(img, 1024, 1024)),
-                                               ToTensor()]),
-                                           mode="test")
+                                               ToTensor()]))
 
     for k in range(1, 6):
         train_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/nn_cut",
@@ -175,7 +201,7 @@ def new_main():
                          module=module,
                          device=torch.device("cuda:0"),
                          optimizer=optim,
-                         loss_function=MixedLoss())
+                         loss_function=BCEWithLogitsLoss(weight=pos_weights))
 
         lr_schedulers = [ExponentialLR(gamma=0.98)]
         callbacks = [EarlyStopping(patience=20, min_delta=1e-5)]
@@ -260,5 +286,121 @@ def new_main():
                         dpi=900)
 
 
+def new_new_main():
+    make_dual_images()
+    mean, std = get_mean_std()
+    pos_weights = get_pos_weight()
+    test_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/dual_exp",
+                                           input_only_transform=Compose(
+                                               [Normalize(mean, std)]
+                                           ),
+                                           transform=Compose([
+                                               Lambda(lambda img:
+                                                      pad_resize(img, 1024, 1024)),
+                                               ToTensor()]))
+
+    train_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/dual_exp",
+                                            input_only_transform=Compose(
+                                                [Normalize(mean, std)]
+                                            ),
+                                            transform=Compose([
+                                                RandomHorizontalFlip(),
+                                                RandomVerticalFlip(),
+                                                Lambda(lambda img:
+                                                       pad_resize(img, 1024, 1024)),
+                                                ToTensor()]))
+    valid_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/dual_exp",
+                                            input_only_transform=Compose(
+                                                [Normalize(mean, std)]
+                                            ),
+                                            transform=Compose([
+                                                Lambda(lambda img:
+                                                       pad_resize(img, 1024, 1024)),
+                                                ToTensor()]))
+
+    train_split, valid_split, test_split = get_splits(train_dataset)
+
+    train_loader = DataLoader(Subset(train_dataset, train_split), batch_size=8, shuffle=True)
+    valid_loader = DataLoader(Subset(valid_dataset, valid_split), batch_size=8)
+    test_loader = DataLoader(Subset(test_dataset, test_split), batch_size=8)
+
+    module = vanilla_unet()
+    optim = torch.optim.Adam(
+        module.parameters(), lr=1e-3, weight_decay=1e-5)
+    exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/dual_unet/",
+                     module=module,
+                     device=torch.device("cuda:0"),
+                     optimizer=optim,
+                     loss_function=CrossEntropyLoss(weight=pos_weights),
+                     metrics=['CrossEntropyLoss'])
+
+    lr_schedulers = [ExponentialLR(gamma=0.99)]
+    callbacks = [EarlyStopping(patience=50, min_delta=1e-5)]
+    exp.train(train_loader=train_loader,
+              valid_loader=valid_loader,
+              epochs=1500,
+              lr_schedulers=lr_schedulers,
+              callbacks=callbacks)
+    exp.test(test_loader)
+
+    module = exp.model.model
+    module.eval()
+
+    to_pil = ToPILImage()
+
+    valid_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/dual_exp",
+                                            input_only_transform=Compose(
+                                                [Normalize(mean, std)]
+                                            ),
+                                            transform=Compose([
+                                                Lambda(lambda img:
+                                                       pad_resize(img, 1024, 1024)),
+                                                ToTensor()]),
+                                            include_fname=True)
+    pure_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/dual_exp",
+                                           transform=Compose([
+                                               Lambda(lambda img:
+                                                      pad_resize(img, 1024, 1024)),
+                                               ToTensor()]),
+                                           include_fname=True)
+
+    valid_loader = DataLoader(valid_dataset, batch_size=1)
+    pure_loader = DataLoader(pure_dataset, batch_size=1)
+
+    for batch, pure_batch in zip(valid_loader, pure_loader):
+        outputs = module(batch[0].to(torch.device("cuda:0")))
+        outputs = torch.sigmoid(outputs)
+        outputs = torch.argmax(outputs, dim=1)
+        batch.append(outputs.detach().cpu())
+        batch[0] = pure_batch[0]
+        tmp = batch[2]
+        batch[2] = batch[3]
+        batch[3] = tmp
+
+        names = ["Input", "Target", "Generated image"]
+
+        for i in range(batch[1].size(0)):
+            _, axs = plt.subplots(1, 3)
+            acc = (batch[2][i] == batch[1][i]).sum().item()/(1024 * 1024)
+
+            for j, ax in enumerate(axs.flatten()):
+                img = batch[j][i].detach()
+
+                if len(img.shape) == 3:
+                    img = img.permute(1, 2, 0)
+
+                ax.imshow(img)
+                ax.set_title(names[j])
+                ax.axis('off')
+
+            plt.suptitle(
+                "Overall accuracy : {:.3f}".format(acc))
+            plt.tight_layout()
+            # plt.show()
+            plt.savefig("/mnt/storage/mgodbout/Ecorcage/Images/results/dual_unet/{}".format(batch[3][i]),
+                        format="png",
+                        dpi=900)
+
+
 if __name__ == "__main__":
-    new_main()
+    new_new_main()

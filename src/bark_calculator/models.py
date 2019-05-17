@@ -127,29 +127,31 @@ class UnetSkipConnectionBlock(nn.Module):
             input_nc = outer_nc
         downconv = nn.Conv2d(input_nc, inner_nc, kernel_size=4,
                              stride=2, padding=1)
-        downrelu = nn.ReLU(True)
+        downrelu = nn.LeakyReLU(0.2, True)
+        downnorm = nn.BatchNorm2d(inner_nc)
         uprelu = nn.ReLU(True)
+        upnorm = nn.BatchNorm2d(outer_nc)
 
         if outermost:
             upconv = nn.ConvTranspose2d(inner_nc * 2, outer_nc,
                                         kernel_size=4, stride=2,
                                         padding=1)
             down = [downconv]
-            up = [uprelu, upconv]
+            up = [uprelu, upconv, nn.Tanh()]
             model = down + [submodule] + up
         elif innermost:
             upconv = nn.ConvTranspose2d(inner_nc, outer_nc,
                                         kernel_size=4, stride=2,
                                         padding=1)
             down = [downrelu, downconv]
-            up = [uprelu, upconv]
+            up = [uprelu, upconv, upnorm]
             model = down + up
         else:
             upconv = nn.ConvTranspose2d(inner_nc * 2, outer_nc,
                                         kernel_size=4, stride=2,
                                         padding=1)
-            down = [downrelu, downconv]
-            up = [uprelu, upconv]
+            down = [downrelu, downconv, downnorm]
+            up = [uprelu, upconv, upnorm]
 
             if use_dropout:
                 model = down + [submodule] + up + [nn.Dropout(0.5)]
@@ -166,7 +168,7 @@ class UnetSkipConnectionBlock(nn.Module):
 
 
 def vanilla_unet():
-    net = UnetGenerator(3, 1, 10, 32, use_dropout=True)
+    net = UnetGenerator(3, 3, 10, 64, use_dropout=True)
 
     return init_net(net, "kaiming")
 
