@@ -325,7 +325,7 @@ def new_new_main():
     test_loader = DataLoader(Subset(test_dataset, test_split), batch_size=3)
 
     module = vanilla_unet()
-    optim = torch.optim.SGD(
+    optim = torch.optim.Adam(
         module.parameters(), lr=1e-3, weight_decay=1e-5)
     exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/dual_mix/",
                      module=module,
