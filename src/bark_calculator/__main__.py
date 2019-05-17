@@ -132,7 +132,7 @@ def old_main():
 
 
 def make_dual_images():
-    barks_dir = "/mnt/storage/mgodbout/Ecorcage/Images/dual_exp/bark"
+    barks_dir = "/mnt/storage/mgodbout/Ecorcage/Images/dual_exp/samples"
     nodes_dir = "/mnt/storage/mgodbout/Ecorcage/Images/dual_exp/nodes"
     duals_dir = "/mnt/storage/mgodbout/Ecorcage/Images/dual_exp/duals"
     duals_png_dir = "/mnt/storage/mgodbout/Ecorcage/Images/dual_exp/duals_png"
@@ -151,7 +151,6 @@ def make_dual_images():
 
             dual = Image.fromarray(dual_png, mode='L')
             dual.save(os.path.join(duals_dir, fname.replace("bmp", "png")))
-            print(os.path.join(duals_dir, fname.replace("bmp", "png")))
 
 
 def new_main():
@@ -288,7 +287,7 @@ def new_main():
 
 
 def new_new_main():
-    make_dual_images()
+    # make_dual_images()
     mean, std = get_mean_std()
     pos_weights = get_pos_weight()
     test_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/dual_exp",
