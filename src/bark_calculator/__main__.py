@@ -326,7 +326,7 @@ def new_new_main():
 
     module = vanilla_unet()
     optim = torch.optim.Adam(
-        module.parameters(), lr=1e-3, weight_decay=1e-5)
+        module.parameters(), lr=1e-4, weight_decay=1e-5)
     exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/dual_mix/",
                      module=module,
                      device=torch.device("cuda:0"),
