@@ -320,7 +320,7 @@ def new_new_main():
 
     train_split, valid_split, test_split = get_splits(train_dataset)
 
-    train_loader = DataLoader(Subset(train_dataset, train_split), batch_size=2, shuffle=True)
+    train_loader = DataLoader(Subset(train_dataset, train_split), batch_size=3, shuffle=True)
     valid_loader = DataLoader(Subset(valid_dataset, valid_split), batch_size=3)
     test_loader = DataLoader(Subset(test_dataset, test_split), batch_size=3)
 
