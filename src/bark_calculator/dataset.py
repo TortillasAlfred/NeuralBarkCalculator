@@ -213,7 +213,9 @@ class RegressionDatasetFolder(data.Dataset):
         sample = self.loader(path)
         target = self.loader(target_path, grayscale=True)
 
+        print()
         print(np.asarray(target).max())
+        print()
 
         if self.transform is not None:
             random_seed = np.random.randint(2147483647)
