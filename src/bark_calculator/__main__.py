@@ -320,18 +320,18 @@ def new_new_main():
 
     train_split, valid_split, test_split = get_splits(train_dataset)
 
-    train_loader = DataLoader(Subset(train_dataset, train_split), batch_size=3, shuffle=True)
+    train_loader = DataLoader(Subset(train_dataset, train_split), batch_size=2, shuffle=True)
     valid_loader = DataLoader(Subset(valid_dataset, valid_split), batch_size=3)
     test_loader = DataLoader(Subset(test_dataset, test_split), batch_size=3)
 
     module = vanilla_unet()
-    optim = torch.optim.Adam(
+    optim = torch.optim.SGD(
         module.parameters(), lr=1e-3, weight_decay=1e-5)
-    exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/dual_unet/",
+    exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/dual_elastic/",
                      module=module,
                      device=torch.device("cuda:0"),
                      optimizer=optim,
-                     loss_function=CrossEntropyLoss(weight=pos_weights),
+                     loss_function=MixedLoss(),
                      metrics=['CrossEntropyLoss'])
 
     lr_schedulers = [ExponentialLR(gamma=0.98)]
@@ -397,7 +397,7 @@ def new_new_main():
                 "Overall accuracy : {:.3f}".format(acc))
             plt.tight_layout()
             # plt.show()
-            plt.savefig("/mnt/storage/mgodbout/Ecorcage/Images/results/dual_unet/{}".format(batch[3][i]),
+            plt.savefig("/mnt/storage/mgodbout/Ecorcage/Images/results/dual_elastic/{}".format(batch[3][i]),
                         format="png",
                         dpi=900)
 

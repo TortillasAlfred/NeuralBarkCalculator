@@ -160,7 +160,7 @@ class SoftDiceLoss(nn.Module):
     def forward(self, logits, targets):
         smooth = 1
         num = targets.size(0)
-        probs = torch.sigmoid(logits)
+        probs = torch.argmax(logits, dim=1)
         m1 = probs.view(num, -1)
         m2 = targets.view(num, -1)
         intersection = (m1 * m2)
@@ -177,11 +177,10 @@ class MixedLoss(nn.Module):
         super(MixedLoss, self).__init__()
         self.__name__ = "MixedLoss"
         self.dice = SoftDiceLoss()
-        self.bce = nn.modules.loss.BCEWithLogitsLoss(
-            pos_weight=get_pos_weight())
+        self.bce = nn.modules.loss.CrossEntropyLoss(weight=get_pos_weight())
 
     def forward(self, predict, true):
-        return self.bce(predict, true)
+        return self.bce(predict, true) + self.dice(predict, true)
 
 
 TO_PIL = ToPILImage()
