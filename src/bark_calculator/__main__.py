@@ -325,8 +325,8 @@ def new_new_main():
     test_loader = DataLoader(Subset(test_dataset, test_split), batch_size=3)
 
     module = vanilla_unet()
-    optim = torch.optim.Adam(
-        module.parameters(), lr=1e-3, weight_decay=1e-5)
+    optim = torch.optim.SGD(
+        module.parameters(), lr=1e-3, weight_decay=1e-4)
     exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/dual_unet/",
                      module=module,
                      device=torch.device("cuda:0"),
@@ -334,7 +334,7 @@ def new_new_main():
                      loss_function=CrossEntropyLoss(weight=pos_weights),
                      metrics=['CrossEntropyLoss'])
 
-    lr_schedulers = [ExponentialLR(gamma=0.99)]
+    lr_schedulers = [ExponentialLR(gamma=0.98)]
     callbacks = [EarlyStopping(patience=50, min_delta=1e-5)]
     exp.train(train_loader=train_loader,
               valid_loader=valid_loader,
