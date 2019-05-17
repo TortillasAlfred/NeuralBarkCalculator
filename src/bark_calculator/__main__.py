@@ -327,7 +327,7 @@ def new_new_main():
     module = vanilla_unet()
     optim = torch.optim.SGD(
         module.parameters(), lr=1e-3, weight_decay=1e-5)
-    exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/dual_elastic/",
+    exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/dual_mix/",
                      module=module,
                      device=torch.device("cuda:0"),
                      optimizer=optim,
@@ -397,7 +397,7 @@ def new_new_main():
                 "Overall accuracy : {:.3f}".format(acc))
             plt.tight_layout()
             # plt.show()
-            plt.savefig("/mnt/storage/mgodbout/Ecorcage/Images/results/dual_elastic/{}".format(batch[3][i]),
+            plt.savefig("/mnt/storage/mgodbout/Ecorcage/Images/results/dual_mix/{}".format(batch[3][i]),
                         format="png",
                         dpi=900)
 
