@@ -213,10 +213,6 @@ class RegressionDatasetFolder(data.Dataset):
         sample = self.loader(path)
         target = self.loader(target_path, grayscale=True)
 
-        print()
-        print(np.asarray(target).max())
-        print()
-
         if self.transform is not None:
             random_seed = np.random.randint(2147483647)
 
@@ -241,8 +237,6 @@ class RegressionDatasetFolder(data.Dataset):
         target = target.long().squeeze()
         # target = make_one_hot(target)
         # target = target.squeeze().permute(2, 0, 1)
-
-        print(target.max())
 
         if self.include_fname:
             return sample, target, fname
