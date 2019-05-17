@@ -238,6 +238,8 @@ class RegressionDatasetFolder(data.Dataset):
         # target = make_one_hot(target)
         # target = target.squeeze().permute(2, 0, 1)
 
+        print(target.max())
+
         if self.include_fname:
             return sample, target, fname
         else:
