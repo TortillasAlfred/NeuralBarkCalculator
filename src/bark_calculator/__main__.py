@@ -151,6 +151,7 @@ def make_dual_images():
 
             dual = Image.fromarray(dual_png, mode='L')
             dual.save(os.path.join(duals_dir, fname.replace("bmp", "png")))
+            print(os.path.join(duals_dir, fname.replace("bmp", "png"))
 
 
 def new_main():
