@@ -331,7 +331,7 @@ def new_new_main():
                      module=module,
                      device=torch.device("cuda:0"),
                      optimizer=optim,
-                     loss_function=MixedLoss(),
+                     loss_function=CrossEntropyLoss(),
                      metrics=['CrossEntropyLoss'])
 
     lr_schedulers = [ExponentialLR(gamma=0.98)]
