@@ -74,7 +74,7 @@ def show_dataset(dataset, pure_dataset, augmented_dataset):
 
 def old_main():
     mean, std = get_mean_std()
-    dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/nn_cut",
+    dataset = RegressionDatasetFolder("./Images/nn_cut",
                                       input_only_transform=Compose(
                                           [Normalize(mean, std)]
                                       ),
@@ -84,13 +84,13 @@ def old_main():
                                            ToTensor()]
                                       ),
                                       mode='all')
-    pure_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/nn_cut",
+    pure_dataset = RegressionDatasetFolder("./Images/nn_cut",
                                            transform=Compose(
                                                [Resize((1024, 1024)),
                                                 ToTensor()]
                                            ),
                                            mode='all')
-    augmented_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/nn_cut",
+    augmented_dataset = RegressionDatasetFolder("./Images/nn_cut",
                                                 input_only_transform=Compose(
                                                     [Normalize(mean, std)]
                                                 ),
@@ -116,7 +116,7 @@ def old_main():
                              sampler=valid_sampler)
     module = vanilla_unet()
     optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-5)
-    exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/weighted_unet/",
+    exp = Experiment(directory="./weighted_unet/",
                      module=module,
                      device=torch.device("cuda:0"),
                      optimizer=optim,
@@ -132,10 +132,10 @@ def old_main():
 
 
 def make_dual_images():
-    barks_dir = "/mnt/storage/mgodbout/Ecorcage/Images/dual_exp/samples"
-    nodes_dir = "/mnt/storage/mgodbout/Ecorcage/Images/dual_exp/nodes"
-    duals_dir = "/mnt/storage/mgodbout/Ecorcage/Images/dual_exp/duals"
-    duals_png_dir = "/mnt/storage/mgodbout/Ecorcage/Images/dual_exp/duals_png"
+    barks_dir = "./Images/dual_exp/samples"
+    nodes_dir = "./Images/dual_exp/nodes"
+    duals_dir = "./Images/dual_exp/duals"
+    duals_png_dir = "./Images/dual_exp/duals_png"
 
     for _, _, fnames in sorted(os.walk(barks_dir)):
         for fname in sorted(fnames):
@@ -157,7 +157,7 @@ def new_main():
     # make_dual_images()
     mean, std = get_mean_std()
     pos_weights = get_pos_weights()
-    test_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/nn_cut",
+    test_dataset = RegressionDatasetFolder("./Images/nn_cut",
                                            input_only_transform=Compose(
                                                [Normalize(mean, std)]
                                            ),
@@ -167,7 +167,7 @@ def new_main():
                                                ToTensor()]))
 
     for k in range(1, 6):
-        train_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/nn_cut",
+        train_dataset = RegressionDatasetFolder("./Images/nn_cut",
                                                 input_only_transform=Compose(
                                                     [Normalize(mean, std)]
                                                 ),
@@ -179,7 +179,7 @@ def new_main():
                                                     ToTensor()]),
                                                 k=k,
                                                 mode="train")
-        valid_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/nn_cut",
+        valid_dataset = RegressionDatasetFolder("./Images/nn_cut",
                                                 input_only_transform=Compose(
                                                     [Normalize(mean, std)]
                                                 ),
@@ -197,7 +197,7 @@ def new_main():
         module = vanilla_unet()
         optim = torch.optim.Adam(
             module.parameters(), lr=1e-2, weight_decay=1e-5)
-        exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/weighted_unet/{}/".format(k),
+        exp = Experiment(directory="./weighted_unet/{}/".format(k),
                          module=module,
                          device=torch.device("cuda:0"),
                          optimizer=optim,
@@ -213,19 +213,19 @@ def new_main():
         exp.test(test_loader)
 
     test_loader = DataLoader(test_dataset, batch_size=1)
-    module = B2B("/mnt/storage/mgodbout/Ecorcage/weighted_unet/", 5)
-    exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/weighted_unet/",
+    module = B2B("./weighted_unet/", 5)
+    exp = Experiment(directory="./weighted_unet/",
                      module=module,
                      device=torch.device("cuda:0"),
                      loss_function=MixedLoss())
     exp.test(test_loader, load_best_checkpoint=False)
 
-    with open("/mnt/storage/mgodbout/Ecorcage/weighted_unet/ensemble.pck", "wb") as f:
+    with open("./weighted_unet/ensemble.pck", "wb") as f:
         pickle.dump(exp.model.model, f,
                     pickle.HIGHEST_PROTOCOL)
 
     module = pickle.load(
-        open("/mnt/storage/mgodbout/Ecorcage/weighted_unet/ensemble.pck",
+        open("./weighted_unet/ensemble.pck",
              "rb"))
 
     module.to(torch.device("cuda:0"))
@@ -233,7 +233,7 @@ def new_main():
 
     to_pil = ToPILImage()
 
-    valid_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/nn_cut",
+    valid_dataset = RegressionDatasetFolder("./Images/nn_cut",
                                             input_only_transform=Compose(
                                                 [Normalize(mean, std)]
                                             ),
@@ -243,7 +243,7 @@ def new_main():
                                                 ToTensor()]),
                                             mode="all",
                                             include_fname=True)
-    pure_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/nn_cut",
+    pure_dataset = RegressionDatasetFolder("./Images/nn_cut",
                                            transform=Compose([
                                                Lambda(lambda img:
                                                       pad_resize(img, 1024, 1024)),
@@ -281,7 +281,7 @@ def new_main():
                 "Overall accuracy : {:.3f}\n Loss : {:.3f}".format(acc, loss))
             plt.tight_layout()
             # plt.show()
-            plt.savefig("/mnt/storage/mgodbout/Ecorcage/Images/results/weighted_unet/{}".format(batch[3][i]),
+            plt.savefig("./Images/results/weighted_unet/{}".format(batch[3][i]),
                         format="png",
                         dpi=900)
 
@@ -290,16 +290,17 @@ def new_new_main():
     # make_dual_images()
     mean, std = get_mean_std()
     pos_weights = get_pos_weight()
-    test_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/dual_exp",
+    test_dataset = RegressionDatasetFolder("./Images/dual_exp",
                                            input_only_transform=Compose(
                                                [Normalize(mean, std)]
                                            ),
                                            transform=Compose([
                                                Lambda(lambda img:
                                                       pad_resize(img, 1024, 1024)),
+                                               Resize(256),
                                                ToTensor()]))
 
-    train_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/dual_exp",
+    train_dataset = RegressionDatasetFolder("./Images/dual_exp",
                                             input_only_transform=Compose(
                                                 [Normalize(mean, std)]
                                             ),
@@ -308,14 +309,16 @@ def new_new_main():
                                                 RandomVerticalFlip(),
                                                 Lambda(lambda img:
                                                        pad_resize(img, 1024, 1024)),
+                                                Resize(256),
                                                 ToTensor()]))
-    valid_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/dual_exp",
+    valid_dataset = RegressionDatasetFolder("./Images/dual_exp",
                                             input_only_transform=Compose(
                                                 [Normalize(mean, std)]
                                             ),
                                             transform=Compose([
                                                 Lambda(lambda img:
                                                        pad_resize(img, 1024, 1024)),
+                                                Resize(256),
                                                 ToTensor()]))
 
     train_split, valid_split, test_split = get_splits(train_dataset)
@@ -324,14 +327,14 @@ def new_new_main():
     valid_loader = DataLoader(Subset(valid_dataset, valid_split), batch_size=3)
     test_loader = DataLoader(Subset(test_dataset, test_split), batch_size=3)
 
-    module = vanilla_unet()
+    module = FCDenseNet57(3)
     optim = torch.optim.Adam(
-        module.parameters(), lr=1e-4, weight_decay=1e-5)
-    exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/dual_mix/",
+        module.parameters(), lr=1e-3, weight_decay=1e-5)
+    exp = Experiment(directory="./fcd_mix/",
                      module=module,
                      device=torch.device("cuda:0"),
                      optimizer=optim,
-                     loss_function=CrossEntropyLoss(),
+                     loss_function=CrossEntropyLoss(weight=pos_weights),
                      metrics=['CrossEntropyLoss'])
 
     lr_schedulers = [ExponentialLR(gamma=0.98)]
@@ -348,7 +351,7 @@ def new_new_main():
 
     to_pil = ToPILImage()
 
-    valid_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/dual_exp",
+    valid_dataset = RegressionDatasetFolder("./Images/dual_exp",
                                             input_only_transform=Compose(
                                                 [Normalize(mean, std)]
                                             ),
@@ -357,7 +360,7 @@ def new_new_main():
                                                        pad_resize(img, 1024, 1024)),
                                                 ToTensor()]),
                                             include_fname=True)
-    pure_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/dual_exp",
+    pure_dataset = RegressionDatasetFolder("./Images/dual_exp",
                                            transform=Compose([
                                                Lambda(lambda img:
                                                       pad_resize(img, 1024, 1024)),
@@ -397,7 +400,7 @@ def new_new_main():
                 "Overall accuracy : {:.3f}".format(acc))
             plt.tight_layout()
             # plt.show()
-            plt.savefig("/mnt/storage/mgodbout/Ecorcage/Images/results/dual_mix/{}".format(batch[3][i]),
+            plt.savefig("./Images/results/dual_mix/{}".format(batch[3][i]),
                         format="png",
                         dpi=900)
 
