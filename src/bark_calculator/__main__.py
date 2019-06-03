@@ -1,6 +1,6 @@
 from dataset import RegressionDatasetFolder, make_weight_map, pil_loader
 from utils import *
-from models import vanilla_unet, FCDenseNet103, FCDenseNet57, B2B
+from models import vanilla_unet, FCDenseNet103, FCDenseNet57, B2B, deeplabv3_resnet101
 
 from torchvision.transforms import *
 
@@ -327,14 +327,15 @@ def new_new_main():
     valid_loader = DataLoader(Subset(valid_dataset, valid_split), batch_size=3)
     test_loader = DataLoader(Subset(test_dataset, test_split), batch_size=3)
 
-    module = FCDenseNet57(3)
+    module = deeplabv3_resnet101()
+
     optim = torch.optim.Adam(
         module.parameters(), lr=1e-3, weight_decay=1e-5)
     exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/fcd_mix/",
                      module=module,
                      device=torch.device("cuda:0"),
                      optimizer=optim,
-                     loss_function=CrossEntropyLoss(weight=pos_weights),
+                     loss_function=CrossEntropyLoss(),
                      metrics=['CrossEntropyLoss'])
 
     lr_schedulers = [ExponentialLR(gamma=0.98)]

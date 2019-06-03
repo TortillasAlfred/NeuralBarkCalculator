@@ -5,9 +5,9 @@ Enhanced copy-pasta from https://github.com/junyanz/pytorch-CycleGAN-and-pix2pix
 import torch
 import torch.nn as nn
 from torch.nn import init
-import functools
-from torch.optim import lr_scheduler
-import numpy as np
+from torchvision.models.segmentation.deeplabv3 import DeepLabHead
+from torchvision.models.detection.backbone_utils import IntermediateLayerGetter
+from torchvision.models import resnet
 from os.path import join
 from poutyne.framework import Experiment
 
@@ -535,3 +535,34 @@ class B2B(nn.Module):
         res = torch.stack([m(x) for m in self.fcd_modules])
 
         return torch.mean(res, 0)
+
+
+class SimpleSegmentationModel(nn.Module):
+    def __init__(self, backbone, classifier):
+        super(SimpleSegmentationModel, self).__init__()
+        self.backbone = backbone
+        self.classifier = classifier
+
+    def forward(self, x):
+        input_shape = x.shape[-2:]
+
+        x = self.backbone(x)["out"]
+        x = self.classifier(x)
+        x = torch.nn.functional.interpolate(x, size=input_shape, mode='bilinear', align_corners=False)
+
+        return x
+
+
+def deeplabv3_resnet101():
+    backbone = resnet.__dict__['resnet101'](
+        pretrained=False,
+        replace_stride_with_dilation=[False, True, True])
+
+    return_layers = {'layer4': 'out'}
+
+    backbone = IntermediateLayerGetter(backbone, return_layers=return_layers)
+
+    inplanes = 2048
+    classifier = DeepLabHead(inplanes, 3)
+
+    return SimpleSegmentationModel(backbone, classifier)
