@@ -43,10 +43,11 @@ class FolderLoader(Loader):
                            "sapin", "epinette_javel"]
 
         self.image_paths = []
-        for wood_type in self.wood_types:
-            wood_type_path = Path(os.path.join(folder_path, wood_type))
+        folder_path = Path(folder_path)
+
+        for wood_type in ['epinette_gelee']:
             self.image_paths.extend([(img_path, wood_type) for img_path
-                                     in wood_type_path.rglob("*.bmp")])
+                                    in folder_path.rglob("*.bmp")])
 
         self.idx = 0
 

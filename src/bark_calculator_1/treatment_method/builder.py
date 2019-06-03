@@ -40,3 +40,6 @@ def build_from_treatment_method_arg(treatment_method):
 
     if treatment_method == "black_trim":
         return BlackTrimmer()
+
+    if treatment_method == "upsampling":
+        return Upsampling()
