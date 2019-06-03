@@ -132,10 +132,9 @@ def old_main():
 
 
 def make_dual_images():
-    barks_dir = "/mnt/storage/mgodbout/Ecorcage/Images/dual_exp/samples"
+    barks_dir = "/mnt/storage/mgodbout/Ecorcage/Images/dual_exp/bark"
     nodes_dir = "/mnt/storage/mgodbout/Ecorcage/Images/dual_exp/nodes"
     duals_dir = "/mnt/storage/mgodbout/Ecorcage/Images/dual_exp/duals"
-    duals_png_dir = "/mnt/storage/mgodbout/Ecorcage/Images/dual_exp/duals_png"
 
     for _, _, fnames in sorted(os.walk(barks_dir)):
         for fname in sorted(fnames):
