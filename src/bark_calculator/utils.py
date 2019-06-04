@@ -1,3 +1,5 @@
+from kornia.losses import FocalLoss
+from sklearn.metrics import jaccard_similarity_score
 from dataset import RegressionDatasetFolder
 
 from torchvision.transforms import Compose, Resize, ToTensor, ToPILImage
@@ -13,6 +15,7 @@ import torch
 from torch import nn
 from torchvision.transforms.functional import rotate, center_crop
 from PIL import Image
+import torch.nn.functional as F
 import random
 
 
@@ -183,8 +186,6 @@ class MixedLoss(nn.Module):
         return self.bce(predict, true) + self.dice(predict, true)
 
 
-from sklearn.metrics import jaccard_similarity_score
-
 class IOU(nn.Module):
 
     def __init__(self):
@@ -199,6 +200,19 @@ class IOU(nn.Module):
         labels = labels.cpu().numpy().reshape(-1)
 
         return jaccard_similarity_score(labels, outputs)
+
+
+class FocalLossWrapper(nn.Module):
+
+    def __init__(self):
+        super().__init__()
+        self.criterion = FocalLoss(alpha=0.25,
+                                   gamma=torch.tensor(2.0).to('cuda:0'),
+                                   reduction='mean')
+        self.__name__ = "FocalLoss"
+
+    def forward(self, outputs, labels):
+        return self.criterion(outputs, labels)
 
 
 TO_PIL = ToPILImage()

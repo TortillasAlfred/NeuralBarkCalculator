@@ -328,10 +328,10 @@ def new_new_main():
                      module=module,
                      device=torch.device("cuda:0"),
                      optimizer=optim,
-                     loss_function=CrossEntropyLoss(),
+                     loss_function=FocalLossWrapper(),
                      metrics=[IOU()])
 
-    lr_schedulers = [ExponentialLR(gamma=0.98)]
+    lr_schedulers = [ExponentialLR(gamma=0.95)]
     callbacks = [EarlyStopping(patience=10, min_delta=1e-5)]
     exp.train(train_loader=train_loader,
               valid_loader=valid_loader,
