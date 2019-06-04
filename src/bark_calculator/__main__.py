@@ -323,7 +323,7 @@ def new_new_main():
     module = deeplabv3_resnet101()
 
     optim = torch.optim.SGD(
-        module.parameters(), lr=1e-2)
+        module.parameters(), lr=1e-3)
     exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/deeplabv3_4096/",
                      module=module,
                      device=torch.device("cuda:0"),
@@ -352,14 +352,14 @@ def new_new_main():
                                             transform=Compose([
                                                 Lambda(lambda img:
                                                        pad_resize(img, 4096, 4096)),
-                                                Resize(2048),
+                                                Resize(1024),
                                                 ToTensor()]),
                                             include_fname=True)
     pure_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/dual_exp",
                                            transform=Compose([
                                                Lambda(lambda img:
                                                       pad_resize(img, 4096, 4096)),
-                                               Resize(2048),
+                                               Resize(1024),
                                                ToTensor()]),
                                            include_fname=True)
 
