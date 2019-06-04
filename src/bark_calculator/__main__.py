@@ -294,6 +294,9 @@ def new_new_main():
                                                [Normalize(mean, std)]
                                            ),
                                            transform=Compose([
+                                               Lambda(lambda img:
+                                                      pad_resize(img, 4096, 4096)),
+                                               Resize(2048),
                                                RandomCrop(224),
                                                ToTensor()]))
 
@@ -302,6 +305,9 @@ def new_new_main():
                                                 [Normalize(mean, std)]
                                             ),
                                             transform=Compose([
+                                                Lambda(lambda img:
+                                                       pad_resize(img, 4096, 4096)),
+                                                Resize(2048),
                                                 RandomCrop(224),
                                                 RandomHorizontalFlip(),
                                                 RandomVerticalFlip(),
@@ -311,6 +317,9 @@ def new_new_main():
                                                 [Normalize(mean, std)]
                                             ),
                                             transform=Compose([
+                                                Lambda(lambda img:
+                                                       pad_resize(img, 4096, 4096)),
+                                                Resize(2048),
                                                 RandomCrop(224),
                                                 ToTensor()]))
 
