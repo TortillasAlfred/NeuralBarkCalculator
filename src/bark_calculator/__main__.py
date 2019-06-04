@@ -323,7 +323,7 @@ def new_new_main():
     module = deeplabv3_resnet101()
 
     optim = torch.optim.Adam(
-        module.parameters(), lr=1e-2)
+        module.parameters(), lr=1e-3)
     exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/deeplabv3_4096/",
                      module=module,
                      device=torch.device("cuda:0"),
@@ -332,7 +332,7 @@ def new_new_main():
                      metrics=[IOU()])
 
     lr_schedulers = [ExponentialLR(gamma=0.98)]
-    callbacks = [EarlyStopping(patience=50, min_delta=1e-5)]
+    callbacks = [EarlyStopping(patience=10, min_delta=1e-5)]
     exp.train(train_loader=train_loader,
               valid_loader=valid_loader,
               epochs=1500,
