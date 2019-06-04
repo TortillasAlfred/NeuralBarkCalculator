@@ -1,5 +1,5 @@
 from kornia.losses import FocalLoss
-from sklearn.metrics import jaccard_similarity_score
+from sklearn.metrics import jaccard_score
 from dataset import RegressionDatasetFolder
 
 from torchvision.transforms import Compose, Resize, ToTensor, ToPILImage
@@ -199,7 +199,7 @@ class IOU(nn.Module):
         outputs = outputs.cpu().numpy().reshape(-1)
         labels = labels.cpu().numpy().reshape(-1)
 
-        return jaccard_similarity_score(labels, outputs)
+        return jaccard_score(labels, outputs, labels=[0, 1, 2], average='weighted')
 
 
 class FocalLossWrapper(nn.Module):
