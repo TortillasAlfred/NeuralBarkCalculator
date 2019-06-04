@@ -311,7 +311,6 @@ def new_new_main():
                                                 [Normalize(mean, std)]
                                             ),
                                             transform=Compose([
-                                                Resize(2048),
                                                 RandomCrop(224),
                                                 ToTensor()]))
 
