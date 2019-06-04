@@ -352,12 +352,14 @@ def new_new_main():
                                             transform=Compose([
                                                 Lambda(lambda img:
                                                        pad_resize(img, 4096, 4096)),
+                                                Resize(2048),
                                                 ToTensor()]),
                                             include_fname=True)
     pure_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/dual_exp",
                                            transform=Compose([
                                                Lambda(lambda img:
                                                       pad_resize(img, 4096, 4096)),
+                                               Resize(2048),
                                                ToTensor()]),
                                            include_fname=True)
 
@@ -379,7 +381,7 @@ def new_new_main():
 
             for i in range(batch[1].size(0)):
                 _, axs = plt.subplots(1, 3)
-                acc = (batch[2][i] == batch[1][i]).sum().item()/(4096 * 4096)
+                acc = (batch[2][i] == batch[1][i]).sum().item()/(2048 * 2048)
 
                 for j, ax in enumerate(axs.flatten()):
                     img = batch[j][i].detach()
