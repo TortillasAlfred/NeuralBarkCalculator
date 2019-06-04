@@ -352,53 +352,52 @@ def new_new_main():
                                             transform=Compose([
                                                 Lambda(lambda img:
                                                        pad_resize(img, 4096, 4096)),
-                                                Resize(1024),
                                                 ToTensor()]),
                                             include_fname=True)
     pure_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/dual_exp",
                                            transform=Compose([
                                                Lambda(lambda img:
                                                       pad_resize(img, 4096, 4096)),
-                                               Resize(1024),
                                                ToTensor()]),
                                            include_fname=True)
 
     valid_loader = DataLoader(valid_dataset, batch_size=1)
     pure_loader = DataLoader(pure_dataset, batch_size=1)
 
-    for batch, pure_batch in zip(valid_loader, pure_loader):
-        outputs = module(batch[0].to(torch.device("cuda:0")))
-        outputs = torch.sigmoid(outputs)
-        outputs = torch.argmax(outputs, dim=1)
-        batch.append(outputs.detach().cpu())
-        batch[0] = pure_batch[0]
-        tmp = batch[2]
-        batch[2] = batch[3]
-        batch[3] = tmp
+    with torch.no_grad():
+        for batch, pure_batch in zip(valid_loader, pure_loader):
+            outputs = module(batch[0].to(torch.device("cuda:0")))
+            outputs = torch.sigmoid(outputs)
+            outputs = torch.argmax(outputs, dim=1)
+            batch.append(outputs.detach().cpu())
+            batch[0] = pure_batch[0]
+            tmp = batch[2]
+            batch[2] = batch[3]
+            batch[3] = tmp
 
-        names = ["Input", "Target", "Generated image"]
+            names = ["Input", "Target", "Generated image"]
 
-        for i in range(batch[1].size(0)):
-            _, axs = plt.subplots(1, 3)
-            acc = (batch[2][i] == batch[1][i]).sum().item()/(1024 * 1024)
+            for i in range(batch[1].size(0)):
+                _, axs = plt.subplots(1, 3)
+                acc = (batch[2][i] == batch[1][i]).sum().item()/(4096 * 4096)
 
-            for j, ax in enumerate(axs.flatten()):
-                img = batch[j][i].detach()
+                for j, ax in enumerate(axs.flatten()):
+                    img = batch[j][i].detach()
 
-                if len(img.shape) == 3:
-                    img = img.permute(1, 2, 0)
+                    if len(img.shape) == 3:
+                        img = img.permute(1, 2, 0)
 
-                ax.imshow(img)
-                ax.set_title(names[j])
-                ax.axis('off')
+                    ax.imshow(img)
+                    ax.set_title(names[j])
+                    ax.axis('off')
 
-            plt.suptitle(
-                "Overall accuracy : {:.3f}".format(acc))
-            plt.tight_layout()
-            # plt.show()
-            plt.savefig("/mnt/storage/mgodbout/Ecorcage/Images/results/dual_mix/{}".format(batch[3][i]),
-                        format="png",
-                        dpi=900)
+                plt.suptitle(
+                    "Overall accuracy : {:.3f}".format(acc))
+                plt.tight_layout()
+                # plt.show()
+                plt.savefig("/mnt/storage/mgodbout/Ecorcage/Images/results/dual_mix/{}".format(batch[3][i]),
+                            format="png",
+                            dpi=900)
 
 
 if __name__ == "__main__":
