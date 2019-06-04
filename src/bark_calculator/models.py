@@ -548,14 +548,14 @@ class SimpleSegmentationModel(nn.Module):
 
         x = self.backbone(x)["out"]
         x = self.classifier(x)
-        x = torch.nn.functional.interpolate(x, size=input_shape, mode='bilinear', align_corners=False)
+        x = torch.nn.functional.interpolate(x, size=input_shape, mode='bicubic', align_corners=False)
 
         return x
 
 
 def deeplabv3_resnet101():
-    backbone = resnet.__dict__['resnet101'](
-        pretrained=False,
+    backbone = resnet.__dict__['resnet50'](
+        pretrained=True,
         replace_stride_with_dilation=[False, True, True])
 
     return_layers = {'layer4': 'out'}
