@@ -350,10 +350,16 @@ def new_new_main():
                                                 [Normalize(mean, std)]
                                             ),
                                             transform=Compose([
+                                                Lambda(lambda img:
+                                                       pad_resize(img, 1024, 1024)),
+                                                Resize(2048),
                                                 ToTensor()]),
                                             include_fname=True)
     pure_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/dual_exp",
                                            transform=Compose([
+                                               Lambda(lambda img:
+                                                      pad_resize(img, 1024, 1024)),
+                                               Resize(2048),
                                                ToTensor()]),
                                            include_fname=True)
 
