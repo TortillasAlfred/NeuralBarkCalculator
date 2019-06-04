@@ -21,13 +21,13 @@ import os
 def load_best_and_show(exp, pure_loader, valid_loader):
     exp.load_best_checkpoint()
     module = exp.model.model
-    module.to(torch.device("cuda:0"))
+    module.to(torch.device("cuda:1"))
     module.eval()
 
     to_pil = ToPILImage()
 
     for batch, pure_batch in zip(valid_loader, pure_loader):
-        outputs = module(batch[0].to(torch.device("cuda:0")))
+        outputs = module(batch[0].to(torch.device("cuda:1")))
         torch.sigmoid(outputs)
         outputs[outputs > 0.5] = 1
         outputs[outputs <= 0.5] = 0
@@ -118,7 +118,7 @@ def old_main():
     optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-5)
     exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/weighted_unet/",
                      module=module,
-                     device=torch.device("cuda:0"),
+                     device=torch.device("cuda:1"),
                      optimizer=optim,
                      loss_function=MixedLoss())
 
@@ -198,7 +198,7 @@ def new_main():
             module.parameters(), lr=1e-2, weight_decay=1e-5)
         exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/weighted_unet/{}/".format(k),
                          module=module,
-                         device=torch.device("cuda:0"),
+                         device=torch.device("cuda:1"),
                          optimizer=optim,
                          loss_function=BCEWithLogitsLoss(weight=pos_weights))
 
@@ -215,7 +215,7 @@ def new_main():
     module = B2B("/mnt/storage/mgodbout/Ecorcage/weighted_unet/", 5)
     exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/weighted_unet/",
                      module=module,
-                     device=torch.device("cuda:0"),
+                     device=torch.device("cuda:1"),
                      loss_function=MixedLoss())
     exp.test(test_loader, load_best_checkpoint=False)
 
@@ -227,7 +227,7 @@ def new_main():
         open("/mnt/storage/mgodbout/Ecorcage/weighted_unet/ensemble.pck",
              "rb"))
 
-    module.to(torch.device("cuda:0"))
+    module.to(torch.device("cuda:1"))
     module.eval()
 
     to_pil = ToPILImage()
@@ -254,7 +254,7 @@ def new_main():
     pure_loader = DataLoader(pure_dataset, batch_size=1)
 
     for batch, pure_batch in zip(valid_loader, pure_loader):
-        outputs = module(batch[0].to(torch.device("cuda:0")))
+        outputs = module(batch[0].to(torch.device("cuda:1")))
         outputs = torch.sigmoid(outputs)
         outputs.round_()
         batch.append(outputs.detach().cpu())
@@ -324,9 +324,9 @@ def new_new_main():
 
     optim = torch.optim.Adam(
         module.parameters(), lr=1e-3)
-    exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/deeplab_focal/",
+    exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/deeplab_focal_101/",
                      module=module,
-                     device=torch.device("cuda:0"),
+                     device=torch.device("cuda:1"),
                      optimizer=optim,
                      loss_function=FocalLossWrapper(),
                      metrics=[IOU()])
@@ -361,7 +361,7 @@ def new_new_main():
 
     with torch.no_grad():
         for batch, pure_batch in zip(valid_loader, pure_loader):
-            outputs = module(batch[0].to(torch.device("cuda:0")))
+            outputs = module(batch[0].to(torch.device("cuda:1")))
             outputs = torch.sigmoid(outputs)
             outputs = torch.argmax(outputs, dim=1)
             batch.append(outputs.detach().cpu())
@@ -390,7 +390,7 @@ def new_new_main():
                     "Overall accuracy : {:.3f}".format(acc))
                 plt.tight_layout()
                 # plt.show()
-                plt.savefig("/mnt/storage/mgodbout/Ecorcage/Images/results/deeplab_focal/{}".format(batch[3][i]),
+                plt.savefig("/mnt/storage/mgodbout/Ecorcage/Images/results/deeplab_focal_101/{}".format(batch[3][i]),
                             format="png",
                             dpi=900)
 
