@@ -207,7 +207,7 @@ class FocalLossWrapper(nn.Module):
     def __init__(self):
         super().__init__()
         self.criterion = FocalLoss(alpha=0.25,
-                                   gamma=torch.tensor(2.0).to('cuda:1'),
+                                   gamma=torch.tensor(2.0).to('cuda:0'),
                                    reduction='mean')
         self.__name__ = "FocalLoss"
 
