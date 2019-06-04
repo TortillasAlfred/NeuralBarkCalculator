@@ -294,9 +294,7 @@ def new_new_main():
                                                [Normalize(mean, std)]
                                            ),
                                            transform=Compose([
-                                               Lambda(lambda img:
-                                                      pad_resize(img, 1024, 1024)),
-                                               Resize(256),
+                                               RandomCrop(224),
                                                ToTensor()]))
 
     train_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/dual_exp",
@@ -304,27 +302,23 @@ def new_new_main():
                                                 [Normalize(mean, std)]
                                             ),
                                             transform=Compose([
+                                                RandomCrop(224),
                                                 RandomHorizontalFlip(),
                                                 RandomVerticalFlip(),
-                                                Lambda(lambda img:
-                                                       pad_resize(img, 1024, 1024)),
-                                                Resize(256),
                                                 ToTensor()]))
     valid_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/dual_exp",
                                             input_only_transform=Compose(
                                                 [Normalize(mean, std)]
                                             ),
                                             transform=Compose([
-                                                Lambda(lambda img:
-                                                       pad_resize(img, 1024, 1024)),
-                                                Resize(256),
+                                                RandomCrop(224),
                                                 ToTensor()]))
 
     train_split, valid_split, test_split = get_splits(train_dataset)
 
-    train_loader = DataLoader(Subset(train_dataset, train_split), batch_size=3, shuffle=True)
-    valid_loader = DataLoader(Subset(valid_dataset, valid_split), batch_size=3)
-    test_loader = DataLoader(Subset(test_dataset, test_split), batch_size=3)
+    train_loader = DataLoader(Subset(train_dataset, train_split), batch_size=12, shuffle=True)
+    valid_loader = DataLoader(Subset(valid_dataset, valid_split), batch_size=12)
+    test_loader = DataLoader(Subset(test_dataset, test_split), batch_size=12)
 
     module = deeplabv3_resnet101()
 
