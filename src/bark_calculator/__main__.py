@@ -397,7 +397,7 @@ def new_new_main():
                     "Overall accuracy : {:.3f}".format(acc))
                 plt.tight_layout()
                 # plt.show()
-                plt.savefig("/mnt/storage/mgodbout/Ecorcage/Images/results/dual_mix/{}".format(batch[3][i]),
+                plt.savefig("/mnt/storage/mgodbout/Ecorcage/Images/results/deeplab_focal/{}".format(batch[3][i]),
                             format="png",
                             dpi=900)
 
