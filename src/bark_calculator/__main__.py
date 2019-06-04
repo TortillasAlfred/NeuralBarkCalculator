@@ -324,7 +324,7 @@ def new_new_main():
 
     optim = torch.optim.Adam(
         module.parameters(), lr=1e-3)
-    exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/deeplabv3_4096/",
+    exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/deeplab_focal/",
                      module=module,
                      device=torch.device("cuda:0"),
                      optimizer=optim,
