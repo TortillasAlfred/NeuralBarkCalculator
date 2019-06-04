@@ -4,7 +4,7 @@ from models import vanilla_unet, FCDenseNet103, FCDenseNet57, B2B, deeplabv3_res
 
 from torchvision.transforms import *
 
-from poutyne.framework import Experiment, ExponentialLR, EarlyStopping
+from poutyne.framework import Experiment, ReduceLROnPlateau, EarlyStopping
 from torch.utils.data import DataLoader, Subset, ConcatDataset
 import matplotlib.pyplot as plt
 from torch.nn.modules.loss import CrossEntropyLoss
@@ -323,7 +323,7 @@ def new_new_main():
     module = deeplabv3_resnet101()
 
     optim = torch.optim.Adam(
-        module.parameters(), lr=1e-3)
+        module.parameters(), lr=1e-2)
     exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/deeplab_focal/",
                      module=module,
                      device=torch.device("cuda:0"),
@@ -331,8 +331,8 @@ def new_new_main():
                      loss_function=FocalLossWrapper(),
                      metrics=[IOU()])
 
-    lr_schedulers = [ExponentialLR(gamma=0.95)]
-    callbacks = [EarlyStopping(patience=10, min_delta=1e-5)]
+    lr_schedulers = [ReduceLROnPlateau(patience=4)]
+    callbacks = [EarlyStopping(patience=15, min_delta=1e-5)]
     exp.train(train_loader=train_loader,
               valid_loader=valid_loader,
               epochs=1500,
