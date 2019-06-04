@@ -555,7 +555,7 @@ class SimpleSegmentationModel(nn.Module):
 
 def deeplabv3_resnet101():
     backbone = resnet.__dict__['resnet50'](
-        pretrained=True,
+        pretrained=False,
         replace_stride_with_dilation=[False, True, True])
 
     return_layers = {'layer4': 'out'}
