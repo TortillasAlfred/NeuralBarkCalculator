@@ -323,7 +323,7 @@ def new_new_main():
     module = deeplabv3_resnet101()
 
     optim = torch.optim.SGD(
-        module.parameters(), lr=1e-4)
+        module.parameters(), lr=1e-2)
     exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/deeplabv3_4096/",
                      module=module,
                      device=torch.device("cuda:0"),
