@@ -5,7 +5,7 @@ from models import vanilla_unet, FCDenseNet103, FCDenseNet57, B2B, deeplabv3_res
 from torchvision.transforms import *
 
 from poutyne.framework import Experiment, ExponentialLR, EarlyStopping
-from torch.utils.data import DataLoader, Subset
+from torch.utils.data import DataLoader, Subset, ConcatDataset
 import matplotlib.pyplot as plt
 from torch.nn.modules.loss import CrossEntropyLoss
 import torch
@@ -316,13 +316,13 @@ def new_new_main():
 
     train_split, valid_split, test_split = get_splits(train_dataset)
 
-    train_loader = DataLoader(Subset(train_dataset, train_split), batch_size=24, shuffle=True)
-    valid_loader = DataLoader(Subset(valid_dataset, valid_split), batch_size=24)
-    test_loader = DataLoader(Subset(test_dataset, test_split), batch_size=24)
+    train_loader = DataLoader(ConcatDataset([Subset(train_dataset, train_split)] * 10), batch_size=24, shuffle=True)
+    valid_loader = DataLoader(ConcatDataset([Subset(valid_dataset, valid_split)] * 10), batch_size=24)
+    test_loader = DataLoader(ConcatDataset([Subset(test_dataset, test_split)] * 10), batch_size=24)
 
     module = deeplabv3_resnet101()
 
-    optim = torch.optim.SGD(
+    optim = torch.optim.Adam(
         module.parameters(), lr=1e-2)
     exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/deeplabv3_4096/",
                      module=module,
@@ -331,7 +331,7 @@ def new_new_main():
                      loss_function=CrossEntropyLoss(),
                      metrics=[IOU()])
 
-    lr_schedulers = [ExponentialLR(gamma=0.99)]
+    lr_schedulers = [ExponentialLR(gamma=0.98)]
     callbacks = [EarlyStopping(patience=50, min_delta=1e-5)]
     exp.train(train_loader=train_loader,
               valid_loader=valid_loader,
