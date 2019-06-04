@@ -329,7 +329,7 @@ def new_new_main():
                      device=torch.device("cuda:0"),
                      optimizer=optim,
                      loss_function=CrossEntropyLoss(),
-                     metrics=['CrossEntropyLoss'])
+                     metrics=[IOU()])
 
     lr_schedulers = [ExponentialLR(gamma=0.99)]
     callbacks = [EarlyStopping(patience=50, min_delta=1e-5)]

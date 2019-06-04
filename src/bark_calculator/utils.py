@@ -183,6 +183,24 @@ class MixedLoss(nn.Module):
         return self.bce(predict, true) + self.dice(predict, true)
 
 
+from sklearn.metrics import jaccard_similarity_score
+
+class IOU(nn.Module):
+
+    def __init__(self):
+        super().__init__()
+        self.SMOOTH = 1e-6
+        self.__name__ = "IntersectionOverUnion"
+
+    def forward(self, outputs, labels):
+        outputs = torch.argmax(outputs, 1)
+
+        outputs = outputs.cpu().numpy().reshape(-1)
+        labels = labels.cpu().numpy().reshape(-1)
+
+        return jaccard_similarity_score(labels, outputs)
+
+
 TO_PIL = ToPILImage()
 TO_TENSOR = ToTensor()
 
