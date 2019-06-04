@@ -294,7 +294,7 @@ def new_new_main():
                                                [Normalize(mean, std)]
                                            ),
                                            transform=Compose([
-                                               RandomCrop(224),
+                                               RandomCrop(112),
                                                ToTensor()]))
 
     train_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/dual_exp",
@@ -302,7 +302,7 @@ def new_new_main():
                                                 [Normalize(mean, std)]
                                             ),
                                             transform=Compose([
-                                                RandomCrop(224),
+                                                RandomCrop(112),
                                                 RandomHorizontalFlip(),
                                                 RandomVerticalFlip(),
                                                 ToTensor()]))
@@ -311,14 +311,14 @@ def new_new_main():
                                                 [Normalize(mean, std)]
                                             ),
                                             transform=Compose([
-                                                RandomCrop(224),
+                                                RandomCrop(112),
                                                 ToTensor()]))
 
     train_split, valid_split, test_split = get_splits(train_dataset)
 
-    train_loader = DataLoader(ConcatDataset([Subset(train_dataset, train_split)] * 20), batch_size=24, shuffle=True)
-    valid_loader = DataLoader(ConcatDataset([Subset(valid_dataset, valid_split)] * 20), batch_size=24)
-    test_loader = DataLoader(ConcatDataset([Subset(test_dataset, test_split)] * 20), batch_size=24)
+    train_loader = DataLoader(ConcatDataset([Subset(train_dataset, train_split)] * 50), batch_size=64, shuffle=True)
+    valid_loader = DataLoader(ConcatDataset([Subset(valid_dataset, valid_split)] * 50), batch_size=64)
+    test_loader = DataLoader(ConcatDataset([Subset(test_dataset, test_split)] * 50), batch_size=64)
 
     module = deeplabv3_resnet101()
 
@@ -331,8 +331,8 @@ def new_new_main():
                      loss_function=FocalLossWrapper(),
                      metrics=[IOU()])
 
-    lr_schedulers = [ReduceLROnPlateau(patience=4)]
-    callbacks = [EarlyStopping(patience=15, min_delta=1e-5)]
+    lr_schedulers = [ReduceLROnPlateau(patience=10)]
+    callbacks = [EarlyStopping(patience=25, min_delta=1e-5)]
     exp.train(train_loader=train_loader,
               valid_loader=valid_loader,
               epochs=1500,
@@ -356,31 +356,31 @@ def new_new_main():
                                            transform=None,
                                            include_fname=True)
 
-    valid_loader=DataLoader(valid_dataset, batch_size=1)
-    pure_loader=DataLoader(pure_dataset, batch_size=1)
+    valid_loader = DataLoader(valid_dataset, batch_size=1)
+    pure_loader = DataLoader(pure_dataset, batch_size=1)
 
     with torch.no_grad():
         for batch, pure_batch in zip(valid_loader, pure_loader):
-            outputs=module(batch[0].to(torch.device("cuda:0")))
-            outputs=torch.sigmoid(outputs)
-            outputs=torch.argmax(outputs, dim=1)
+            outputs = module(batch[0].to(torch.device("cuda:0")))
+            outputs = torch.sigmoid(outputs)
+            outputs = torch.argmax(outputs, dim=1)
             batch.append(outputs.detach().cpu())
-            batch[0]=pure_batch[0]
-            tmp=batch[2]
-            batch[2]=batch[3]
-            batch[3]=tmp
+            batch[0] = pure_batch[0]
+            tmp = batch[2]
+            batch[2] = batch[3]
+            batch[3] = tmp
 
-            names=["Input", "Target", "Generated image"]
+            names = ["Input", "Target", "Generated image"]
 
             for i in range(batch[1].size(0)):
-                _, axs=plt.subplots(1, 3)
-                acc=(batch[2][i] == batch[1][i]).sum().item()/(2048 * 2048)
+                _, axs = plt.subplots(1, 3)
+                acc = (batch[2][i] == batch[1][i]).sum().item()/(2048 * 2048)
 
                 for j, ax in enumerate(axs.flatten()):
-                    img=batch[j][i].detach()
+                    img = batch[j][i].detach()
 
                     if len(img.shape) == 3:
-                        img=img.permute(1, 2, 0)
+                        img = img.permute(1, 2, 0)
 
                     ax.imshow(img)
                     ax.set_title(names[j])
