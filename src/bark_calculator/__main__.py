@@ -61,7 +61,6 @@ def main():
                                                 RandomCrop(56),
                                                 RandomHorizontalFlip(),
                                                 RandomVerticalFlip(),
-                                                ColorJitter(brightness=0.1),
                                                 ToTensor()]))
 
     train_split, valid_split, test_split = get_splits(train_dataset)
