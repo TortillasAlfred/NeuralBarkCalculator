@@ -59,7 +59,7 @@ def main():
                                                 [Normalize(mean, std)]
                                             ),
                                             transform=Compose([
-                                                RandomCrop(224),
+                                                RandomCrop(112),
                                                 RandomHorizontalFlip(),
                                                 RandomVerticalFlip(),
                                                 ToTensor()]))
@@ -74,7 +74,7 @@ def main():
 
     optim = torch.optim.Adam(
         module.parameters(), lr=1e-3)
-    exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/cwce_224/",
+    exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/cwce_112/",
                      module=module,
                      device=torch.device("cuda:0"),
                      optimizer=optim,
@@ -119,7 +119,7 @@ def main():
 
             del pure_batch
 
-            # if os.path.isfile("/mnt/storage/mgodbout/Ecorcage/Images/results/deeplab_cwce_224/{}".format(fname)):
+            # if os.path.isfile("/mnt/storage/mgodbout/Ecorcage/Images/results/deeplab_cwce_112/{}".format(fname)):
             #     continue
 
             outputs = module(batch[0].to(torch.device("cuda:0")))
@@ -163,7 +163,7 @@ def main():
             plt.suptitle(suptitle)
             plt.tight_layout()
             # plt.show()
-            plt.savefig("/mnt/storage/mgodbout/Ecorcage/Images/results/cwce_224/{}".format(fname),
+            plt.savefig("/mnt/storage/mgodbout/Ecorcage/Images/results/cwce_112/{}".format(fname),
                         format="png",
                         dpi=900)
 
