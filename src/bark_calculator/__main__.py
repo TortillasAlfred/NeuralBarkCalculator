@@ -319,9 +319,9 @@ def new_new_main():
 
     train_split, valid_split, test_split = get_splits(train_dataset)
 
-    train_loader = DataLoader(ConcatDataset([Subset(train_dataset, train_split)] * 50), batch_size=64, shuffle=True)
-    valid_loader = DataLoader(ConcatDataset([Subset(valid_dataset, valid_split)] * 50), batch_size=64)
-    test_loader = DataLoader(ConcatDataset([Subset(test_dataset, test_split)] * 50), batch_size=64)
+    train_loader = DataLoader(ConcatDataset([Subset(train_dataset, train_split)] * 50), batch_size=100, shuffle=True)
+    valid_loader = DataLoader(ConcatDataset([Subset(valid_dataset, valid_split)] * 50), batch_size=100)
+    test_loader = DataLoader(ConcatDataset([Subset(test_dataset, test_split)] * 50), batch_size=100)
 
     module = deeplabv3_resnet101()
 
