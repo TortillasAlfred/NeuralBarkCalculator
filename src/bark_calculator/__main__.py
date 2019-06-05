@@ -51,7 +51,7 @@ def main():
                                                [Normalize(mean, std)]
                                            ),
                                            transform=Compose([
-                                               RandomCrop(56),
+                                               RandomCrop(112),
                                                ToTensor()]))
 
     train_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/dual_exp",
@@ -59,7 +59,7 @@ def main():
                                                 [Normalize(mean, std)]
                                             ),
                                             transform=Compose([
-                                                RandomCrop(56),
+                                                RandomCrop(112),
                                                 RandomHorizontalFlip(),
                                                 RandomVerticalFlip(),
                                                 ToTensor()]))
@@ -68,7 +68,7 @@ def main():
                                                 [Normalize(mean, std)]
                                             ),
                                             transform=Compose([
-                                                RandomCrop(56),
+                                                RandomCrop(112),
                                                 ToTensor()]))
 
     train_split, valid_split, test_split = get_splits(train_dataset)
@@ -81,7 +81,7 @@ def main():
 
     optim = torch.optim.Adam(
         module.parameters(), lr=1e-3)
-    exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/cwce_56/",
+    exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/cwce_112/",
                      module=module,
                      device=torch.device("cuda:1"),
                      optimizer=optim,
@@ -124,7 +124,7 @@ def main():
 
             del pure_batch
 
-            # if os.path.isfile("/mnt/storage/mgodbout/Ecorcage/Images/results/deeplab_cwce_56/{}".format(fname)):
+            # if os.path.isfile("/mnt/storage/mgodbout/Ecorcage/Images/results/deeplab_cwce_112/{}".format(fname)):
             #     continue
 
             outputs = module(batch[0].to(torch.device("cuda:1")))
@@ -168,7 +168,7 @@ def main():
             plt.suptitle(suptitle)
             plt.tight_layout()
             # plt.show()
-            plt.savefig("/mnt/storage/mgodbout/Ecorcage/Images/results/cwce_56/{}".format(fname),
+            plt.savefig("/mnt/storage/mgodbout/Ecorcage/Images/results/cwce_112/{}".format(fname),
                         format="png",
                         dpi=900)
 
