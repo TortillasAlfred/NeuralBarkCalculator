@@ -43,6 +43,8 @@ def make_dual_images():
 
 
 def main():
+    # mean, std = compute_mean_std("./Images/dual_exp")
+    # pos_weights = compute_pos_weight("./Images/dual_exp")
     mean, std = get_mean_std()
     pos_weights = get_pos_weight()
     test_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/dual_exp",
@@ -190,5 +192,5 @@ def fix_image(img_number, n_pixels_to_fix):
 
 if __name__ == "__main__":
     # fix_image(264, 1)
-    make_dual_images()
-    # main()
+    # make_dual_images()
+    main()
