@@ -405,7 +405,7 @@ def new_new_main():
                 ax.set_title(names[i])
                 ax.axis('off')
 
-            suptitle = "Overall accuracy : {:.3f}".format(acc)
+            suptitle = "Mean f1 : {:.3f}".format(acc)
 
             class_names = ["Nothing", "Bark", "Node"]
 
