@@ -51,7 +51,7 @@ def main():
                                                [Normalize(mean, std)]
                                            ),
                                            transform=Compose([
-                                               RandomCrop(112),
+                                               RandomCrop(56),
                                                ToTensor()]))
 
     train_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/dual_exp",
@@ -59,16 +59,17 @@ def main():
                                                 [Normalize(mean, std)]
                                             ),
                                             transform=Compose([
-                                                RandomCrop(112),
+                                                RandomCrop(56),
                                                 RandomHorizontalFlip(),
                                                 RandomVerticalFlip(),
+                                                ColorJitter(brightness=0.1),
                                                 ToTensor()]))
     valid_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/dual_exp",
                                             input_only_transform=Compose(
                                                 [Normalize(mean, std)]
                                             ),
                                             transform=Compose([
-                                                RandomCrop(112),
+                                                RandomCrop(56),
                                                 ToTensor()]))
 
     train_split, valid_split, test_split = get_splits(train_dataset)
@@ -81,7 +82,7 @@ def main():
 
     optim = torch.optim.Adam(
         module.parameters(), lr=1e-3)
-    exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/cwce_112/",
+    exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/56_jitter/",
                      module=module,
                      device=torch.device("cuda:1"),
                      optimizer=optim,
@@ -124,7 +125,7 @@ def main():
 
             del pure_batch
 
-            # if os.path.isfile("/mnt/storage/mgodbout/Ecorcage/Images/results/deeplab_cwce_112/{}".format(fname)):
+            # if os.path.isfile("/mnt/storage/mgodbout/Ecorcage/Images/results/deeplab_56_jitter/{}".format(fname)):
             #     continue
 
             outputs = module(batch[0].to(torch.device("cuda:1")))
@@ -168,7 +169,7 @@ def main():
             plt.suptitle(suptitle)
             plt.tight_layout()
             # plt.show()
-            plt.savefig("/mnt/storage/mgodbout/Ecorcage/Images/results/cwce_112/{}".format(fname),
+            plt.savefig("/mnt/storage/mgodbout/Ecorcage/Images/results/56_jitter/{}".format(fname),
                         format="png",
                         dpi=900)
 
