@@ -74,7 +74,7 @@ def main():
     train_split, valid_split, test_split = get_splits(train_dataset)
 
     train_loader = DataLoader(ConcatDataset([Subset(train_dataset, train_split)] * 50), batch_size=32, shuffle=True)
-    valid_loader = DataLoader(ConcatDataset([Subset(valid_dataset, valid_split)] * 50), batch_size=32)
+    valid_loader = DataLoader(ConcatDataset([valid_dataset] * 50), batch_size=32)
     test_loader = DataLoader(ConcatDataset([Subset(test_dataset, test_split)] * 50), batch_size=32)
 
     module = deeplabv3_resnet101()
