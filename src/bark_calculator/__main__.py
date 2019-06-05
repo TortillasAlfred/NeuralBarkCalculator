@@ -65,7 +65,7 @@ def main():
 
     train_split, valid_split, test_split = get_splits(train_dataset)
 
-    train_loader = DataLoader(ConcatDataset([Subset(train_dataset, train_split)] * 5), batch_size=32, shuffle=True)
+    train_loader = DataLoader(ConcatDataset([Subset(train_dataset, train_split)] * 25), batch_size=32, shuffle=True)
     valid_loader = DataLoader(Subset(test_dataset, np.hstack((valid_split, train_split))), batch_size=1)
     test_loader = DataLoader(Subset(test_dataset, test_split), batch_size=1)
 
@@ -82,8 +82,8 @@ def main():
                      monitor_metric='val_IntersectionOverUnion',
                      monitor_mode='max')
 
-    lr_schedulers = [ReduceLROnPlateau(patience=50, monitor='val_IntersectionOverUnion', mode='max')]
-    callbacks = [EarlyStopping(patience=150, min_delta=1e-5)]
+    lr_schedulers = [ReduceLROnPlateau(patience=10, monitor='val_IntersectionOverUnion', mode='max')]
+    callbacks = [EarlyStopping(patience=30, min_delta=1e-5)]
     exp.train(train_loader=train_loader,
               valid_loader=valid_loader,
               epochs=1500,
