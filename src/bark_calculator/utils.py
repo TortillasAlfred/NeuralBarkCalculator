@@ -196,10 +196,9 @@ class CustomWeightedCrossEntropy(nn.Module):
     def forward(self, predict, true):
         entropies = F.cross_entropy(predict, true, reduction='none')
 
-        class_weights = torch.max(torch.argmax(predict, dim=1), true).float()
+        max_classes = torch.max(torch.argmax(predict, dim=1), true).flatten()
 
-        for i, w_i in enumerate(self.weights):
-            class_weights[class_weights == i] = w_i
+        class_weights = torch.index_select(self.weights, 0, max_classes).view(true.shape)
 
         return (entropies * class_weights).mean()
 
