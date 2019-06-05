@@ -212,8 +212,8 @@ class IOU(nn.Module):
     def forward(self, outputs, labels):
         outputs = torch.argmax(outputs, 1)
 
-        outputs = outputs.cpu().numpy().reshape(-1)
-        labels = labels.cpu().numpy().reshape(-1)
+        outputs = outputs.cpu().reshape(-1)
+        labels = labels.cpu().reshape(-1)
 
         scores = f1_score(labels, outputs, labels=[0, 1, 2], average=None)
 
