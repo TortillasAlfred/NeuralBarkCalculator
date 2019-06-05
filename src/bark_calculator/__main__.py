@@ -22,9 +22,9 @@ import os
 
 
 def make_dual_images():
-    barks_dir = "./Images/dual_exp/bark"
-    nodes_dir = "./Images/dual_exp/nodes"
-    duals_dir = "./Images/dual_exp/duals"
+    barks_dir = "/mnt/storage/mgodbout/Ecorcage/Images/dual_exp/bark"
+    nodes_dir = "/mnt/storage/mgodbout/Ecorcage/Images/dual_exp/nodes"
+    duals_dir = "/mnt/storage/mgodbout/Ecorcage/Images/dual_exp/duals"
 
     for _, _, fnames in sorted(os.walk(barks_dir)):
         for fname in sorted(fnames):
@@ -46,14 +46,14 @@ def main():
     # make_dual_images()
     mean, std = get_mean_std()
     pos_weights = get_pos_weight()
-    test_dataset = RegressionDatasetFolder("./Images/dual_exp",
+    test_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/dual_exp",
                                            input_only_transform=Compose(
                                                [Normalize(mean, std)]
                                            ),
                                            transform=Compose([
                                                ToTensor()]))
 
-    train_dataset = RegressionDatasetFolder("./Images/dual_exp",
+    train_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/dual_exp",
                                             input_only_transform=Compose(
                                                 [Normalize(mean, std)]
                                             ),
@@ -73,7 +73,7 @@ def main():
 
     optim = torch.optim.Adam(
         module.parameters(), lr=1e-4)
-    exp = Experiment(directory="./56_jitter/",
+    exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/56_jitter/",
                      module=module,
                      device=torch.device("cuda:0"),
                      optimizer=optim,
@@ -95,14 +95,14 @@ def main():
     module = exp.model.model
     module.eval()
 
-    valid_dataset = RegressionDatasetFolder("./Images/dual_exp",
+    valid_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/dual_exp",
                                             input_only_transform=Compose(
                                                 [Normalize(mean, std)]
                                             ),
                                             transform=Compose([
                                                 ToTensor()]),
                                             include_fname=True)
-    pure_dataset = RegressionDatasetFolder("./Images/dual_exp",
+    pure_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/dual_exp",
                                            transform=Compose([
                                                ToTensor()]),
                                            include_fname=True)
@@ -118,7 +118,7 @@ def main():
 
             del pure_batch
 
-            # if os.path.isfile("./Images/results/deeplab_56_jitter/{}".format(fname)):
+            # if os.path.isfile("/mnt/storage/mgodbout/Ecorcage/Images/results/deeplab_56_jitter/{}".format(fname)):
             #     continue
 
             outputs = module(batch[0].to(torch.device("cuda:0")))
@@ -162,7 +162,7 @@ def main():
             plt.suptitle(suptitle)
             plt.tight_layout()
             # plt.show()
-            plt.savefig("./Images/results/56_jitter/{}".format(fname),
+            plt.savefig("/mnt/storage/mgodbout/Ecorcage/Images/results/56_jitter/{}".format(fname),
                         format="png",
                         dpi=900)
 
