@@ -19,7 +19,7 @@ import torch.nn.functional as F
 import random
 
 
-def get_train_valid_samplers(dataset, train_percent, seed=42):
+def get_train_valid_samplers(dataset, train_percent, seed=69):
     np.random.seed(seed)
     n_items = len(dataset)
 
