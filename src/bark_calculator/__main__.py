@@ -51,7 +51,6 @@ def main():
                                                [Normalize(mean, std)]
                                            ),
                                            transform=Compose([
-                                               RandomCrop(56),
                                                ToTensor()]))
 
     train_dataset = RegressionDatasetFolder("./Images/dual_exp",
@@ -64,19 +63,12 @@ def main():
                                                 RandomVerticalFlip(),
                                                 ColorJitter(brightness=0.1),
                                                 ToTensor()]))
-    valid_dataset = RegressionDatasetFolder("./Images/dual_exp",
-                                            input_only_transform=Compose(
-                                                [Normalize(mean, std)]
-                                            ),
-                                            transform=Compose([
-                                                RandomCrop(56),
-                                                ToTensor()]))
 
     train_split, valid_split, test_split = get_splits(train_dataset)
 
     train_loader = DataLoader(ConcatDataset([Subset(train_dataset, train_split)] * 10), batch_size=32, shuffle=True)
-    valid_loader = DataLoader(ConcatDataset([valid_dataset] * 50), batch_size=32)
-    test_loader = DataLoader(ConcatDataset([Subset(test_dataset, test_split)] * 50), batch_size=32)
+    valid_loader = DataLoader(Subset(test_dataset, np.hstack((valid_split, train_split))), batch_size=1)
+    test_loader = DataLoader(Subset(test_dataset, test_split), batch_size=1)
 
     module = deeplabv3_resnet101()
 
