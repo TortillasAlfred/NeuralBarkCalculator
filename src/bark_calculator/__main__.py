@@ -73,9 +73,9 @@ def main():
 
     train_split, valid_split, test_split = get_splits(train_dataset)
 
-    train_loader = DataLoader(ConcatDataset([Subset(train_dataset, train_split)] * 50), batch_size=256, shuffle=True)
-    valid_loader = DataLoader(ConcatDataset([valid_dataset] * 50), batch_size=256)
-    test_loader = DataLoader(ConcatDataset([Subset(test_dataset, test_split)] * 50), batch_size=256)
+    train_loader = DataLoader(ConcatDataset([Subset(train_dataset, train_split)] * 10), batch_size=32, shuffle=True)
+    valid_loader = DataLoader(ConcatDataset([valid_dataset] * 50), batch_size=32)
+    test_loader = DataLoader(ConcatDataset([Subset(test_dataset, test_split)] * 50), batch_size=32)
 
     module = deeplabv3_resnet101()
 
@@ -88,8 +88,8 @@ def main():
                      loss_function=CustomWeightedCrossEntropy(pos_weights),
                      metrics=[IOU()])
 
-    lr_schedulers = [ReduceLROnPlateau(patience=10)]
-    callbacks = [EarlyStopping(patience=25, min_delta=1e-5)]
+    lr_schedulers = [ReduceLROnPlateau(patience=50)]
+    callbacks = [EarlyStopping(patience=125, min_delta=1e-5)]
     exp.train(train_loader=train_loader,
               valid_loader=valid_loader,
               epochs=150,
