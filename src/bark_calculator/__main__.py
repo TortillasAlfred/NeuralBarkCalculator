@@ -65,14 +65,14 @@ def main():
 
     train_split, valid_split, test_split = get_splits(train_dataset)
 
-    train_loader = DataLoader(ConcatDataset([Subset(train_dataset, train_split)] * 10), batch_size=32, shuffle=True)
+    train_loader = DataLoader(ConcatDataset([Subset(train_dataset, train_split)] * 5), batch_size=16, shuffle=True)
     valid_loader = DataLoader(Subset(test_dataset, np.hstack((valid_split, train_split))), batch_size=1)
     test_loader = DataLoader(Subset(test_dataset, test_split), batch_size=1)
 
     module = deeplabv3_resnet101()
 
     optim = torch.optim.Adam(
-        module.parameters(), lr=1e-3)
+        module.parameters(), lr=1e-4)
     exp = Experiment(directory="./56_jitter/",
                      module=module,
                      device=torch.device("cuda:0"),
@@ -82,11 +82,11 @@ def main():
                      monitor_metric='val_IntersectionOverUnion',
                      monitor_mode='max')
 
-    lr_schedulers = [ReduceLROnPlateau(patience=50)]
-    callbacks = [EarlyStopping(patience=125, min_delta=1e-5)]
+    lr_schedulers = [ReduceLROnPlateau(patience=50, monitor='val_IntersectionOverUnion', mode='max')]
+    callbacks = [EarlyStopping(patience=150, min_delta=1e-5)]
     exp.train(train_loader=train_loader,
               valid_loader=valid_loader,
-              epochs=150,
+              epochs=1500,
               lr_schedulers=lr_schedulers,
               callbacks=callbacks)
     exp.test(valid_loader)
