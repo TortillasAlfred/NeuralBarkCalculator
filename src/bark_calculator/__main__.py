@@ -58,14 +58,14 @@ def main():
                                                 [Normalize(mean, std)]
                                             ),
                                             transform=Compose([
-                                                RandomCrop(112),
+                                                RandomCrop(224),
                                                 RandomHorizontalFlip(),
                                                 RandomVerticalFlip(),
                                                 ToTensor()]))
 
     train_split, valid_split, test_split = get_splits(train_dataset)
 
-    train_loader = DataLoader(ConcatDataset([Subset(train_dataset, train_split)] * 25), batch_size=64, shuffle=True)
+    train_loader = DataLoader(ConcatDataset([Subset(train_dataset, train_split)] * 25), batch_size=16, shuffle=True)
     valid_loader = DataLoader(Subset(test_dataset, np.hstack((valid_split, train_split))), batch_size=1)
     test_loader = DataLoader(Subset(test_dataset, test_split), batch_size=1)
 
@@ -73,9 +73,9 @@ def main():
 
     optim = torch.optim.Adam(
         module.parameters(), lr=1e-3)
-    exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/cwce_112/",
+    exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/cwce_224/",
                      module=module,
-                     device=torch.device("cuda:0"),
+                     device=torch.device("cuda:1"),
                      optimizer=optim,
                      loss_function=CustomWeightedCrossEntropy(pos_weights),
                      metrics=[IOU()],
@@ -118,10 +118,10 @@ def main():
 
             del pure_batch
 
-            # if os.path.isfile("/mnt/storage/mgodbout/Ecorcage/Images/results/deeplab_cwce_112/{}".format(fname)):
+            # if os.path.isfile("/mnt/storage/mgodbout/Ecorcage/Images/results/deeplab_cwce_224/{}".format(fname)):
             #     continue
 
-            outputs = module(batch[0].to(torch.device("cuda:0")))
+            outputs = module(batch[0].to(torch.device("cuda:1")))
             outputs = torch.argmax(outputs, dim=1)
 
             del batch
@@ -162,7 +162,7 @@ def main():
             plt.suptitle(suptitle)
             plt.tight_layout()
             # plt.show()
-            plt.savefig("/mnt/storage/mgodbout/Ecorcage/Images/results/cwce_112/{}".format(fname),
+            plt.savefig("/mnt/storage/mgodbout/Ecorcage/Images/results/cwce_224/{}".format(fname),
                         format="png",
                         dpi=900)
 
