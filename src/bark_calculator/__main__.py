@@ -8,6 +8,9 @@ from poutyne.framework import Experiment, ReduceLROnPlateau, EarlyStopping
 from torch.utils.data import DataLoader, Subset, ConcatDataset
 import matplotlib.pyplot as plt
 from torch.nn.modules.loss import CrossEntropyLoss
+from skimage.io import imread, imsave
+
+from sklearn.metrics import jaccard_score
 import torch
 
 from math import ceil
@@ -335,7 +338,7 @@ def new_new_main():
     callbacks = [EarlyStopping(patience=25, min_delta=1e-5)]
     exp.train(train_loader=train_loader,
               valid_loader=valid_loader,
-              epochs=100,
+              epochs=150,
               lr_schedulers=lr_schedulers,
               callbacks=callbacks)
     exp.test(test_loader)
@@ -353,7 +356,8 @@ def new_new_main():
                                                 ToTensor()]),
                                             include_fname=True)
     pure_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/dual_exp",
-                                           transform=None,
+                                           transform=Compose([
+                                               ToTensor()]),
                                            include_fname=True)
 
     valid_loader = DataLoader(valid_dataset, batch_size=1)
@@ -361,39 +365,83 @@ def new_new_main():
 
     with torch.no_grad():
         for batch, pure_batch in zip(valid_loader, pure_loader):
+            input = pure_batch[0]
+            target = pure_batch[1]
+            fname = pure_batch[2][0]
+
+            del pure_batch
+
+            # if os.path.isfile("/mnt/storage/mgodbout/Ecorcage/Images/results/deeplab_focal/{}".format(fname)):
+            #     continue
+
             outputs = module(batch[0].to(torch.device("cuda:0")))
-            outputs = torch.sigmoid(outputs)
             outputs = torch.argmax(outputs, dim=1)
-            batch.append(outputs.detach().cpu())
-            batch[0] = pure_batch[0]
-            tmp = batch[2]
-            batch[2] = batch[3]
-            batch[3] = tmp
+
+            del batch
 
             names = ["Input", "Target", "Generated image"]
 
-            for i in range(batch[1].size(0)):
-                _, axs = plt.subplots(1, 3)
-                acc = (batch[2][i] == batch[1][i]).sum().item()/(2048 * 2048)
+            imgs = [input, target, outputs]
+            imgs = [img.detach().cpu().squeeze().numpy() for img in imgs]
 
-                for j, ax in enumerate(axs.flatten()):
-                    img = batch[j][i].detach()
+            try:
+                acc = jaccard_score(imgs[1].flatten(), imgs[2].flatten(), labels=[0, 1, 2], average='weighted')
+                class_accs = jaccard_score(imgs[1].flatten(), imgs[2].flatten(), labels=[0, 1, 2], average=None)
+            except ValueError:
+                print("Error on file {}".format(fname))
+                print(imgs[1].shape)
+                print(imgs[2].shape)
+                continue
 
-                    if len(img.shape) == 3:
-                        img = img.permute(1, 2, 0)
+            _, axs = plt.subplots(1, 3)
 
-                    ax.imshow(img)
-                    ax.set_title(names[j])
-                    ax.axis('off')
+            for i, ax in enumerate(axs.flatten()):
+                img = imgs[i]
 
-                plt.suptitle(
-                    "Overall accuracy : {:.3f}".format(acc))
-                plt.tight_layout()
-                # plt.show()
-                plt.savefig("/mnt/storage/mgodbout/Ecorcage/Images/results/deeplab_focal/{}".format(batch[3][i]),
-                            format="png",
-                            dpi=900)
+                if len(img.shape) == 3:
+                    img = img.transpose(1, 2, 0)
+
+                ax.imshow(img)
+                ax.set_title(names[i])
+                ax.axis('off')
+
+            suptitle = "Overall accuracy : {:.3f}".format(acc)
+
+            class_names = ["Nothing", "Bark", "Node"]
+
+            for c, c_acc in zip(class_names, class_accs):
+                suptitle += "\n{} : {:.3f}".format(c, c_acc)
+
+            plt.suptitle(suptitle)
+            plt.tight_layout()
+            # plt.show()
+            plt.savefig("/mnt/storage/mgodbout/Ecorcage/Images/results/deeplab_focal/{}".format(fname),
+                        format="png",
+                        dpi=900)
+
+
+def fix_image(img_number, n_pixels_to_fix):
+    dual = imread("/home/magod/Documents/Encorcage/Images/dual_exp/duals/{}.png".format(img_number))
+    bark = imread("/home/magod/Documents/Encorcage/Images/dual_exp/bark/{}.bmp".format(img_number))
+    node = imread("/home/magod/Documents/Encorcage/Images/dual_exp/nodes/{}.bmp".format(img_number))
+    sample = imread("/home/magod/Documents/Encorcage/Images/dual_exp/samples/{}.bmp".format(img_number))
+
+    if n_pixels_to_fix == 1:
+        dual = dual[:-1]
+        bark = bark[:-1]
+        node = node[:-1]
+    elif n_pixels_to_fix == 2:
+        dual = dual[1:-1]
+        bark = bark[1:-1]
+        node = node[1:-1]
+    else:
+        raise ValueError()
+
+    imsave("/home/magod/Documents/Encorcage/Images/dual_exp/duals/{}.png".format(img_number), dual)
+    imsave("/home/magod/Documents/Encorcage/Images/dual_exp/bark/{}.bmp".format(img_number), bark)
+    imsave("/home/magod/Documents/Encorcage/Images/dual_exp/nodes/{}.bmp".format(img_number), node)
 
 
 if __name__ == "__main__":
+    # fix_image(264, 1)
     new_new_main()
