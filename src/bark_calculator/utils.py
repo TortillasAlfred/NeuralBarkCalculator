@@ -186,6 +186,24 @@ class MixedLoss(nn.Module):
         return self.bce(predict, true) + self.dice(predict, true)
 
 
+class CustomWeightedCrossEntropy(nn.Module):
+
+    def __init__(self, weights):
+        super(CustomWeightedCrossEntropy, self).__init__()
+        self.__name__ = "CustomWeightedCrossEntropy"
+        self.weights = weights
+
+    def forward(self, predict, true):
+        entropies = F.cross_entropy(predict, true, reduction='none')
+
+        class_weights = torch.max(torch.argmax(predict, dim=1), true).float()
+
+        for i, w_i in enumerate(self.weights):
+            class_weights[class_weights == i] = w_i
+
+        return (entropies * class_weights).mean()
+
+
 class IOU(nn.Module):
 
     def __init__(self):

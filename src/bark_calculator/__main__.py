@@ -331,7 +331,7 @@ def new_new_main():
                      module=module,
                      device=torch.device("cuda:0"),
                      optimizer=optim,
-                     loss_function=FocalLossWrapper(),
+                     loss_function=CustomWeightedCrossEntropy(pos_weights),
                      metrics=[IOU()])
 
     lr_schedulers = [ReduceLROnPlateau(patience=10)]
