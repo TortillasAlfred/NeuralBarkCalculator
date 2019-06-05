@@ -1,5 +1,5 @@
 from kornia.losses import FocalLoss
-from sklearn.metrics import jaccard_score
+from sklearn.metrics import f1_score
 from dataset import RegressionDatasetFolder
 
 from torchvision.transforms import Compose, Resize, ToTensor, ToPILImage
@@ -208,7 +208,6 @@ class IOU(nn.Module):
 
     def __init__(self):
         super().__init__()
-        self.SMOOTH = 1e-6
         self.__name__ = "IntersectionOverUnion"
 
     def forward(self, outputs, labels):
@@ -217,7 +216,9 @@ class IOU(nn.Module):
         outputs = outputs.cpu().numpy().reshape(-1)
         labels = labels.cpu().numpy().reshape(-1)
 
-        return jaccard_score(labels, outputs, labels=[0, 1, 2], average='weighted')
+        scores = f1_score(labels, outputs, labels=[0, 1, 2], average=None)
+
+        return scores.mean()
 
 
 class FocalLossWrapper(nn.Module):

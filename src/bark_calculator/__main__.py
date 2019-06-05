@@ -385,8 +385,8 @@ def new_new_main():
             imgs = [img.detach().cpu().squeeze().numpy() for img in imgs]
 
             try:
-                acc = jaccard_score(imgs[1].flatten(), imgs[2].flatten(), labels=[0, 1, 2], average='weighted')
-                class_accs = jaccard_score(imgs[1].flatten(), imgs[2].flatten(), labels=[0, 1, 2], average=None)
+                class_accs = f1_score(imgs[1].flatten(), imgs[2].flatten(), labels=[0, 1, 2], average=None)
+                acc = class_accs.mean()
             except ValueError:
                 print("Error on file {}".format(fname))
                 print(imgs[1].shape)
