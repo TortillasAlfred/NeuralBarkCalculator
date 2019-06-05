@@ -327,7 +327,7 @@ def new_new_main():
 
     optim = torch.optim.Adam(
         module.parameters(), lr=1e-3)
-    exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/deeplab_focal/",
+    exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/cwce/",
                      module=module,
                      device=torch.device("cuda:0"),
                      optimizer=optim,
@@ -371,7 +371,7 @@ def new_new_main():
 
             del pure_batch
 
-            # if os.path.isfile("/mnt/storage/mgodbout/Ecorcage/Images/results/deeplab_focal/{}".format(fname)):
+            # if os.path.isfile("/mnt/storage/mgodbout/Ecorcage/Images/results/deeplab_cwce/{}".format(fname)):
             #     continue
 
             outputs = module(batch[0].to(torch.device("cuda:0")))
@@ -415,7 +415,7 @@ def new_new_main():
             plt.suptitle(suptitle)
             plt.tight_layout()
             # plt.show()
-            plt.savefig("/mnt/storage/mgodbout/Ecorcage/Images/results/deeplab_focal/{}".format(fname),
+            plt.savefig("/mnt/storage/mgodbout/Ecorcage/Images/results/cwce/{}".format(fname),
                         format="png",
                         dpi=900)
 
