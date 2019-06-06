@@ -212,7 +212,7 @@ class IOU(nn.Module):
         if self.class_to_watch is None:
             self.__name__ = "IntersectionOverUnion"
         else:
-            self.__name__ = "IntersectionOverUnion_class{}".format(self.class_to_watch)
+            self.__name__ = "IntersectionOverUnion_class_{}".format(self.class_to_watch)
 
     def forward(self, outputs, labels):
         outputs = torch.argmax(outputs, 1)
@@ -224,6 +224,8 @@ class IOU(nn.Module):
 
         if self.class_to_watch is None:
             return scores.mean()
+        elif self.class_to_watch == 'loss':
+            return 1 - scores.mean()
         else:
             return scores[self.class_to_watch]
 
