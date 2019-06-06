@@ -66,9 +66,9 @@ def main():
 
     train_split, valid_split, test_split = get_splits(train_dataset)
 
-    train_loader = DataLoader(Subset(train_dataset, train_split.repeat(5)), batch_size=16, shuffle=True)
-    valid_loader = DataLoader(Subset(test_dataset, np.hstack((valid_split, train_split))), batch_size=1)
-    test_loader = DataLoader(Subset(test_dataset, test_split), batch_size=1)
+    train_loader = DataLoader(Subset(train_dataset, train_split.repeat(5)), batch_size=16, shuffle=True, num_workers=8)
+    valid_loader = DataLoader(Subset(test_dataset, np.hstack((valid_split, train_split))), batch_size=1, num_workers=8)
+    test_loader = DataLoader(Subset(test_dataset, test_split), batch_size=1, num_workers=8)
 
     module = deeplabv3_resnet101()
 
