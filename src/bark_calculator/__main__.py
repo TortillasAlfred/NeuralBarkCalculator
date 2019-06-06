@@ -67,17 +67,17 @@ def main():
     train_split, valid_split, test_split = get_splits(train_dataset)
 
     train_loader = DataLoader(Subset(train_dataset, train_split.repeat(5)), batch_size=16, shuffle=True, num_workers=8)
-    valid_loader = DataLoader(Subset(test_dataset, np.hstack((valid_split, train_split))), batch_size=1, num_workers=8)
+    valid_loader = DataLoader(Subset(test_dataset, valid_split,) batch_size=1, num_workers=8)
     test_loader = DataLoader(Subset(test_dataset, test_split), batch_size=1, num_workers=8)
 
     module = deeplabv3_resnet101()
 
     optim = torch.optim.Adam(module.parameters(), lr=1e-3)
-    exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/iou_224/",
+    exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/cwce_224/",
                      module=module,
                      device=torch.device("cuda:0"),
                      optimizer=optim,
-                     loss_function=IOU('loss'),
+                     loss_function=CustomWeightedCrossEntropy(torch.tensor(pos_weights).to('cuda:0')),
                      metrics=[IOU(None), IOU(0), IOU(1), IOU(2)],
                      monitor_metric='val_IntersectionOverUnion',
                      monitor_mode='max')
@@ -107,11 +107,11 @@ def main():
                                                ToTensor()]),
                                            include_fname=True)
 
-    valid_loader = DataLoader(valid_dataset, batch_size=1)
-    pure_loader = DataLoader(pure_dataset, batch_size=1)
+    valid_loader = DataLoader(valid_dataset, batch_size=1, num_workers=8)
+    pure_loader = DataLoader(pure_dataset, batch_size=1, num_workers=8)
 
-    if not os.path.isdir("/mnt/storage/mgodbout/Ecorcage/Images/results/iou_224"):
-        os.makedirs("/mnt/storage/mgodbout/Ecorcage/Images/results/iou_224")
+    if not os.path.isdir("/mnt/storage/mgodbout/Ecorcage/Images/results/cwce_224"):
+        os.makedirs("/mnt/storage/mgodbout/Ecorcage/Images/results/cwce_224")
 
     with torch.no_grad():
         for batch, pure_batch in zip(valid_loader, pure_loader):
@@ -121,7 +121,7 @@ def main():
 
             del pure_batch
 
-            # if os.path.isfile("/mnt/storage/mgodbout/Ecorcage/Images/results/iou_224/{}".format(fname)):
+            # if os.path.isfile("/mnt/storage/mgodbout/Ecorcage/Images/results/cwce_224/{}".format(fname)):
             #     continue
 
             outputs = module(batch[0].to(torch.device("cuda:0")))
@@ -165,7 +165,7 @@ def main():
             plt.suptitle(suptitle)
             plt.tight_layout()
             # plt.show()
-            plt.savefig("/mnt/storage/mgodbout/Ecorcage/Images/results/iou_224/{}".format(fname),
+            plt.savefig("/mnt/storage/mgodbout/Ecorcage/Images/results/cwce_224/{}".format(fname),
                         format="png",
                         dpi=900)
 
