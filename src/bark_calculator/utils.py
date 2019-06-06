@@ -207,8 +207,12 @@ class IOU(nn.Module):
 
     def __init__(self, class_to_watch):
         super().__init__()
-        self.__name__ = "IntersectionOverUnion"
         self.class_to_watch = class_to_watch
+
+        if self.class_to_watch is None:
+            self.__name__ = "IntersectionOverUnion"
+        else:
+            self.__name__ = "IntersectionOverUnion_class{}".format(self.class_to_watch)
 
     def forward(self, outputs, labels):
         outputs = torch.argmax(outputs, 1)
