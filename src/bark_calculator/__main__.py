@@ -66,7 +66,7 @@ def main():
 
     train_split, valid_split, test_split = get_splits(train_dataset)
 
-    train_loader = DataLoader(Subset(train_dataset, train_split.repeat(25)), batch_size=10, shuffle=True)
+    train_loader = DataLoader(Subset(train_dataset, train_split.repeat(25)), batch_size=8, shuffle=True)
     valid_loader = DataLoader(Subset(test_dataset, np.hstack((valid_split, train_split))), batch_size=1)
     test_loader = DataLoader(Subset(test_dataset, test_split), batch_size=1)
 
