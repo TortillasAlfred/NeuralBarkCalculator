@@ -205,9 +205,10 @@ class CustomWeightedCrossEntropy(nn.Module):
 
 class IOU(nn.Module):
 
-    def __init__(self):
+    def __init__(self, class_to_watch):
         super().__init__()
         self.__name__ = "IntersectionOverUnion"
+        self.class_to_watch = class_to_watch
 
     def forward(self, outputs, labels):
         outputs = torch.argmax(outputs, 1)
@@ -217,7 +218,10 @@ class IOU(nn.Module):
 
         scores = f1_score(labels, outputs, labels=[0, 1, 2], average=None)
 
-        return scores.mean()
+        if self.class_to_watch is None:
+            return scores.mean()
+        else:
+            return scores[self.class_to_watch]
 
 
 class FocalLossWrapper(nn.Module):

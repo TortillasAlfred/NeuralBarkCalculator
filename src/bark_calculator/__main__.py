@@ -79,7 +79,7 @@ def main():
                      device=torch.device("cuda:1"),
                      optimizer=optim,
                      loss_function=CustomWeightedCrossEntropy(torch.tensor(pos_weights).to('cuda:1')),
-                     metrics=[IOU()],
+                     metrics=[IOU(None), IOU(0), IOU(1), IOU(2)],
                      monitor_metric='val_IntersectionOverUnion',
                      monitor_mode='max')
 
