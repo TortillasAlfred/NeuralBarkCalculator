@@ -59,7 +59,7 @@ def main():
                                                 [Normalize(mean, std)]
                                             ),
                                             transform=Compose([
-                                                RandomCrop(112),
+                                                RandomCrop(448),
                                                 RandomHorizontalFlip(),
                                                 RandomVerticalFlip(),
                                                 ToTensor()]))
@@ -72,9 +72,8 @@ def main():
 
     module = deeplabv3_resnet101()
 
-    optim = torch.optim.Adam(
-        module.parameters(), lr=1e-3)
-    exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/cwce_112/",
+    optim = torch.optim.Adam(module.parameters(), lr=1e-3)
+    exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/cwce_448/",
                      module=module,
                      device=torch.device("cuda:1"),
                      optimizer=optim,
@@ -111,8 +110,8 @@ def main():
     valid_loader = DataLoader(valid_dataset, batch_size=1)
     pure_loader = DataLoader(pure_dataset, batch_size=1)
 
-    if not os.path.isdir("/mnt/storage/mgodbout/Ecorcage/Images/results/cwce_112"):
-        os.makedirs("/mnt/storage/mgodbout/Ecorcage/Images/results/cwce_112")
+    if not os.path.isdir("/mnt/storage/mgodbout/Ecorcage/Images/results/cwce_448"):
+        os.makedirs("/mnt/storage/mgodbout/Ecorcage/Images/results/cwce_448")
 
     with torch.no_grad():
         for batch, pure_batch in zip(valid_loader, pure_loader):
@@ -122,7 +121,7 @@ def main():
 
             del pure_batch
 
-            # if os.path.isfile("/mnt/storage/mgodbout/Ecorcage/Images/results/cwce_112/{}".format(fname)):
+            # if os.path.isfile("/mnt/storage/mgodbout/Ecorcage/Images/results/cwce_448/{}".format(fname)):
             #     continue
 
             outputs = module(batch[0].to(torch.device("cuda:1")))
@@ -166,7 +165,7 @@ def main():
             plt.suptitle(suptitle)
             plt.tight_layout()
             # plt.show()
-            plt.savefig("/mnt/storage/mgodbout/Ecorcage/Images/results/cwce_112/{}".format(fname),
+            plt.savefig("/mnt/storage/mgodbout/Ecorcage/Images/results/cwce_448/{}".format(fname),
                         format="png",
                         dpi=900)
 
