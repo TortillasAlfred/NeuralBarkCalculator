@@ -51,7 +51,7 @@ def get_loader_for_crop_batch(crop_size, batch_size, train_split, mean, std):
                                                 RandomCrop(crop_size),
                                                 RandomHorizontalFlip(),
                                                 RandomVerticalFlip(),
-                                                ColorJitter(brightness=0.25, contrast=0.25, saturation=0.25),
+                                                ColorJitter(brightness=0.1, contrast=0.1, saturation=0.1),
                                                 ToTensor()]))
 
     return DataLoader(Subset(train_dataset, train_split.repeat(50)), batch_size=batch_size, shuffle=True, num_workers=32, drop_last=True)
@@ -71,7 +71,7 @@ def main():
 
     train_split, valid_split, test_split = get_splits(test_dataset)
 
-    valid_loader = DataLoader(Subset(test_dataset, valid_split), batch_size=1, num_workers=32)
+    valid_loader = DataLoader(Subset(test_dataset, np.stack((train_split, valid_split))), batch_size=1, num_workers=32)
     test_loader = DataLoader(Subset(test_dataset, test_split), batch_size=1, num_workers=32)
 
     module = deeplabv3_resnet101()
