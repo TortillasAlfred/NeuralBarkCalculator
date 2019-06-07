@@ -54,7 +54,7 @@ def get_loader_for_crop_batch(crop_size, batch_size, train_split, mean, std):
                                                 ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2),
                                                 ToTensor()]))
 
-    return DataLoader(Subset(train_dataset, train_split.repeat(20)), batch_size=batch_size, shuffle=True, num_workers=32, drop_last=True)
+    return DataLoader(Subset(train_dataset, train_split.repeat(50)), batch_size=batch_size, shuffle=True, num_workers=32, drop_last=True)
 
 
 def main():
