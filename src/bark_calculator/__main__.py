@@ -42,7 +42,7 @@ def make_dual_images():
             dual.save(os.path.join(duals_dir, fname.replace("bmp", "png")))
 
 
-def get_loader_for_crop_batch(crop_size, batch_size, train_split):
+def get_loader_for_crop_batch(crop_size, batch_size, train_split, mean, std):
     train_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/dual_exp",
                                             input_only_transform=Compose(
                                                 [Normalize(mean, std)]
@@ -90,7 +90,7 @@ def main():
     callbacks = [ResetLR(1e-3)]
 
     for crop_size, batch_size in zip([112, 224, 448], [32, 24, 5]):
-        train_loader = get_loader_for_crop_batch(crop_size, batch_size, train_split)
+        train_loader = get_loader_for_crop_batch(crop_size, batch_size, train_split, mean, std)
 
         exp.train(train_loader=train_loader,
                   valid_loader=valid_loader,
