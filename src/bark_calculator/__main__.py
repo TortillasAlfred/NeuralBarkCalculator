@@ -72,7 +72,7 @@ def main():
 
     module = fcn_resnet50()
 
-    optim = torch.optim.Adam(module.parameters(), lr=1e-4)
+    optim = torch.optim.Adam(module.parameters(), lr=1e-3)
     exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/fcn_rsz_224/",
                      module=module,
                      device=torch.device("cuda:0"),
