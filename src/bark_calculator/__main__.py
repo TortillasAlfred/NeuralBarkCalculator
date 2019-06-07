@@ -2,7 +2,7 @@ from dataset import RegressionDatasetFolder, make_weight_map, pil_loader
 from utils import *
 from models import vanilla_unet, FCDenseNet103, FCDenseNet57, B2B, deeplabv3_resnet101
 
-from torchvision.transforsz import *
+from torchvision.transforms import *
 
 from poutyne.framework import Experiment, ReduceLROnPlateau, EarlyStopping
 from torch.utils.data import DataLoader, Subset, ConcatDataset
