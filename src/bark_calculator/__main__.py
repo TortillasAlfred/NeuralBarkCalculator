@@ -75,7 +75,7 @@ def main():
 
     module = deeplabv3_resnet101()
 
-    optim = torch.optim.SGD(module.parameters(), lr=1e-2, momentum=0.9, weight_decay=1e-4)
+    optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-4)
     exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/mix_raw/",
                      module=module,
                      device=torch.device("cuda:0"),
@@ -88,7 +88,7 @@ def main():
     lr_schedulers = [ExponentialLR(gamma=0.95)]
     callbacks = [ResetLR(1e-3)]
 
-    for i, (crop_size, batch_size) in enumerate(zip([112, 224, 448], [32, 16, 8])):
+    for i, (crop_size, batch_size) in enumerate(zip([112, 224, 448], [32, 24, 5])):
         train_loader = get_loader_for_crop_batch(crop_size, batch_size, train_split, mean, std)
 
         exp.train(train_loader=train_loader,
