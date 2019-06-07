@@ -317,7 +317,7 @@ def pad_to_biggest_image(tensor_data):
 class ResetLR(Callback):
 
     def __init__(self, init_lr):
-        super(ResetLR, Callback).__init__()
+        super(ResetLR, self).__init__()
         self.init_lr = init_lr
 
     def on_train_begin(self, logs):
