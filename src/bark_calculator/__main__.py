@@ -4,7 +4,7 @@ from models import vanilla_unet, FCDenseNet103, FCDenseNet57, B2B, deeplabv3_res
 
 from torchvision.transforms import *
 
-from poutyne.framework import Experiment, ReduceLROnPlateau, EarlyStopping
+from poutyne.framework import Experiment, ExponentialLR, EarlyStopping
 from torch.utils.data import DataLoader, Subset, ConcatDataset
 import matplotlib.pyplot as plt
 from torch.nn.modules.loss import CrossEntropyLoss
@@ -42,6 +42,21 @@ def make_dual_images():
             dual.save(os.path.join(duals_dir, fname.replace("bmp", "png")))
 
 
+def get_loader_for_crop_batch(crop_size, batch_size, train_split):
+    train_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/dual_exp",
+                                            input_only_transform=Compose(
+                                                [Normalize(mean, std)]
+                                            ),
+                                            transform=Compose([
+                                                RandomCrop(crop_size),
+                                                RandomHorizontalFlip(),
+                                                RandomVerticalFlip(),
+                                                ColorJitter(brightness=0.1, saturation=0.1, contrast=0.1),
+                                                ToTensor()]))
+
+    train_loader = DataLoader(Subset(train_dataset, train_split.repeat(50)), batch_size=batch_size, shuffle=True, num_workers=32)
+
+
 def main():
     # mean, std = compute_mean_std("/mnt/storage/mgodbout/Ecorcage/Images/dual_exp")
     # pos_weights = compute_pos_weight("/mnt/storage/mgodbout/Ecorcage/Images/dual_exp")
@@ -54,42 +69,35 @@ def main():
                                            transform=Compose([
                                                ToTensor()]))
 
-    train_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/dual_exp",
-                                            input_only_transform=Compose(
-                                                [Normalize(mean, std)]
-                                            ),
-                                            transform=Compose([
-                                                RandomCrop(224),
-                                                RandomHorizontalFlip(),
-                                                RandomVerticalFlip(),
-                                                ColorJitter(brightness=0.1),
-                                                ToTensor()]))
-
     train_split, valid_split, test_split = get_splits(train_dataset)
 
-    train_loader = DataLoader(Subset(train_dataset, train_split.repeat(50)), batch_size=24, shuffle=True, num_workers=32)
-    valid_loader = DataLoader(Subset(test_dataset, np.hstack((valid_split, train_split))), batch_size=1, num_workers=32)
+    valid_loader = DataLoader(Subset(test_dataset, valid_split), batch_size=1, num_workers=32)
     test_loader = DataLoader(Subset(test_dataset, test_split), batch_size=1, num_workers=32)
 
     module = deeplabv3_resnet101()
 
-    optim = torch.optim.Adam(module.parameters(), lr=1e-4)
-    exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/da_224/",
+    optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-4)
+    exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/mix_da/",
                      module=module,
-                     device=torch.device("cuda:0"),
+                     device=torch.device("cuda:1"),
                      optimizer=optim,
-                     loss_function=CustomWeightedCrossEntropy(torch.tensor(pos_weights).to('cuda:0')),
+                     loss_function=CustomWeightedCrossEntropy(torch.tensor(pos_weights).to('cuda:1')),
                      metrics=[IOU(None)],
                      monitor_metric='val_IntersectionOverUnion',
                      monitor_mode='max')
 
-    lr_schedulers = [ReduceLROnPlateau(patience=10, monitor='val_IntersectionOverUnion', mode='max')]
-    callbacks = []
-    exp.train(train_loader=train_loader,
-              valid_loader=valid_loader,
-              epochs=150,
-              lr_schedulers=lr_schedulers,
-              callbacks=callbacks)
+    lr_schedulers = [ExponentialLR(gamma=0.95)]
+    callbacks = [ResetLR(1e-3)]
+
+    for crop_size, batch_size in zip([112, 224, 448], [32, 24, 5]):
+        train_loader = get_loader_for_crop_batch(crop_size, batch_size, train_split)
+
+        exp.train(train_loader=train_loader,
+                  valid_loader=valid_loader,
+                  epochs=3,
+                  lr_schedulers=lr_schedulers,
+                  callbacks=callbacks)
+
     exp.test(valid_loader)
     exp.test(test_loader)
 
@@ -111,8 +119,8 @@ def main():
     valid_loader = DataLoader(valid_dataset, batch_size=1, num_workers=32)
     pure_loader = DataLoader(pure_dataset, batch_size=1, num_workers=32)
 
-    if not os.path.isdir("/mnt/storage/mgodbout/Ecorcage/Images/results/da_224"):
-        os.makedirs("/mnt/storage/mgodbout/Ecorcage/Images/results/da_224")
+    if not os.path.isdir("/mnt/storage/mgodbout/Ecorcage/Images/results/mix_da"):
+        os.makedirs("/mnt/storage/mgodbout/Ecorcage/Images/results/mix_da")
 
     with torch.no_grad():
         for batch, pure_batch in zip(valid_loader, pure_loader):
@@ -122,10 +130,10 @@ def main():
 
             del pure_batch
 
-            # if os.path.isfile("/mnt/storage/mgodbout/Ecorcage/Images/results/da_224/{}".format(fname)):
+            # if os.path.isfile("/mnt/storage/mgodbout/Ecorcage/Images/results/mix_da/{}".format(fname)):
             #     continue
 
-            outputs = module(batch[0].to(torch.device("cuda:0")))
+            outputs = module(batch[0].to(torch.device("cuda:1")))
             outputs = torch.argmax(outputs, dim=1)
             outputs = remove_small_zones(outputs)
 
@@ -167,7 +175,7 @@ def main():
             plt.suptitle(suptitle)
             plt.tight_layout()
             # plt.show()
-            plt.savefig("/mnt/storage/mgodbout/Ecorcage/Images/results/da_224/{}".format(fname),
+            plt.savefig("/mnt/storage/mgodbout/Ecorcage/Images/results/mix_da/{}".format(fname),
                         format="png",
                         dpi=900)
 

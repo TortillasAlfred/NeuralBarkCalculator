@@ -8,6 +8,7 @@ from torch.utils.data import DataLoader, SubsetRandomSampler
 from scipy.ndimage.interpolation import map_coordinates
 from scipy.ndimage.filters import gaussian_filter
 from skimage.morphology import remove_small_objects
+from poutyne.framework.callbacks import Callback
 
 from math import ceil, floor, sin, cos
 import elasticdeform
@@ -311,3 +312,14 @@ def pad_to_biggest_image(tensor_data):
 
     return torch.stack([t[0] for t in tensor_data]), \
         torch.stack([t[1] for t in tensor_data])
+
+
+class ResetLR(Callback):
+
+    def __init__(self, init_lr):
+        super(ResetLR, Callback).__init__()
+        self.init_lr = init_lr
+
+    def on_train_begin(self, logs):
+        for param_group in self.model.optim.param_groups:
+            param_group['lr'] = self.init_lr
