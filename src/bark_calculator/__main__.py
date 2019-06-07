@@ -75,7 +75,7 @@ def main():
 
     module = deeplabv3_resnet101()
 
-    optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-4)
+    optim = torch.optim.SGD(module.parameters(), lr=1e-2, momentum=0.9, weight_decay=1e-4)
     exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/mix_raw/",
                      module=module,
                      device=torch.device("cuda:0"),
