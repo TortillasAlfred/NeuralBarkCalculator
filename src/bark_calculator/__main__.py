@@ -63,7 +63,6 @@ def main():
                                                 RandomHorizontalFlip(),
                                                 RandomVerticalFlip(),
                                                 ColorJitter(brightness=0.1),
-                                                Lambda(lambda img: elastic_transform(img)),
                                                 ToTensor()]))
 
     train_split, valid_split, test_split = get_splits(train_dataset)
