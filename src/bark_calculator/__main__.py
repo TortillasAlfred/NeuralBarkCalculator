@@ -79,9 +79,9 @@ def main():
     optim = torch.optim.SGD(module.parameters(), lr=1e-2, momentum=0.9, weight_decay=1e-4)
     exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/mix_aug/",
                      module=module,
-                     device=torch.device("cuda1"),
+                     device=torch.device("cuda:1"),
                      optimizer=optim,
-                     loss_function=CustomWeightedCrossEntropy(torch.tensor(pos_weights).to('cuda1')),
+                     loss_function=CustomWeightedCrossEntropy(torch.tensor(pos_weights).to('cuda:1')),
                      metrics=[IOU(None)],
                      monitor_metric='val_IntersectionOverUnion',
                      monitor_mode='max')
@@ -133,7 +133,7 @@ def main():
             # if os.path.isfile("/mnt/storage/mgodbout/Ecorcage/Images/results/mix_aug/{}".format(fname)):
             #     continue
 
-            outputs = module(batch[0].to(torch.device("cuda1")))
+            outputs = module(batch[0].to(torch.device("cuda:1")))
             outputs = torch.argmax(outputs, dim=1)
             outputs = remove_small_zones(outputs)
 
