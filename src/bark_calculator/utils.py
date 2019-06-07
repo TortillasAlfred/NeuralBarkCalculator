@@ -141,16 +141,16 @@ def get_pos_weight():
 
 
 def get_splits(dataset):
-    train_percent = 0.7
-    valid_percent = 0.15
-    test_percent = 0.15
+    train_percent = 0.6
+    valid_percent = 0.2
+    test_percent = 0.2
     n_data = len(dataset)
 
     idxs = np.arange(n_data)
     np.random.shuffle(idxs)
 
-    n_train = int(ceil(train_percent * n_data))
-    n_valid = int(floor(valid_percent * n_data))
+    n_train = int(floor(train_percent * n_data))
+    n_valid = int(ceil(valid_percent * n_data))
 
     return idxs[:n_train], \
         idxs[n_train:n_train + n_valid], \
