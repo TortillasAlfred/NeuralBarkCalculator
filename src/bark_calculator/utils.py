@@ -321,5 +321,5 @@ class ResetLR(Callback):
         self.init_lr = init_lr
 
     def on_train_begin(self, logs):
-        for param_group in self.model.optim.param_groups:
+        for param_group in self.model.optimizer.param_groups:
             param_group['lr'] = self.init_lr
