@@ -54,7 +54,7 @@ def get_loader_for_crop_batch(crop_size, batch_size, train_split, mean, std):
                                                 ColorJitter(brightness=0.1, saturation=0.1, contrast=0.1),
                                                 ToTensor()]))
 
-    return DataLoader(Subset(train_dataset, train_split.repeat(2)), batch_size=batch_size, shuffle=True, num_workers=32, drop_last=True)
+    return DataLoader(Subset(train_dataset, train_split.repeat(50)), batch_size=batch_size, shuffle=True, num_workers=32, drop_last=True)
 
 
 def main():
@@ -77,7 +77,7 @@ def main():
     module = deeplabv3_resnet101()
 
     optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-4)
-    exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/mix_da/",
+    exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/mix_aug/",
                      module=module,
                      device=torch.device("cuda:1"),
                      optimizer=optim,
@@ -94,7 +94,7 @@ def main():
 
         exp.train(train_loader=train_loader,
                   valid_loader=valid_loader,
-                  epochs=(1 + i) * 3,
+                  epochs=(1 + i) * 100,
                   lr_schedulers=lr_schedulers,
                   callbacks=callbacks)
 
@@ -119,8 +119,8 @@ def main():
     valid_loader = DataLoader(valid_dataset, batch_size=1, num_workers=32)
     pure_loader = DataLoader(pure_dataset, batch_size=1, num_workers=32)
 
-    if not os.path.isdir("/mnt/storage/mgodbout/Ecorcage/Images/results/mix_da"):
-        os.makedirs("/mnt/storage/mgodbout/Ecorcage/Images/results/mix_da")
+    if not os.path.isdir("/mnt/storage/mgodbout/Ecorcage/Images/results/mix_aug"):
+        os.makedirs("/mnt/storage/mgodbout/Ecorcage/Images/results/mix_aug")
 
     with torch.no_grad():
         for batch, pure_batch in zip(valid_loader, pure_loader):
@@ -130,7 +130,7 @@ def main():
 
             del pure_batch
 
-            # if os.path.isfile("/mnt/storage/mgodbout/Ecorcage/Images/results/mix_da/{}".format(fname)):
+            # if os.path.isfile("/mnt/storage/mgodbout/Ecorcage/Images/results/mix_aug/{}".format(fname)):
             #     continue
 
             outputs = module(batch[0].to(torch.device("cuda:1")))
@@ -175,7 +175,7 @@ def main():
             plt.suptitle(suptitle)
             plt.tight_layout()
             # plt.show()
-            plt.savefig("/mnt/storage/mgodbout/Ecorcage/Images/results/mix_da/{}".format(fname),
+            plt.savefig("/mnt/storage/mgodbout/Ecorcage/Images/results/mix_aug/{}".format(fname),
                         format="png",
                         dpi=900)
 
