@@ -83,10 +83,10 @@ def main():
                      monitor_mode='max')
 
     lr_schedulers = [ReduceLROnPlateau(patience=5, monitor='val_IntersectionOverUnion', mode='max')]
-    callbacks = [EarlyStopping(patience=15, min_delta=1e-5)]
+    callbacks = []
     exp.train(train_loader=train_loader,
               valid_loader=valid_loader,
-              epochs=300,
+              epochs=100,
               lr_schedulers=lr_schedulers,
               callbacks=callbacks)
     exp.test(valid_loader)
