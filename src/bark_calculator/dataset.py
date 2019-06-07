@@ -235,8 +235,6 @@ class RegressionDatasetFolder(data.Dataset):
         target.round_()
 
         target = target.long().squeeze()
-        # target = make_one_hot(target)
-        # target = target.squeeze().permute(2, 0, 1)
 
         if self.include_fname:
             return sample, target, fname
