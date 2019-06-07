@@ -62,6 +62,8 @@ def main():
                                                 RandomCrop(224),
                                                 RandomHorizontalFlip(),
                                                 RandomVerticalFlip(),
+                                                ColorJitter(brightness=0.1),
+                                                Lambda(lambda img: elastic_transform(img)),
                                                 ToTensor()]))
 
     train_split, valid_split, test_split = get_splits(train_dataset)
@@ -70,10 +72,10 @@ def main():
     valid_loader = DataLoader(Subset(test_dataset, np.hstack((valid_split, train_split))), batch_size=1, num_workers=32)
     test_loader = DataLoader(Subset(test_dataset, test_split), batch_size=1, num_workers=32)
 
-    module = fcn_resnet50()
+    module = deeplabv3_resnet101()
 
     optim = torch.optim.Adam(module.parameters(), lr=1e-3)
-    exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/fcn_rsz_224/",
+    exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/da_224/",
                      module=module,
                      device=torch.device("cuda:0"),
                      optimizer=optim,
@@ -86,7 +88,7 @@ def main():
     callbacks = []
     exp.train(train_loader=train_loader,
               valid_loader=valid_loader,
-              epochs=100,
+              epochs=150,
               lr_schedulers=lr_schedulers,
               callbacks=callbacks)
     exp.test(valid_loader)
@@ -110,8 +112,8 @@ def main():
     valid_loader = DataLoader(valid_dataset, batch_size=1, num_workers=32)
     pure_loader = DataLoader(pure_dataset, batch_size=1, num_workers=32)
 
-    if not os.path.isdir("/mnt/storage/mgodbout/Ecorcage/Images/results/fcn_rsz_224"):
-        os.makedirs("/mnt/storage/mgodbout/Ecorcage/Images/results/fcn_rsz_224")
+    if not os.path.isdir("/mnt/storage/mgodbout/Ecorcage/Images/results/da_224"):
+        os.makedirs("/mnt/storage/mgodbout/Ecorcage/Images/results/da_224")
 
     with torch.no_grad():
         for batch, pure_batch in zip(valid_loader, pure_loader):
@@ -121,7 +123,7 @@ def main():
 
             del pure_batch
 
-            # if os.path.isfile("/mnt/storage/mgodbout/Ecorcage/Images/results/fcn_rsz_224/{}".format(fname)):
+            # if os.path.isfile("/mnt/storage/mgodbout/Ecorcage/Images/results/da_224/{}".format(fname)):
             #     continue
 
             outputs = module(batch[0].to(torch.device("cuda:0")))
@@ -166,7 +168,7 @@ def main():
             plt.suptitle(suptitle)
             plt.tight_layout()
             # plt.show()
-            plt.savefig("/mnt/storage/mgodbout/Ecorcage/Images/results/fcn_rsz_224/{}".format(fname),
+            plt.savefig("/mnt/storage/mgodbout/Ecorcage/Images/results/da_224/{}".format(fname),
                         format="png",
                         dpi=900)
 
