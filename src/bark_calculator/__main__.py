@@ -89,12 +89,12 @@ def main():
     lr_schedulers = [ExponentialLR(gamma=0.95)]
     callbacks = [ResetLR(1e-3)]
 
-    for crop_size, batch_size in zip([112, 224, 448], [32, 24, 5]):
+    for i, crop_size, batch_size in enumerate(zip([112, 224, 448], [32, 24, 5])):
         train_loader = get_loader_for_crop_batch(crop_size, batch_size, train_split, mean, std)
 
         exp.train(train_loader=train_loader,
                   valid_loader=valid_loader,
-                  epochs=3,
+                  epochs=(1 + i) * 3,
                   lr_schedulers=lr_schedulers,
                   callbacks=callbacks)
 
