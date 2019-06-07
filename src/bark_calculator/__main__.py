@@ -22,9 +22,9 @@ import os
 
 
 def make_dual_images():
-    barks_dir = "./Images/dual_exp/bark"
-    nodes_dir = "./Images/dual_exp/nodes"
-    duals_dir = "./Images/dual_exp/duals"
+    barks_dir = "/mnt/storage/mgodbout/Ecorcage/Images/dual_exp/bark"
+    nodes_dir = "/mnt/storage/mgodbout/Ecorcage/Images/dual_exp/nodes"
+    duals_dir = "/mnt/storage/mgodbout/Ecorcage/Images/dual_exp/duals"
 
     for _, _, fnames in sorted(os.walk(barks_dir)):
         for fname in sorted(fnames):
@@ -43,18 +43,18 @@ def make_dual_images():
 
 
 def main():
-    # mean, std = compute_mean_std("./Images/dual_exp")
-    # pos_weights = compute_pos_weight("./Images/dual_exp")
+    # mean, std = compute_mean_std("/mnt/storage/mgodbout/Ecorcage/Images/dual_exp")
+    # pos_weights = compute_pos_weight("/mnt/storage/mgodbout/Ecorcage/Images/dual_exp")
     mean, std = get_mean_std()
     pos_weights = get_pos_weight()
-    test_dataset = RegressionDatasetFolder("./Images/dual_exp",
+    test_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/dual_exp",
                                            input_only_transform=Compose(
                                                [Normalize(mean, std)]
                                            ),
                                            transform=Compose([
                                                ToTensor()]))
 
-    train_dataset = RegressionDatasetFolder("./Images/dual_exp",
+    train_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/dual_exp",
                                             input_only_transform=Compose(
                                                 [Normalize(mean, std)]
                                             ),
@@ -73,7 +73,7 @@ def main():
     module = deeplabv3_resnet101()
 
     optim = torch.optim.Adam(module.parameters(), lr=1e-4)
-    exp = Experiment(directory="./rsz_224/",
+    exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/rsz_224/",
                      module=module,
                      device=torch.device("cuda:0"),
                      optimizer=optim,
@@ -95,14 +95,14 @@ def main():
     module = exp.model.model
     module.eval()
 
-    valid_dataset = RegressionDatasetFolder("./Images/dual_exp",
+    valid_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/dual_exp",
                                             input_only_transform=Compose(
                                                 [Normalize(mean, std)]
                                             ),
                                             transform=Compose([
                                                 ToTensor()]),
                                             include_fname=True)
-    pure_dataset = RegressionDatasetFolder("./Images/dual_exp",
+    pure_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/dual_exp",
                                            transform=Compose([
                                                ToTensor()]),
                                            include_fname=True)
@@ -110,8 +110,8 @@ def main():
     valid_loader = DataLoader(valid_dataset, batch_size=1, num_workers=32)
     pure_loader = DataLoader(pure_dataset, batch_size=1, num_workers=32)
 
-    if not os.path.isdir("./Images/results/rsz_224"):
-        os.makedirs("./Images/results/rsz_224")
+    if not os.path.isdir("/mnt/storage/mgodbout/Ecorcage/Images/results/rsz_224"):
+        os.makedirs("/mnt/storage/mgodbout/Ecorcage/Images/results/rsz_224")
 
     with torch.no_grad():
         for batch, pure_batch in zip(valid_loader, pure_loader):
@@ -121,7 +121,7 @@ def main():
 
             del pure_batch
 
-            # if os.path.isfile("./Images/results/rsz_224/{}".format(fname)):
+            # if os.path.isfile("/mnt/storage/mgodbout/Ecorcage/Images/results/rsz_224/{}".format(fname)):
             #     continue
 
             outputs = module(batch[0].to(torch.device("cuda:0")))
@@ -166,7 +166,7 @@ def main():
             plt.suptitle(suptitle)
             plt.tight_layout()
             # plt.show()
-            plt.savefig("./Images/results/rsz_224/{}".format(fname),
+            plt.savefig("/mnt/storage/mgodbout/Ecorcage/Images/results/rsz_224/{}".format(fname),
                         format="png",
                         dpi=900)
 
