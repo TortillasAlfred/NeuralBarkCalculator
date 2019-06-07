@@ -2,7 +2,7 @@ from dataset import RegressionDatasetFolder, make_weight_map, pil_loader
 from utils import *
 from models import vanilla_unet, FCDenseNet103, FCDenseNet57, B2B, deeplabv3_resnet101
 
-from torchvision.transforms import *
+from torchvision.transforsz import *
 
 from poutyne.framework import Experiment, ReduceLROnPlateau, EarlyStopping
 from torch.utils.data import DataLoader, Subset, ConcatDataset
@@ -59,26 +59,26 @@ def main():
                                                 [Normalize(mean, std)]
                                             ),
                                             transform=Compose([
-                                                RandomCrop(448),
+                                                RandomCrop(224),
                                                 RandomHorizontalFlip(),
                                                 RandomVerticalFlip(),
                                                 ToTensor()]))
 
     train_split, valid_split, test_split = get_splits(train_dataset)
 
-    train_loader = DataLoader(Subset(train_dataset, train_split.repeat(50)), batch_size=5, shuffle=True, num_workers=32)
+    train_loader = DataLoader(Subset(train_dataset, train_split.repeat(50)), batch_size=24, shuffle=True, num_workers=32)
     valid_loader = DataLoader(Subset(test_dataset, np.hstack((valid_split, train_split))), batch_size=1, num_workers=32)
     test_loader = DataLoader(Subset(test_dataset, test_split), batch_size=1, num_workers=32)
 
     module = deeplabv3_resnet101()
 
     optim = torch.optim.Adam(module.parameters(), lr=1e-4)
-    exp = Experiment(directory="./cwce_448/",
+    exp = Experiment(directory="./rsz_224/",
                      module=module,
-                     device=torch.device("cuda:1"),
+                     device=torch.device("cuda:0"),
                      optimizer=optim,
-                     loss_function=CustomWeightedCrossEntropy(torch.tensor(pos_weights).to('cuda:1')),
-                     metrics=[IOU(None), IOU(0), IOU(1), IOU(2)],
+                     loss_function=CustomWeightedCrossEntropy(torch.tensor(pos_weights).to('cuda:0')),
+                     metrics=[IOU(None)],
                      monitor_metric='val_IntersectionOverUnion',
                      monitor_mode='max')
 
@@ -110,8 +110,8 @@ def main():
     valid_loader = DataLoader(valid_dataset, batch_size=1, num_workers=32)
     pure_loader = DataLoader(pure_dataset, batch_size=1, num_workers=32)
 
-    if not os.path.isdir("./Images/results/cwce_448"):
-        os.makedirs("./Images/results/cwce_448")
+    if not os.path.isdir("./Images/results/rsz_224"):
+        os.makedirs("./Images/results/rsz_224")
 
     with torch.no_grad():
         for batch, pure_batch in zip(valid_loader, pure_loader):
@@ -121,11 +121,12 @@ def main():
 
             del pure_batch
 
-            # if os.path.isfile("./Images/results/cwce_448/{}".format(fname)):
+            # if os.path.isfile("./Images/results/rsz_224/{}".format(fname)):
             #     continue
 
-            outputs = module(batch[0].to(torch.device("cuda:1")))
+            outputs = module(batch[0].to(torch.device("cuda:0")))
             outputs = torch.argmax(outputs, dim=1)
+            outputs = remove_small_zones(outputs)
 
             del batch
 
@@ -165,7 +166,7 @@ def main():
             plt.suptitle(suptitle)
             plt.tight_layout()
             # plt.show()
-            plt.savefig("./Images/results/cwce_448/{}".format(fname),
+            plt.savefig("./Images/results/rsz_224/{}".format(fname),
                         format="png",
                         dpi=900)
 
