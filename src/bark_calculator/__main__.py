@@ -70,10 +70,10 @@ def main():
     valid_loader = DataLoader(Subset(test_dataset, np.hstack((valid_split, train_split))), batch_size=1, num_workers=32)
     test_loader = DataLoader(Subset(test_dataset, test_split), batch_size=1, num_workers=32)
 
-    module = deeplabv3_resnet101()
+    module = fcn_resnet50()
 
     optim = torch.optim.Adam(module.parameters(), lr=1e-4)
-    exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/rsz_224/",
+    exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/fcn_rsz_224/",
                      module=module,
                      device=torch.device("cuda:0"),
                      optimizer=optim,
@@ -82,7 +82,7 @@ def main():
                      monitor_metric='val_IntersectionOverUnion',
                      monitor_mode='max')
 
-    lr_schedulers = [ReduceLROnPlateau(patience=5, monitor='val_IntersectionOverUnion', mode='max')]
+    lr_schedulers = [ReduceLROnPlateau(patience=10, monitor='val_IntersectionOverUnion', mode='max')]
     callbacks = []
     exp.train(train_loader=train_loader,
               valid_loader=valid_loader,
@@ -110,8 +110,8 @@ def main():
     valid_loader = DataLoader(valid_dataset, batch_size=1, num_workers=32)
     pure_loader = DataLoader(pure_dataset, batch_size=1, num_workers=32)
 
-    if not os.path.isdir("/mnt/storage/mgodbout/Ecorcage/Images/results/rsz_224"):
-        os.makedirs("/mnt/storage/mgodbout/Ecorcage/Images/results/rsz_224")
+    if not os.path.isdir("/mnt/storage/mgodbout/Ecorcage/Images/results/fcn_rsz_224"):
+        os.makedirs("/mnt/storage/mgodbout/Ecorcage/Images/results/fcn_rsz_224")
 
     with torch.no_grad():
         for batch, pure_batch in zip(valid_loader, pure_loader):
@@ -121,7 +121,7 @@ def main():
 
             del pure_batch
 
-            # if os.path.isfile("/mnt/storage/mgodbout/Ecorcage/Images/results/rsz_224/{}".format(fname)):
+            # if os.path.isfile("/mnt/storage/mgodbout/Ecorcage/Images/results/fcn_rsz_224/{}".format(fname)):
             #     continue
 
             outputs = module(batch[0].to(torch.device("cuda:0")))
@@ -166,7 +166,7 @@ def main():
             plt.suptitle(suptitle)
             plt.tight_layout()
             # plt.show()
-            plt.savefig("/mnt/storage/mgodbout/Ecorcage/Images/results/rsz_224/{}".format(fname),
+            plt.savefig("/mnt/storage/mgodbout/Ecorcage/Images/results/fcn_rsz_224/{}".format(fname),
                         format="png",
                         dpi=900)
 
