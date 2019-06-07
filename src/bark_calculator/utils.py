@@ -222,6 +222,12 @@ class IOU(nn.Module):
 
         scores = f1_score(labels, outputs, labels=[0, 1, 2], average=None)
 
+        targets_count = np.bincount(labels)
+
+        for i, count_i in enumerate(targets_count):
+            if count_i == 0:
+                scores[i] = np.delete(scores, i).mean()
+
         if self.class_to_watch is None:
             return scores.mean()
         elif self.class_to_watch == 'loss':
