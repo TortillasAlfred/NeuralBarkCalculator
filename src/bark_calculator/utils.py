@@ -7,6 +7,7 @@ from torchvision.transforms.functional import pad, resize
 from torch.utils.data import DataLoader, SubsetRandomSampler
 from scipy.ndimage.interpolation import map_coordinates
 from scipy.ndimage.filters import gaussian_filter
+from skimage.morphology import remove_small_objects
 
 from math import ceil, floor, sin, cos
 import elasticdeform
@@ -203,6 +204,38 @@ class CustomWeightedCrossEntropy(nn.Module):
         return (entropies * class_weights).mean()
 
 
+def remove_class_wise(img, class_idx, shape):
+    binary_mapping = [0 if i != class_idx else 1 for i in range(3)]
+    binary_mapping = torch.tensor(binary_mapping).to(img.device)
+
+    binary_img = torch.index_select(binary_mapping, 0, img.flatten()).reshape(shape)
+
+    masks = torch.stack(list(map(remove_from_img, binary_img)))
+
+    img[(masks == 0) & (img == class_idx)] = 0
+
+    return img
+
+
+def remove_from_img(img_i):
+    img_i = remove_small_objects(img_i.cpu().numpy().astype(bool),
+                                 min_size=400,
+                                 connectivity=2)
+
+    return torch.from_numpy(img_i).long()
+
+
+def remove_small_zones(img):
+    shape = img.shape
+
+    img = img.cpu()
+
+    for class_idx in [2, 1]:
+        img = remove_class_wise(img, class_idx, shape)
+
+    return img
+
+
 class IOU(nn.Module):
 
     def __init__(self, class_to_watch):
@@ -216,6 +249,8 @@ class IOU(nn.Module):
 
     def forward(self, outputs, labels):
         outputs = torch.argmax(outputs, 1)
+
+        outputs = remove_small_zones(outputs)
 
         outputs = outputs.cpu().reshape(-1)
         labels = labels.cpu().reshape(-1)
