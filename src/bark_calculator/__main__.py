@@ -43,8 +43,8 @@ def make_dual_images():
 
 
 def main():
-    # mean, std = compute_mean_std("./Images/dual_exp")
-    # pos_weights = compute_pos_weight("./Images/dual_exp")
+    # mean, std = compute_mean_std("/mnt/storage/mgodbout/Ecorcage/Images/dual_exp")
+    # pos_weights = compute_pos_weight("/mnt/storage/mgodbout/Ecorcage/Images/dual_exp")
     mean, std = get_mean_std()
     pos_weights = get_pos_weight()
     test_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/dual_exp",
@@ -66,13 +66,13 @@ def main():
 
     train_split, valid_split, test_split = get_splits(train_dataset)
 
-    train_loader = DataLoader(Subset(train_dataset, train_split.repeat(50)), batch_size=5, shuffle=True, num_workers=8)
-    valid_loader = DataLoader(Subset(test_dataset, np.hstack((valid_split, train_split))), batch_size=1, num_workers=8)
-    test_loader = DataLoader(Subset(test_dataset, test_split), batch_size=1, num_workers=8)
+    train_loader = DataLoader(Subset(train_dataset, train_split.repeat(50)), batch_size=5, shuffle=True, num_workers=16)
+    valid_loader = DataLoader(Subset(test_dataset, np.hstack((valid_split, train_split))), batch_size=1, num_workers=16)
+    test_loader = DataLoader(Subset(test_dataset, test_split), batch_size=1, num_workers=16)
 
     module = deeplabv3_resnet101()
 
-    optim = torch.optim.Adam(module.parameters(), lr=1e-3)
+    optim = torch.optim.Adam(module.parameters(), lr=1e-4)
     exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/cwce_448/",
                      module=module,
                      device=torch.device("cuda:1"),
@@ -107,8 +107,8 @@ def main():
                                                ToTensor()]),
                                            include_fname=True)
 
-    valid_loader = DataLoader(valid_dataset, batch_size=1, num_workers=8)
-    pure_loader = DataLoader(pure_dataset, batch_size=1, num_workers=8)
+    valid_loader = DataLoader(valid_dataset, batch_size=1, num_workers=16)
+    pure_loader = DataLoader(pure_dataset, batch_size=1, num_workers=16)
 
     if not os.path.isdir("/mnt/storage/mgodbout/Ecorcage/Images/results/cwce_448"):
         os.makedirs("/mnt/storage/mgodbout/Ecorcage/Images/results/cwce_448")
