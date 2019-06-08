@@ -121,8 +121,21 @@ def main():
     if not os.path.isdir("/mnt/storage/mgodbout/Ecorcage/Images/results/mix_raw"):
         os.makedirs("/mnt/storage/mgodbout/Ecorcage/Images/results/mix_raw")
 
+    if not os.path.isdir("/mnt/storage/mgodbout/Ecorcage/Images/results/mix_raw/train"):
+        os.makedirs("/mnt/storage/mgodbout/Ecorcage/Images/results/mix_raw/train")
+
+    if not os.path.isdir("/mnt/storage/mgodbout/Ecorcage/Images/results/mix_raw/valid"):
+        os.makedirs("/mnt/storage/mgodbout/Ecorcage/Images/results/mix_raw/valid")
+
+    if not os.path.isdir("/mnt/storage/mgodbout/Ecorcage/Images/results/mix_raw/test"):
+        os.makedirs("/mnt/storage/mgodbout/Ecorcage/Images/results/mix_raw/test")
+
+    splits = [(train_split, 'train'),
+              (valid_split, 'valid'),
+              (test_split, 'test')]
+
     with torch.no_grad():
-        for batch, pure_batch in zip(valid_loader, pure_loader):
+        for i, (batch, pure_batch) in enumerate(zip(valid_loader, pure_loader)):
             input = pure_batch[0]
             target = pure_batch[1]
             fname = pure_batch[2][0]
@@ -171,10 +184,14 @@ def main():
             for c, c_acc in zip(class_names, class_accs):
                 suptitle += "\n{} : {:.3f}".format(c, c_acc)
 
+            for split_idxs, split_name in splits:
+                if i in split_idxs:
+                    split = split_name
+
             plt.suptitle(suptitle)
             plt.tight_layout()
             # plt.show()
-            plt.savefig("/mnt/storage/mgodbout/Ecorcage/Images/results/mix_raw/{}".format(fname),
+            plt.savefig("/mnt/storage/mgodbout/Ecorcage/Images/results/mix_raw/{}/{}".format(split, fname),
                         format="png",
                         dpi=900)
 
