@@ -73,10 +73,10 @@ def main():
     valid_loader = DataLoader(Subset(test_dataset, valid_split), batch_size=1, num_workers=32)
     test_loader = DataLoader(Subset(test_dataset, test_split), batch_size=1, num_workers=32)
 
-    module = deeplabv3_resnet101()
+    module = vanilla_unet()
 
     optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-4)
-    exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/mix_raw/",
+    exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/unet_cwce/",
                      module=module,
                      device=torch.device("cuda:0"),
                      optimizer=optim,
@@ -85,15 +85,15 @@ def main():
                      monitor_metric='val_IntersectionOverUnion',
                      monitor_mode='max')
 
-    lr_schedulers = [ExponentialLR(gamma=0.95)]
+    lr_schedulers = [ExponentialLR(gamma=0.98)]
     callbacks = [ResetLR(1e-3)]
 
-    for i, (crop_size, batch_size) in enumerate(zip([112, 224, 448], [32, 24, 5])):
+    for i, (crop_size, batch_size) in enumerate(zip([1024], [5])):
         train_loader = get_loader_for_crop_batch(crop_size, batch_size, train_split, mean, std)
 
         exp.train(train_loader=train_loader,
                   valid_loader=valid_loader,
-                  epochs=(1 + i) * 100,
+                  epochs=(1 + i) * 150,
                   lr_schedulers=lr_schedulers,
                   callbacks=callbacks)
 
@@ -118,17 +118,17 @@ def main():
     valid_loader = DataLoader(valid_dataset, batch_size=1, num_workers=32)
     pure_loader = DataLoader(pure_dataset, batch_size=1, num_workers=32)
 
-    if not os.path.isdir("/mnt/storage/mgodbout/Ecorcage/Images/results/mix_raw"):
-        os.makedirs("/mnt/storage/mgodbout/Ecorcage/Images/results/mix_raw")
+    if not os.path.isdir("/mnt/storage/mgodbout/Ecorcage/Images/results/unet_cwce"):
+        os.makedirs("/mnt/storage/mgodbout/Ecorcage/Images/results/unet_cwce")
 
-    if not os.path.isdir("/mnt/storage/mgodbout/Ecorcage/Images/results/mix_raw/train"):
-        os.makedirs("/mnt/storage/mgodbout/Ecorcage/Images/results/mix_raw/train")
+    if not os.path.isdir("/mnt/storage/mgodbout/Ecorcage/Images/results/unet_cwce/train"):
+        os.makedirs("/mnt/storage/mgodbout/Ecorcage/Images/results/unet_cwce/train")
 
-    if not os.path.isdir("/mnt/storage/mgodbout/Ecorcage/Images/results/mix_raw/valid"):
-        os.makedirs("/mnt/storage/mgodbout/Ecorcage/Images/results/mix_raw/valid")
+    if not os.path.isdir("/mnt/storage/mgodbout/Ecorcage/Images/results/unet_cwce/valid"):
+        os.makedirs("/mnt/storage/mgodbout/Ecorcage/Images/results/unet_cwce/valid")
 
-    if not os.path.isdir("/mnt/storage/mgodbout/Ecorcage/Images/results/mix_raw/test"):
-        os.makedirs("/mnt/storage/mgodbout/Ecorcage/Images/results/mix_raw/test")
+    if not os.path.isdir("/mnt/storage/mgodbout/Ecorcage/Images/results/unet_cwce/test"):
+        os.makedirs("/mnt/storage/mgodbout/Ecorcage/Images/results/unet_cwce/test")
 
     splits = [(train_split, 'train'),
               (valid_split, 'valid'),
@@ -142,7 +142,7 @@ def main():
 
             del pure_batch
 
-            # if os.path.isfile("/mnt/storage/mgodbout/Ecorcage/Images/results/mix_raw/{}".format(fname)):
+            # if os.path.isfile("/mnt/storage/mgodbout/Ecorcage/Images/results/unet_cwce/{}".format(fname)):
             #     continue
 
             outputs = module(batch[0].to(torch.device("cuda:0")))
@@ -191,7 +191,7 @@ def main():
             plt.suptitle(suptitle)
             plt.tight_layout()
             # plt.show()
-            plt.savefig("/mnt/storage/mgodbout/Ecorcage/Images/results/mix_raw/{}/{}".format(split, fname),
+            plt.savefig("/mnt/storage/mgodbout/Ecorcage/Images/results/unet_cwce/{}/{}".format(split, fname),
                         format="png",
                         dpi=900)
 
