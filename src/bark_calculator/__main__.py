@@ -1,6 +1,6 @@
 from dataset import RegressionDatasetFolder, make_weight_map, pil_loader
 from utils import *
-from models import vanilla_unet, FCDenseNet103, FCDenseNet57, B2B, deeplabv3_resnet101, deeplab_decay
+from models import vanilla_unet, FCDenseNet103, FCDenseNet57, B2B, deeplabv3_resnet101
 
 from torchvision.transforms import *
 
