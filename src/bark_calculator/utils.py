@@ -19,6 +19,7 @@ from torchvision.transforms.functional import rotate, center_crop
 from PIL import Image
 import torch.nn.functional as F
 import random
+from joblib import Parallel, delayed
 
 
 def get_train_valid_samplers(dataset, train_percent, seed=69):
@@ -211,7 +212,9 @@ def remove_class_wise(img, class_idx, shape):
 
     binary_img = torch.index_select(binary_mapping, 0, img.flatten()).reshape(shape)
 
-    masks = torch.stack(list(map(remove_from_img, binary_img)))
+    masks = torch.stack(list(Parallel(n_jobs=8, verbose=0, backend='multiprocessing')
+                             (delayed(remove_from_img)(binary_img_i)
+                              for binary_img_i in binary_img)))
 
     img[(masks == 0) & (img == class_idx)] = 0
 
