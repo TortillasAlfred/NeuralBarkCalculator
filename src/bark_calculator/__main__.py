@@ -48,6 +48,7 @@ def get_loader_for_crop_batch(crop_size, batch_size, train_split, mean, std):
                                                 [Normalize(mean, std)]
                                             ),
                                             transform=Compose([
+                                                Lambda(lambda img: pad_resize(img, 2048, 2048)),
                                                 RandomCrop(crop_size),
                                                 RandomHorizontalFlip(),
                                                 RandomVerticalFlip(),
