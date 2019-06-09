@@ -1,6 +1,6 @@
 from dataset import RegressionDatasetFolder, make_weight_map, pil_loader
 from utils import *
-from models import vanilla_unet, FCDenseNet103, FCDenseNet57, B2B, deeplabv3_resnet101, fcn_resnet50, deeplabv3_resnet18
+from models import vanilla_unet, FCDenseNet103, FCDenseNet57, B2B, deeplabv3_resnet101, fcn_resnet50, deeplabv3_fcn_resnet50
 
 from torchvision.transforms import *
 
@@ -74,10 +74,10 @@ def main():
     valid_loader = DataLoader(Subset(test_dataset, valid_split), batch_size=1, num_workers=32)
     test_loader = DataLoader(Subset(test_dataset, test_split), batch_size=1, num_workers=32)
 
-    module = deeplabv3_resnet18()
+    module = fcn_resnet50()
 
     optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-3)
-    exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/resnet18/",
+    exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/fcn_resnet50/",
                      module=module,
                      device=torch.device("cuda:0"),
                      optimizer=optim,
@@ -119,17 +119,17 @@ def main():
     valid_loader = DataLoader(valid_dataset, batch_size=1, num_workers=32)
     pure_loader = DataLoader(pure_dataset, batch_size=1, num_workers=32)
 
-    if not os.path.isdir("/mnt/storage/mgodbout/Ecorcage/Images/results/resnet18"):
-        os.makedirs("/mnt/storage/mgodbout/Ecorcage/Images/results/resnet18")
+    if not os.path.isdir("/mnt/storage/mgodbout/Ecorcage/Images/results/fcn_resnet50"):
+        os.makedirs("/mnt/storage/mgodbout/Ecorcage/Images/results/fcn_resnet50")
 
-    if not os.path.isdir("/mnt/storage/mgodbout/Ecorcage/Images/results/resnet18/train"):
-        os.makedirs("/mnt/storage/mgodbout/Ecorcage/Images/results/resnet18/train")
+    if not os.path.isdir("/mnt/storage/mgodbout/Ecorcage/Images/results/fcn_resnet50/train"):
+        os.makedirs("/mnt/storage/mgodbout/Ecorcage/Images/results/fcn_resnet50/train")
 
-    if not os.path.isdir("/mnt/storage/mgodbout/Ecorcage/Images/results/resnet18/valid"):
-        os.makedirs("/mnt/storage/mgodbout/Ecorcage/Images/results/resnet18/valid")
+    if not os.path.isdir("/mnt/storage/mgodbout/Ecorcage/Images/results/fcn_resnet50/valid"):
+        os.makedirs("/mnt/storage/mgodbout/Ecorcage/Images/results/fcn_resnet50/valid")
 
-    if not os.path.isdir("/mnt/storage/mgodbout/Ecorcage/Images/results/resnet18/test"):
-        os.makedirs("/mnt/storage/mgodbout/Ecorcage/Images/results/resnet18/test")
+    if not os.path.isdir("/mnt/storage/mgodbout/Ecorcage/Images/results/fcn_resnet50/test"):
+        os.makedirs("/mnt/storage/mgodbout/Ecorcage/Images/results/fcn_resnet50/test")
 
     splits = [(train_split, 'train'),
               (valid_split, 'valid'),
@@ -143,7 +143,7 @@ def main():
 
             del pure_batch
 
-            # if os.path.isfile("/mnt/storage/mgodbout/Ecorcage/Images/results/resnet18/{}".format(fname)):
+            # if os.path.isfile("/mnt/storage/mgodbout/Ecorcage/Images/results/fcn_resnet50/{}".format(fname)):
             #     continue
 
             outputs = module(batch[0].to(torch.device("cuda:0")))
@@ -192,7 +192,7 @@ def main():
             plt.suptitle(suptitle)
             plt.tight_layout()
             # plt.show()
-            plt.savefig("/mnt/storage/mgodbout/Ecorcage/Images/results/resnet18/{}/{}".format(split, fname),
+            plt.savefig("/mnt/storage/mgodbout/Ecorcage/Images/results/fcn_resnet50/{}/{}".format(split, fname),
                         format="png",
                         dpi=900)
 
