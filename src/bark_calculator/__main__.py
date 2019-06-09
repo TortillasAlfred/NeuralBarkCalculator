@@ -1,6 +1,6 @@
 from dataset import RegressionDatasetFolder, make_weight_map, pil_loader
 from utils import *
-from models import vanilla_unet, FCDenseNet103, FCDenseNet57, B2B, deeplabv3_resnet101, fcn_resnet50
+from models import vanilla_unet, FCDenseNet103, FCDenseNet57, B2B, deeplabv3_resnet101, fcn_resnet50, deeplabv3_resnet18
 
 from torchvision.transforms import *
 
@@ -74,10 +74,10 @@ def main():
     valid_loader = DataLoader(Subset(test_dataset, valid_split), batch_size=1, num_workers=32)
     test_loader = DataLoader(Subset(test_dataset, test_split), batch_size=1, num_workers=32)
 
-    module = vanilla_unet()
+    module = deeplabv3_resnet18()
 
-    optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=5e-4)
-    exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/unet_cwce/",
+    optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-3)
+    exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/resnet18/",
                      module=module,
                      device=torch.device("cuda:0"),
                      optimizer=optim,
@@ -86,10 +86,10 @@ def main():
                      monitor_metric='val_IntersectionOverUnion',
                      monitor_mode='max')
 
-    lr_schedulers = [ExponentialLR(gamma=0.98)]
+    lr_schedulers = [ExponentialLR(gamma=0.99)]
     callbacks = [ResetLR(1e-3)]
 
-    for i, (crop_size, batch_size) in enumerate(zip([1024], [5])):
+    for i, (crop_size, batch_size) in enumerate(zip([448], [5])):
         train_loader = get_loader_for_crop_batch(crop_size, batch_size, train_split, mean, std)
 
         exp.train(train_loader=train_loader,
@@ -109,29 +109,27 @@ def main():
                                                 [Normalize(mean, std)]
                                             ),
                                             transform=Compose([
-                                                Lambda(lambda img: pad_resize(img, 2048, 2048)),
                                                 ToTensor()]),
                                             include_fname=True)
     pure_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/dual_exp",
                                            transform=Compose([
-                                               Lambda(lambda img: pad_resize(img, 2048, 2048)),
                                                ToTensor()]),
                                            include_fname=True)
 
     valid_loader = DataLoader(valid_dataset, batch_size=1, num_workers=32)
     pure_loader = DataLoader(pure_dataset, batch_size=1, num_workers=32)
 
-    if not os.path.isdir("/mnt/storage/mgodbout/Ecorcage/Images/results/unet_cwce"):
-        os.makedirs("/mnt/storage/mgodbout/Ecorcage/Images/results/unet_cwce")
+    if not os.path.isdir("/mnt/storage/mgodbout/Ecorcage/Images/results/resnet18"):
+        os.makedirs("/mnt/storage/mgodbout/Ecorcage/Images/results/resnet18")
 
-    if not os.path.isdir("/mnt/storage/mgodbout/Ecorcage/Images/results/unet_cwce/train"):
-        os.makedirs("/mnt/storage/mgodbout/Ecorcage/Images/results/unet_cwce/train")
+    if not os.path.isdir("/mnt/storage/mgodbout/Ecorcage/Images/results/resnet18/train"):
+        os.makedirs("/mnt/storage/mgodbout/Ecorcage/Images/results/resnet18/train")
 
-    if not os.path.isdir("/mnt/storage/mgodbout/Ecorcage/Images/results/unet_cwce/valid"):
-        os.makedirs("/mnt/storage/mgodbout/Ecorcage/Images/results/unet_cwce/valid")
+    if not os.path.isdir("/mnt/storage/mgodbout/Ecorcage/Images/results/resnet18/valid"):
+        os.makedirs("/mnt/storage/mgodbout/Ecorcage/Images/results/resnet18/valid")
 
-    if not os.path.isdir("/mnt/storage/mgodbout/Ecorcage/Images/results/unet_cwce/test"):
-        os.makedirs("/mnt/storage/mgodbout/Ecorcage/Images/results/unet_cwce/test")
+    if not os.path.isdir("/mnt/storage/mgodbout/Ecorcage/Images/results/resnet18/test"):
+        os.makedirs("/mnt/storage/mgodbout/Ecorcage/Images/results/resnet18/test")
 
     splits = [(train_split, 'train'),
               (valid_split, 'valid'),
@@ -145,7 +143,7 @@ def main():
 
             del pure_batch
 
-            # if os.path.isfile("/mnt/storage/mgodbout/Ecorcage/Images/results/unet_cwce/{}".format(fname)):
+            # if os.path.isfile("/mnt/storage/mgodbout/Ecorcage/Images/results/resnet18/{}".format(fname)):
             #     continue
 
             outputs = module(batch[0].to(torch.device("cuda:0")))
@@ -194,7 +192,7 @@ def main():
             plt.suptitle(suptitle)
             plt.tight_layout()
             # plt.show()
-            plt.savefig("/mnt/storage/mgodbout/Ecorcage/Images/results/unet_cwce/{}/{}".format(split, fname),
+            plt.savefig("/mnt/storage/mgodbout/Ecorcage/Images/results/resnet18/{}/{}".format(split, fname),
                         format="png",
                         dpi=900)
 
