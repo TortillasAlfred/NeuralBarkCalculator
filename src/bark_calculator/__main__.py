@@ -79,9 +79,9 @@ def main():
     optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-2)
     exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/deeplab_decay/",
                      module=module,
-                     device=torch.device("cuda:0"),
+                     device=torch.device("cuda:1"),
                      optimizer=optim,
-                     loss_function=CustomWeightedCrossEntropy(torch.tensor(pos_weights).to('cuda:0')),
+                     loss_function=CustomWeightedCrossEntropy(torch.tensor(pos_weights).to('cuda:1')),
                      metrics=[IOU(None)],
                      monitor_metric='val_IntersectionOverUnion',
                      monitor_mode='max')
@@ -146,7 +146,7 @@ def main():
             # if os.path.isfile("/mnt/storage/mgodbout/Ecorcage/Images/results/deeplab_decay/{}".format(fname)):
             #     continue
 
-            outputs = module(batch[0].to(torch.device("cuda:0")))
+            outputs = module(batch[0].to(torch.device("cuda:1")))
             outputs = torch.argmax(outputs, dim=1)
             outputs = remove_small_zones(outputs)
 
