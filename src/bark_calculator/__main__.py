@@ -54,7 +54,7 @@ def get_loader_for_crop_batch(crop_size, batch_size, train_split, mean, std):
                                                 RandomVerticalFlip(),
                                                 ToTensor()]))
 
-    return DataLoader(Subset(train_dataset, train_split.repeat(50)), batch_size=batch_size, shuffle=True, num_workers=32, drop_last=True)
+    return DataLoader(Subset(train_dataset, train_split.repeat(10)), batch_size=batch_size, shuffle=True, num_workers=32, drop_last=True)
 
 
 def main():
@@ -76,7 +76,7 @@ def main():
 
     module = vanilla_unet()
 
-    optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-4)
+    optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=5e-4)
     exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/unet_cwce/",
                      module=module,
                      device=torch.device("cuda:0"),
@@ -94,7 +94,7 @@ def main():
 
         exp.train(train_loader=train_loader,
                   valid_loader=valid_loader,
-                  epochs=(1 + i) * 150,
+                  epochs=(1 + i) * 250,
                   lr_schedulers=lr_schedulers,
                   callbacks=callbacks)
 
