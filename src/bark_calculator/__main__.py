@@ -88,7 +88,7 @@ def main():
     lr_schedulers = [ReduceLROnPlateau(factor=0.2, patience=10)]
     callbacks = [ResetLR(1e-3)]
 
-    for i, (crop_size, batch_size) in enumerate(zip([448], [6])):
+    for i, (crop_size, batch_size) in enumerate(zip([448], [7])):
         train_loader = get_loader_for_crop_batch(crop_size, batch_size, train_split, mean, std)
 
         exp.train(train_loader=train_loader,
