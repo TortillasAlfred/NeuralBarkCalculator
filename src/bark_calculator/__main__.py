@@ -4,7 +4,7 @@ from models import vanilla_unet, FCDenseNet103, FCDenseNet57, B2B, deeplabv3_res
 
 from torchvision.transforms import *
 
-from poutyne.framework import Experiment, ExponentialLR, EarlyStopping
+from poutyne.framework import Experiment, ReduceLROnPlateau, EarlyStopping
 from torch.utils.data import DataLoader, Subset, ConcatDataset
 import matplotlib.pyplot as plt
 from torch.nn.modules.loss import CrossEntropyLoss
@@ -75,7 +75,7 @@ def main():
 
     module = fcn_resnet50()
 
-    optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=5e-3)
+    optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-3)
     exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/fcn_decay/",
                      module=module,
                      device=torch.device("cuda:1"),
@@ -85,7 +85,7 @@ def main():
                      monitor_metric='val_IntersectionOverUnion',
                      monitor_mode='max')
 
-    lr_schedulers = [ExponentialLR(gamma=0.98)]
+    lr_schedulers = [ReduceLROnPlateau(factor=0.2, patience=10)]
     callbacks = [ResetLR(1e-3)]
 
     for i, (crop_size, batch_size) in enumerate(zip([448], [5])):
@@ -93,7 +93,7 @@ def main():
 
         exp.train(train_loader=train_loader,
                   valid_loader=valid_loader,
-                  epochs=(1 + i) * 300,
+                  epochs=(1 + i) * 150,
                   lr_schedulers=lr_schedulers,
                   callbacks=callbacks)
 
