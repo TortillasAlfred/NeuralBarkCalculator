@@ -74,7 +74,7 @@ def main():
     valid_loader = DataLoader(Subset(test_dataset, valid_split), batch_size=1, num_workers=32)
     test_loader = DataLoader(Subset(test_dataset, test_split), batch_size=1, num_workers=32)
 
-    module = fcn_da()
+    module = fcn_resnet50()
 
     optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=5e-3)
     exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/fcn_da/",
