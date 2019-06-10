@@ -1,6 +1,6 @@
 from dataset import RegressionDatasetFolder, make_weight_map, pil_loader
 from utils import *
-from models import vanilla_unet, FCDenseNet103, FCDenseNet57, B2B, deeplabv3_resnet101
+from models import vanilla_unet, FCDenseNet103, FCDenseNet57, B2B, deeplabv3_resnet101, fcn_resnet50
 
 from torchvision.transforms import *
 
@@ -48,7 +48,6 @@ def get_loader_for_crop_batch(crop_size, batch_size, train_split, mean, std):
                                                 [Normalize(mean, std)]
                                             ),
                                             transform=Compose([
-                                                Lambda(lambda img: pad_resize(img, 2048, 2048)),
                                                 RandomCrop(crop_size),
                                                 RandomHorizontalFlip(),
                                                 RandomVerticalFlip(),
@@ -74,10 +73,10 @@ def main():
     valid_loader = DataLoader(Subset(test_dataset, valid_split), batch_size=1, num_workers=32)
     test_loader = DataLoader(Subset(test_dataset, test_split), batch_size=1, num_workers=32)
 
-    module = deeplabv3_resnet101()
+    module = fcn_resnet50()
 
-    optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-2)
-    exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/deeplab_decay/",
+    optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-3)
+    exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/fcn_resnet50/",
                      module=module,
                      device=torch.device("cuda:1"),
                      optimizer=optim,
@@ -116,34 +115,34 @@ def main():
                                                ToTensor()]),
                                            include_fname=True)
 
-    valid_loader = DataLoader(valid_dataset, batch_size=1, num_workers=32)
-    pure_loader = DataLoader(pure_dataset, batch_size=1, num_workers=32)
+    valid_loader = DataLoader(valid_dataset, batch_size=1)
+    pure_loader = DataLoader(pure_dataset, batch_size=1)
 
-    if not os.path.isdir("/mnt/storage/mgodbout/Ecorcage/Images/results/deeplab_decay"):
-        os.makedirs("/mnt/storage/mgodbout/Ecorcage/Images/results/deeplab_decay")
+    if not os.path.isdir("/mnt/storage/mgodbout/Ecorcage/Images/results/fcn_resnet50"):
+        os.makedirs("/mnt/storage/mgodbout/Ecorcage/Images/results/fcn_resnet50")
 
-    if not os.path.isdir("/mnt/storage/mgodbout/Ecorcage/Images/results/deeplab_decay/train"):
-        os.makedirs("/mnt/storage/mgodbout/Ecorcage/Images/results/deeplab_decay/train")
+    if not os.path.isdir("/mnt/storage/mgodbout/Ecorcage/Images/results/fcn_resnet50/train"):
+        os.makedirs("/mnt/storage/mgodbout/Ecorcage/Images/results/fcn_resnet50/train")
 
-    if not os.path.isdir("/mnt/storage/mgodbout/Ecorcage/Images/results/deeplab_decay/valid"):
-        os.makedirs("/mnt/storage/mgodbout/Ecorcage/Images/results/deeplab_decay/valid")
+    if not os.path.isdir("/mnt/storage/mgodbout/Ecorcage/Images/results/fcn_resnet50/valid"):
+        os.makedirs("/mnt/storage/mgodbout/Ecorcage/Images/results/fcn_resnet50/valid")
 
-    if not os.path.isdir("/mnt/storage/mgodbout/Ecorcage/Images/results/deeplab_decay/test"):
-        os.makedirs("/mnt/storage/mgodbout/Ecorcage/Images/results/deeplab_decay/test")
+    if not os.path.isdir("/mnt/storage/mgodbout/Ecorcage/Images/results/fcn_resnet50/test"):
+        os.makedirs("/mnt/storage/mgodbout/Ecorcage/Images/results/fcn_resnet50/test")
 
     splits = [(train_split, 'train'),
               (valid_split, 'valid'),
               (test_split, 'test')]
 
     with torch.no_grad():
-        for i, (batch, pure_batch) in enumerate(zip(valid_loader, pure_loader)):
+        for image_number, (batch, pure_batch) in enumerate(zip(valid_loader, pure_loader)):
             input = pure_batch[0]
             target = pure_batch[1]
             fname = pure_batch[2][0]
 
             del pure_batch
 
-            # if os.path.isfile("/mnt/storage/mgodbout/Ecorcage/Images/results/deeplab_decay/{}".format(fname)):
+            # if os.path.isfile("/mnt/storage/mgodbout/Ecorcage/Images/results/fcn_resnet50/{}".format(fname)):
             #     continue
 
             outputs = module(batch[0].to(torch.device("cuda:1")))
@@ -186,13 +185,13 @@ def main():
                 suptitle += "\n{} : {:.3f}".format(c, c_acc)
 
             for split_idxs, split_name in splits:
-                if i in split_idxs:
+                if image_number in split_idxs:
                     split = split_name
 
             plt.suptitle(suptitle)
             plt.tight_layout()
             # plt.show()
-            plt.savefig("/mnt/storage/mgodbout/Ecorcage/Images/results/deeplab_decay/{}/{}".format(split, fname),
+            plt.savefig("/mnt/storage/mgodbout/Ecorcage/Images/results/fcn_resnet50/{}/{}".format(split, fname),
                         format="png",
                         dpi=900)
 
