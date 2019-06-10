@@ -71,7 +71,6 @@ def main():
     train_split, valid_split, test_split = get_splits(test_dataset)
 
     valid_loader = DataLoader(Subset(test_dataset, valid_split), batch_size=1, num_workers=4)
-    test_loader = DataLoader(Subset(test_dataset, test_split), batch_size=1, num_workers=4)
 
     module = fcn_resnet50()
 
@@ -97,12 +96,6 @@ def main():
                   lr_schedulers=lr_schedulers,
                   callbacks=callbacks)
 
-    exp.test(valid_loader)
-    exp.test(test_loader)
-
-    module = exp.model.model
-    module.eval()
-
     valid_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/dual_exp",
                                             input_only_transform=Compose(
                                                 [Normalize(mean, std)]
@@ -117,6 +110,11 @@ def main():
 
     valid_loader = DataLoader(valid_dataset, batch_size=1)
     pure_loader = DataLoader(pure_dataset, batch_size=1)
+
+    exp.test(valid_loader)
+
+    module = exp.model.model
+    module.eval()
 
     if not os.path.isdir("/mnt/storage/mgodbout/Ecorcage/Images/results/fcn_decay"):
         os.makedirs("/mnt/storage/mgodbout/Ecorcage/Images/results/fcn_decay")
