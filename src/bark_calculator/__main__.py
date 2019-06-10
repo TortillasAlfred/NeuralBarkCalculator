@@ -93,7 +93,7 @@ def main():
 
         exp.train(train_loader=train_loader,
                   valid_loader=valid_loader,
-                  epochs=(1 + i) * 150,
+                  epochs=(1 + i) * 1000,
                   lr_schedulers=lr_schedulers,
                   callbacks=callbacks)
 
