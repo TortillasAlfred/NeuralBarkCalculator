@@ -53,7 +53,7 @@ def get_loader_for_crop_batch(crop_size, batch_size, train_split, mean, std):
                                                 RandomVerticalFlip(),
                                                 ToTensor()]))
 
-    return DataLoader(Subset(train_dataset, train_split.repeat(20)), batch_size=batch_size, shuffle=True, num_workers=32, drop_last=True)
+    return DataLoader(Subset(train_dataset, train_split), batch_size=batch_size, shuffle=True, num_workers=4, drop_last=True)
 
 
 def main():
@@ -70,8 +70,8 @@ def main():
 
     train_split, valid_split, test_split = get_splits(test_dataset)
 
-    valid_loader = DataLoader(Subset(test_dataset, valid_split), batch_size=1, num_workers=32)
-    test_loader = DataLoader(Subset(test_dataset, test_split), batch_size=1, num_workers=32)
+    valid_loader = DataLoader(Subset(test_dataset, valid_split), batch_size=1, num_workers=4)
+    test_loader = DataLoader(Subset(test_dataset, test_split), batch_size=1, num_workers=4)
 
     module = fcn_resnet50()
 
@@ -85,7 +85,7 @@ def main():
                      monitor_metric='val_IntersectionOverUnion',
                      monitor_mode='max')
 
-    lr_schedulers = [ReduceLROnPlateau(factor=0.2, patience=10)]
+    lr_schedulers = [ReduceLROnPlateau(factor=0.2, patience=20)]
     callbacks = [ResetLR(1e-3)]
 
     for i, (crop_size, batch_size) in enumerate(zip([448], [7])):
