@@ -55,7 +55,7 @@ class BasicBlock(nn.Module):
 
         out = self.conv1(x)
         out = self.bn1(out)
-        out = self.swish(out)
+        self.swish(out)
 
         out = self.conv2(out)
         out = self.bn2(out)
@@ -64,7 +64,7 @@ class BasicBlock(nn.Module):
             identity = self.downsample(x)
 
         out += identity
-        out = self.swish(out)
+        self.swish(out)
 
         return out
 
@@ -94,11 +94,11 @@ class Bottleneck(nn.Module):
 
         out = self.conv1(x)
         out = self.bn1(out)
-        out = self.swish(out)
+        self.swish(out)
 
         out = self.conv2(out)
         out = self.bn2(out)
-        out = self.swish(out)
+        self.swish(out)
 
         out = self.conv3(out)
         out = self.bn3(out)
@@ -107,7 +107,7 @@ class Bottleneck(nn.Module):
             identity = self.downsample(x)
 
         out += identity
-        out = self.swish(out)
+        self.swish(out)
 
         return out
 
