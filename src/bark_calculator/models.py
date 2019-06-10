@@ -8,7 +8,7 @@ from torch.nn import init
 from torchvision.models.segmentation.deeplabv3 import DeepLabHead
 from torchvision.models.segmentation.fcn import FCNHead
 from torchvision.models.detection.backbone_utils import IntermediateLayerGetter
-import resnet
+from torchvision.models import resnet
 from os.path import join
 from poutyne.framework import Experiment
 
