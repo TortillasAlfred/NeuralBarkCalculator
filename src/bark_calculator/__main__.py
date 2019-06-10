@@ -4,7 +4,7 @@ from models import vanilla_unet, FCDenseNet103, FCDenseNet57, B2B, deeplabv3_res
 
 from torchvision.transforms import *
 
-from poutyne.framework import Experiment, ReduceLROnPlateau, EarlyStopping
+from poutyne.framework import Experiment, ExponentialLR, EarlyStopping
 from torch.utils.data import DataLoader, Subset, ConcatDataset
 import matplotlib.pyplot as plt
 from torch.nn.modules.loss import CrossEntropyLoss
@@ -84,7 +84,7 @@ def main():
                      monitor_metric='val_IntersectionOverUnion',
                      monitor_mode='max')
 
-    lr_schedulers = [ReduceLROnPlateau(factor=0.2, patience=20)]
+    lr_schedulers = [ExponentialLR(gamma=0.995)]
     callbacks = [ResetLR(1e-3)]
 
     for i, (crop_size, batch_size) in enumerate(zip([448], [7])):
