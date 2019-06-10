@@ -1,6 +1,6 @@
 from dataset import RegressionDatasetFolder, make_weight_map, pil_loader
 from utils import *
-from models import vanilla_unet, FCDenseNet103, FCDenseNet57, B2B, deeplabv3_resnet101, fcn_resnet50
+from models import vanilla_unet, FCDenseNet103, FCDenseNet57, B2B, deeplabv3_resnet101, fcn_da
 
 from torchvision.transforms import *
 
@@ -51,9 +51,10 @@ def get_loader_for_crop_batch(crop_size, batch_size, train_split, mean, std):
                                                 RandomCrop(crop_size),
                                                 RandomHorizontalFlip(),
                                                 RandomVerticalFlip(),
+                                                ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2),
                                                 ToTensor()]))
 
-    return DataLoader(Subset(train_dataset, train_split.repeat(10)), batch_size=batch_size, shuffle=True, num_workers=32, drop_last=True)
+    return DataLoader(Subset(train_dataset, train_split.repeat(20)), batch_size=batch_size, shuffle=True, num_workers=32, drop_last=True)
 
 
 def main():
@@ -73,10 +74,10 @@ def main():
     valid_loader = DataLoader(Subset(test_dataset, valid_split), batch_size=1, num_workers=32)
     test_loader = DataLoader(Subset(test_dataset, test_split), batch_size=1, num_workers=32)
 
-    module = fcn_resnet50()
+    module = fcn_da()
 
-    optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-3)
-    exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/fcn_resnet50/",
+    optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=5e-3)
+    exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/fcn_da/",
                      module=module,
                      device=torch.device("cuda:1"),
                      optimizer=optim,
@@ -93,7 +94,7 @@ def main():
 
         exp.train(train_loader=train_loader,
                   valid_loader=valid_loader,
-                  epochs=(1 + i) * 250,
+                  epochs=(1 + i) * 300,
                   lr_schedulers=lr_schedulers,
                   callbacks=callbacks)
 
@@ -118,17 +119,17 @@ def main():
     valid_loader = DataLoader(valid_dataset, batch_size=1)
     pure_loader = DataLoader(pure_dataset, batch_size=1)
 
-    if not os.path.isdir("/mnt/storage/mgodbout/Ecorcage/Images/results/fcn_resnet50"):
-        os.makedirs("/mnt/storage/mgodbout/Ecorcage/Images/results/fcn_resnet50")
+    if not os.path.isdir("/mnt/storage/mgodbout/Ecorcage/Images/results/fcn_da"):
+        os.makedirs("/mnt/storage/mgodbout/Ecorcage/Images/results/fcn_da")
 
-    if not os.path.isdir("/mnt/storage/mgodbout/Ecorcage/Images/results/fcn_resnet50/train"):
-        os.makedirs("/mnt/storage/mgodbout/Ecorcage/Images/results/fcn_resnet50/train")
+    if not os.path.isdir("/mnt/storage/mgodbout/Ecorcage/Images/results/fcn_da/train"):
+        os.makedirs("/mnt/storage/mgodbout/Ecorcage/Images/results/fcn_da/train")
 
-    if not os.path.isdir("/mnt/storage/mgodbout/Ecorcage/Images/results/fcn_resnet50/valid"):
-        os.makedirs("/mnt/storage/mgodbout/Ecorcage/Images/results/fcn_resnet50/valid")
+    if not os.path.isdir("/mnt/storage/mgodbout/Ecorcage/Images/results/fcn_da/valid"):
+        os.makedirs("/mnt/storage/mgodbout/Ecorcage/Images/results/fcn_da/valid")
 
-    if not os.path.isdir("/mnt/storage/mgodbout/Ecorcage/Images/results/fcn_resnet50/test"):
-        os.makedirs("/mnt/storage/mgodbout/Ecorcage/Images/results/fcn_resnet50/test")
+    if not os.path.isdir("/mnt/storage/mgodbout/Ecorcage/Images/results/fcn_da/test"):
+        os.makedirs("/mnt/storage/mgodbout/Ecorcage/Images/results/fcn_da/test")
 
     splits = [(train_split, 'train'),
               (valid_split, 'valid'),
@@ -142,7 +143,7 @@ def main():
 
             del pure_batch
 
-            # if os.path.isfile("/mnt/storage/mgodbout/Ecorcage/Images/results/fcn_resnet50/{}".format(fname)):
+            # if os.path.isfile("/mnt/storage/mgodbout/Ecorcage/Images/results/fcn_da/{}".format(fname)):
             #     continue
 
             outputs = module(batch[0].to(torch.device("cuda:1")))
@@ -191,7 +192,7 @@ def main():
             plt.suptitle(suptitle)
             plt.tight_layout()
             # plt.show()
-            plt.savefig("/mnt/storage/mgodbout/Ecorcage/Images/results/fcn_resnet50/{}/{}".format(split, fname),
+            plt.savefig("/mnt/storage/mgodbout/Ecorcage/Images/results/fcn_da/{}/{}".format(split, fname),
                         format="png",
                         dpi=900)
 
