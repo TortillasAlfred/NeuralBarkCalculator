@@ -48,6 +48,7 @@ def get_loader_for_crop_batch(crop_size, batch_size, train_split, mean, std):
                                                 [Normalize(mean, std)]
                                             ),
                                             transform=Compose([
+                                                Lambda(lambda img: pad_resize(img, 2048, 2048)),
                                                 RandomCrop(crop_size),
                                                 RandomHorizontalFlip(),
                                                 RandomVerticalFlip(),
@@ -84,7 +85,7 @@ def main():
                      monitor_metric='val_IntersectionOverUnion',
                      monitor_mode='max')
 
-    lr_schedulers = [ExponentialLR(gamma=0.96)]
+    lr_schedulers = [ExponentialLR(gamma=0.99)]
     callbacks = [ResetLR(1e-3)]
 
     for i, (crop_size, batch_size) in enumerate(zip([448], [7])):
@@ -92,7 +93,7 @@ def main():
 
         exp.train(train_loader=train_loader,
                   valid_loader=valid_loader,
-                  epochs=(1 + i) * 150,
+                  epochs=(1 + i) * 50,
                   lr_schedulers=lr_schedulers,
                   callbacks=callbacks)
 
