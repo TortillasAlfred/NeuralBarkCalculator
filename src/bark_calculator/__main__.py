@@ -74,7 +74,7 @@ def main():
 
     module = fcn_resnet50()
 
-    optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=2e-3)
+    optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-3)
     exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/best_try/",
                      module=module,
                      device=torch.device("cuda:1"),
@@ -108,10 +108,11 @@ def main():
                                                ToTensor()]),
                                            include_fname=True)
 
+    test_loader = DataLoader(test_dataset, batch_size=1)
     valid_loader = DataLoader(valid_dataset, batch_size=1)
     pure_loader = DataLoader(pure_dataset, batch_size=1)
 
-    exp.test(valid_loader)
+    exp.test(test_dataset)
 
     module = exp.model.model
     module.eval()
