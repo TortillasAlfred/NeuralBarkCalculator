@@ -85,7 +85,7 @@ def main():
                      monitor_metric='val_IntersectionOverUnion',
                      monitor_mode='max')
 
-    lr_schedulers = [ExponentialLR(gamma=0.95)]
+    lr_schedulers = [ExponentialLR(gamma=0.975)]
     callbacks = []
 
     for i, (crop_size, batch_size) in enumerate(zip([448], [7])):
