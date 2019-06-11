@@ -113,7 +113,7 @@ def main():
     valid_loader = DataLoader(valid_dataset, batch_size=1)
     pure_loader = DataLoader(pure_dataset, batch_size=1)
 
-    exp.test(test_dataset)
+    exp.test(test_loader)
 
     module = exp.model.model
     module.eval()
