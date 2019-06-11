@@ -86,7 +86,7 @@ def main():
                      monitor_mode='max')
 
     lr_schedulers = [ExponentialLR(gamma=0.95)]
-    callbacks = [ResetLR(1e-3)]
+    callbacks = []
 
     for i, (crop_size, batch_size) in enumerate(zip([448], [7])):
         train_loader = get_loader_for_crop_batch(crop_size, batch_size, train_split, mean, std)
