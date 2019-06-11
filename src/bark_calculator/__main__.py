@@ -74,8 +74,8 @@ def main():
 
     module = fcn_resnet50()
 
-    optim = torch.optim.SGD(module.parameters(), lr=1e-2, weight_decay=1e-3, momentum=0.9)
-    exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/sgd/",
+    optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=2e-3)
+    exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/best_try/",
                      module=module,
                      device=torch.device("cuda:1"),
                      optimizer=optim,
@@ -84,7 +84,7 @@ def main():
                      monitor_metric='val_IntersectionOverUnion',
                      monitor_mode='max')
 
-    lr_schedulers = [ExponentialLR(gamma=0.995)]
+    lr_schedulers = [ExponentialLR(gamma=0.99)]
     callbacks = [ResetLR(1e-3)]
 
     for i, (crop_size, batch_size) in enumerate(zip([448], [7])):
@@ -92,7 +92,7 @@ def main():
 
         exp.train(train_loader=train_loader,
                   valid_loader=valid_loader,
-                  epochs=(1 + i) * 500,
+                  epochs=(1 + i) * 250,
                   lr_schedulers=lr_schedulers,
                   callbacks=callbacks)
 
@@ -116,17 +116,17 @@ def main():
     module = exp.model.model
     module.eval()
 
-    if not os.path.isdir("/mnt/storage/mgodbout/Ecorcage/Images/results/sgd"):
-        os.makedirs("/mnt/storage/mgodbout/Ecorcage/Images/results/sgd")
+    if not os.path.isdir("/mnt/storage/mgodbout/Ecorcage/Images/results/best_try"):
+        os.makedirs("/mnt/storage/mgodbout/Ecorcage/Images/results/best_try")
 
-    if not os.path.isdir("/mnt/storage/mgodbout/Ecorcage/Images/results/sgd/train"):
-        os.makedirs("/mnt/storage/mgodbout/Ecorcage/Images/results/sgd/train")
+    if not os.path.isdir("/mnt/storage/mgodbout/Ecorcage/Images/results/best_try/train"):
+        os.makedirs("/mnt/storage/mgodbout/Ecorcage/Images/results/best_try/train")
 
-    if not os.path.isdir("/mnt/storage/mgodbout/Ecorcage/Images/results/sgd/valid"):
-        os.makedirs("/mnt/storage/mgodbout/Ecorcage/Images/results/sgd/valid")
+    if not os.path.isdir("/mnt/storage/mgodbout/Ecorcage/Images/results/best_try/valid"):
+        os.makedirs("/mnt/storage/mgodbout/Ecorcage/Images/results/best_try/valid")
 
-    if not os.path.isdir("/mnt/storage/mgodbout/Ecorcage/Images/results/sgd/test"):
-        os.makedirs("/mnt/storage/mgodbout/Ecorcage/Images/results/sgd/test")
+    if not os.path.isdir("/mnt/storage/mgodbout/Ecorcage/Images/results/best_try/test"):
+        os.makedirs("/mnt/storage/mgodbout/Ecorcage/Images/results/best_try/test")
 
     splits = [(train_split, 'train'),
               (valid_split, 'valid'),
@@ -140,7 +140,7 @@ def main():
 
             del pure_batch
 
-            # if os.path.isfile("/mnt/storage/mgodbout/Ecorcage/Images/results/sgd/{}".format(fname)):
+            # if os.path.isfile("/mnt/storage/mgodbout/Ecorcage/Images/results/best_try/{}".format(fname)):
             #     continue
 
             outputs = module(batch[0].to(torch.device("cuda:1")))
@@ -189,7 +189,7 @@ def main():
             plt.suptitle(suptitle)
             plt.tight_layout()
             # plt.show()
-            plt.savefig("/mnt/storage/mgodbout/Ecorcage/Images/results/sgd/{}/{}".format(split, fname),
+            plt.savefig("/mnt/storage/mgodbout/Ecorcage/Images/results/best_try/{}/{}".format(split, fname),
                         format="png",
                         dpi=900)
 
