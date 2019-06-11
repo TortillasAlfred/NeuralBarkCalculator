@@ -53,7 +53,7 @@ def get_loader_for_crop_batch(crop_size, batch_size, train_split, mean, std):
                                                 RandomVerticalFlip(),
                                                 ToTensor()]))
 
-    return DataLoader(Subset(train_dataset, train_split), batch_size=batch_size, shuffle=True, num_workers=4, drop_last=True)
+    return DataLoader(Subset(train_dataset, train_split.repeat(10)), batch_size=batch_size, shuffle=True, num_workers=4, drop_last=True)
 
 
 def main():
@@ -92,7 +92,7 @@ def main():
 
         exp.train(train_loader=train_loader,
                   valid_loader=valid_loader,
-                  epochs=(1 + i) * 3000,
+                  epochs=(1 + i) * 500,
                   lr_schedulers=lr_schedulers,
                   callbacks=callbacks)
 
