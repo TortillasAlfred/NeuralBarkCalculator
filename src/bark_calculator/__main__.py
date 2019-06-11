@@ -108,7 +108,7 @@ def main():
                                                ToTensor()]),
                                            include_fname=True)
 
-    test_loader = DataLoader(test_dataset, batch_size=1)
+    test_loader = DataLoader(Subset(test_dataset, np.hstack(valid_split, test_split)), batch_size=1)
     valid_loader = DataLoader(valid_dataset, batch_size=1)
     pure_loader = DataLoader(pure_dataset, batch_size=1)
 
