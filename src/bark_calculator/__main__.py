@@ -75,12 +75,12 @@ def main():
 
     module = fcn_resnet50()
 
-    optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=5e-1)
-    exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/fcn_big_decay/",
+    optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-0)
+    exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/fcn_huge_decay/",
                      module=module,
-                     device=torch.device("cuda:0"),
+                     device=torch.device("cuda:1"),
                      optimizer=optim,
-                     loss_function=CustomWeightedCrossEntropy(torch.tensor(pos_weights).to('cuda:0')),
+                     loss_function=CustomWeightedCrossEntropy(torch.tensor(pos_weights).to('cuda:1')),
                      metrics=[IOU(None)],
                      monitor_metric='val_IntersectionOverUnion',
                      monitor_mode='max')
@@ -118,17 +118,17 @@ def main():
     module = exp.model.model
     module.eval()
 
-    if not os.path.isdir("/mnt/storage/mgodbout/Ecorcage/Images/results/fcn_big_decay"):
-        os.makedirs("/mnt/storage/mgodbout/Ecorcage/Images/results/fcn_big_decay")
+    if not os.path.isdir("/mnt/storage/mgodbout/Ecorcage/Images/results/fcn_huge_decay"):
+        os.makedirs("/mnt/storage/mgodbout/Ecorcage/Images/results/fcn_huge_decay")
 
-    if not os.path.isdir("/mnt/storage/mgodbout/Ecorcage/Images/results/fcn_big_decay/train"):
-        os.makedirs("/mnt/storage/mgodbout/Ecorcage/Images/results/fcn_big_decay/train")
+    if not os.path.isdir("/mnt/storage/mgodbout/Ecorcage/Images/results/fcn_huge_decay/train"):
+        os.makedirs("/mnt/storage/mgodbout/Ecorcage/Images/results/fcn_huge_decay/train")
 
-    if not os.path.isdir("/mnt/storage/mgodbout/Ecorcage/Images/results/fcn_big_decay/valid"):
-        os.makedirs("/mnt/storage/mgodbout/Ecorcage/Images/results/fcn_big_decay/valid")
+    if not os.path.isdir("/mnt/storage/mgodbout/Ecorcage/Images/results/fcn_huge_decay/valid"):
+        os.makedirs("/mnt/storage/mgodbout/Ecorcage/Images/results/fcn_huge_decay/valid")
 
-    if not os.path.isdir("/mnt/storage/mgodbout/Ecorcage/Images/results/fcn_big_decay/test"):
-        os.makedirs("/mnt/storage/mgodbout/Ecorcage/Images/results/fcn_big_decay/test")
+    if not os.path.isdir("/mnt/storage/mgodbout/Ecorcage/Images/results/fcn_huge_decay/test"):
+        os.makedirs("/mnt/storage/mgodbout/Ecorcage/Images/results/fcn_huge_decay/test")
 
     splits = [(train_split, 'train'),
               (valid_split, 'valid'),
@@ -142,10 +142,10 @@ def main():
 
             del pure_batch
 
-            # if os.path.isfile("/mnt/storage/mgodbout/Ecorcage/Images/results/fcn_big_decay/{}".format(fname)):
+            # if os.path.isfile("/mnt/storage/mgodbout/Ecorcage/Images/results/fcn_huge_decay/{}".format(fname)):
             #     continue
 
-            outputs = module(batch[0].to(torch.device("cuda:0")))
+            outputs = module(batch[0].to(torch.device("cuda:1")))
             outputs = torch.argmax(outputs, dim=1)
             outputs = remove_small_zones(outputs)
 
@@ -191,7 +191,7 @@ def main():
             plt.suptitle(suptitle)
             plt.tight_layout()
             # plt.show()
-            plt.savefig("/mnt/storage/mgodbout/Ecorcage/Images/results/fcn_big_decay/{}/{}".format(split, fname),
+            plt.savefig("/mnt/storage/mgodbout/Ecorcage/Images/results/fcn_huge_decay/{}/{}".format(split, fname),
                         format="png",
                         dpi=900)
 
