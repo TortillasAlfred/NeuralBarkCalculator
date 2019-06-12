@@ -75,7 +75,7 @@ def main():
 
     module = fcn_resnet50()
 
-    optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=5e-2)
+    optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-1)
     exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/fcn_small_decay/",
                      module=module,
                      device=torch.device("cuda:0"),
