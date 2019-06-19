@@ -229,6 +229,7 @@ def main():
                 .format(split, fname),
                 format="png",
                 dpi=900)
+            plt.close()
 
 
 def fix_image(img_number, n_pixels_to_fix):
