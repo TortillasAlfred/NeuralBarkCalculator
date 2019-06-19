@@ -147,6 +147,9 @@ def main(args):
                         dpi=900)
             plt.close()
 
+            outputs = Image.fromarray(outputs, mode='L')
+            outputs.save(os.path.join(args.root_dir, "Images/results/outputs/fcn_decay/{}/{}").format(split, fname))
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
