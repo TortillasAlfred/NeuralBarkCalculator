@@ -92,7 +92,7 @@ def main(args):
             input = pure_batch[0]
             target = pure_batch[1]
             fname = pure_batch[2][0]
-            wood_type = pure_batch[3]
+            wood_type = pure_batch[3][0]
 
             del pure_batch
 
@@ -137,7 +137,7 @@ def main(args):
                 if image_number in split_idxs:
                     split = split_name
 
-            running_csv_stats = [fname, wood_type, split_name]
+            running_csv_stats = [fname, wood_type, split]
 
             class_names = ['Nothing', 'Bark', 'Node']
 
