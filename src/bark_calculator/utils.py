@@ -223,7 +223,7 @@ def remove_small_zones(img):
 
     img = img.cpu()
 
-    for class_idx in [2, 1]:
+    for class_idx in reversed(range(3)):
         img = remove_class_wise(img, class_idx, shape)
 
     return img
