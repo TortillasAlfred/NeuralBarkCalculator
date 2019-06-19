@@ -223,6 +223,11 @@ class RegressionDatasetFolder(data.Dataset):
         """
         sample, target, fname, wood_type = self.samples[index]
 
+        print(sample)
+        print(target)
+        print(fname)
+        print(wood_type)
+
         if self.transform is not None:
             random_seed = np.random.randint(2147483647)
 
