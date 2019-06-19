@@ -160,8 +160,13 @@ def main(args):
                         dpi=900)
             plt.close()
 
-            outputs = Image.fromarray(outputs.squeeze().cpu().numpy(), mode='L')
-            outputs.save(os.path.join(args.root_dir, 'Images/results/fcn_decay/outputs/{}/{}').format(split, fname))
+            outputs = outputs.squeeze().cpu().numpy()
+            dual_outputs = np.zeros((outputs.shape[0], outputs.shape[1]), dtype=np.uint8)
+            dual_outputs[outputs == 1] = 127
+            dual_outputs[outputs == 2] = 255
+
+            dual = Image.fromarray(dual_outputs, mode='L')
+            dual.save(os.path.join(args.root_dir, 'Images/results/fcn_decay/outputs/{}/{}').format(split, fname))
 
             results_csv.append(running_csv_stats)
 
