@@ -1,6 +1,6 @@
 from dataset import RegressionDatasetFolder, make_weight_map, pil_loader
 from utils import *
-from models import vanilla_unet, FCDenseNet103, FCDenseNet57, B2B, deeplabv3_resnet101, fcn_resnet50
+from models import cn_resnet50
 
 from torchvision.transforms import *
 
@@ -26,14 +26,16 @@ def main(args):
                                            input_only_transform=Compose([Normalize(mean, std)]),
                                            transform=Compose([ToTensor()]))
 
+    train_split, valid_split, test_split = get_splits(test_dataset)
+
     module = fcn_resnet50()
 
     optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=5e-3)
-    exp = Experiment(directory=os.path.join(args.root_dir, "best_model/"),
+    exp = Experiment(directory=os.path.join(args.root_dir, "fcn_decay/"),
                      module=module,
-                     device=torch.device("cuda:1"),
+                     device=torch.device(args.device),
                      optimizer=optim,
-                     loss_function=CustomWeightedCrossEntropy(torch.tensor(pos_weights).to('cuda:1')),
+                     loss_function=CustomWeightedCrossEntropy(torch.tensor(pos_weights).to(args.device)),
                      metrics=[IOU(None)],
                      monitor_metric='val_IntersectionOverUnion',
                      monitor_mode='max')
@@ -48,20 +50,21 @@ def main(args):
 
     all_loader = DataLoader(all_dataset, batch_size=1, num_workers=4)
 
+    exp.load_best_checkpoint()
     module = exp.model.model
     module.eval()
 
-    if not os.path.isdir("/mnt/storage/mgodbout/Ecorcage/Images/results/best_model"):
-        os.makedirs("/mnt/storage/mgodbout/Ecorcage/Images/results/best_model")
+    if not os.path.isdir(os.path.join(args.root_dir, "Images/results/fcn_decay")):
+        os.makedirs(os.path.join(args.root_dir, "Images/results/fcn_decay"))
 
-    if not os.path.isdir("/mnt/storage/mgodbout/Ecorcage/Images/results/best_model/train"):
-        os.makedirs("/mnt/storage/mgodbout/Ecorcage/Images/results/best_model/train")
+    if not os.path.isdir(os.path.join(args.root_dir, "Images/results/fcn_decay/train")):
+        os.makedirs(os.path.join(args.root_dir, "Images/results/fcn_decay/train"))
 
-    if not os.path.isdir("/mnt/storage/mgodbout/Ecorcage/Images/results/best_model/valid"):
-        os.makedirs("/mnt/storage/mgodbout/Ecorcage/Images/results/best_model/valid")
+    if not os.path.isdir(os.path.join(args.root_dir, "Images/results/fcn_decay/valid")):
+        os.makedirs(os.path.join(args.root_dir, "Images/results/fcn_decay/valid"))
 
-    if not os.path.isdir("/mnt/storage/mgodbout/Ecorcage/Images/results/best_model/test"):
-        os.makedirs("/mnt/storage/mgodbout/Ecorcage/Images/results/best_model/test")
+    if not os.path.isdir(os.path.join(args.root_dir, "Images/results/fcn_decay/test")):
+        os.makedirs(os.path.join(args.root_dir, "Images/results/fcn_decay/test"))
 
     splits = [(train_split, 'train'), (valid_split, 'valid'), (test_split, 'test')]
 
@@ -73,10 +76,10 @@ def main(args):
 
             del pure_batch
 
-            # if os.path.isfile("/mnt/storage/mgodbout/Ecorcage/Images/results/best_model/{}".format(fname)):
+            # if os.path.isfile("/mnt/storage/mgodbout/Ecorcage/Images/results/fcn_decay/{}".format(fname)):
             #     continue
 
-            outputs = module(batch[0].to(torch.device("cuda:1")))
+            outputs = module(batch[0].to(torch.device(args.device)))
             outputs = torch.argmax(outputs, dim=1)
             outputs = remove_small_zones(outputs)
 
@@ -122,7 +125,7 @@ def main(args):
             plt.suptitle(suptitle)
             plt.tight_layout()
             # plt.show()
-            plt.savefig("/mnt/storage/mgodbout/Ecorcage/Images/results/best_model/{}/{}".format(split, fname),
+            plt.savefig(os.path.join(args.root_dir, "Images/results/fcn_decay/{}/{}").format(split, fname),
                         format="png",
                         dpi=900)
             plt.close()
@@ -132,8 +135,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
     parser.add_argument('root_dir', type=str, help='root directory path.')
-
-    parser.add_argument('model_save_dir', type=str, help='root where computed data stats will be saved.')
 
     parser.add_argument('--device',
                         type=str,
