@@ -2,6 +2,7 @@ import argparse
 
 from experiments.builder import build_experiment_from_args
 
+
 def parse_all_args():
     parser = argparse.ArgumentParser()
 
@@ -10,7 +11,7 @@ def parse_all_args():
     parser.add_argument("--treatment_method", help="Treatment method used when calculating an image's bark. " + \
                         "Possible values are : 'edge_detection', 'id'", type=str, default="edge_detection")
     parser.add_argument("--image_processor", help="Process applied to every image once treated. " + \
-                        "Possible values are : 'display'", type=str, default="display")                                         
+                        "Possible values are : 'display'", type=str, default="display")
 
     return parser.parse_args()
 

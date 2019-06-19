@@ -24,9 +24,11 @@ def init_weights(net, init_type='normal', init_gain=0.02):
     We use 'normal' in the original pix2pix and CycleGAN paper. But xavier and kaiming might
     work better for some applications. Feel free to try yourself.
     """
+
     def init_func(m):  # define the initialization function
         classname = m.__class__.__name__
-        if hasattr(m, 'weight') and (classname.find('Conv') != -1 or classname.find('Linear') != -1):
+        if hasattr(m, 'weight') and (classname.find('Conv') != -1
+                                     or classname.find('Linear') != -1):
             if init_type == 'normal':
                 init.normal_(m.weight.data, 0.0, init_gain)
             elif init_type == 'xavier':
@@ -37,7 +39,8 @@ def init_weights(net, init_type='normal', init_gain=0.02):
                 init.orthogonal_(m.weight.data, gain=init_gain)
             else:
                 raise NotImplementedError(
-                    'initialization method [%s] is not implemented' % init_type)
+                    'initialization method [%s] is not implemented' %
+                    init_type)
             if hasattr(m, 'bias') and m.bias is not None:
                 init.constant_(m.bias.data, 0.0)
         # BatchNorm Layer's weight is not a matrix; only normal distribution applies.
@@ -66,7 +69,12 @@ def init_net(net, init_type='normal', init_gain=0.02):
 class UnetGenerator(nn.Module):
     """Create a Unet-based generator"""
 
-    def __init__(self, input_nc, output_nc, num_downs, ngf=16, use_dropout=False):
+    def __init__(self,
+                 input_nc,
+                 output_nc,
+                 num_downs,
+                 ngf=16,
+                 use_dropout=False):
         """Construct a Unet generator
         Parameters:
             input_nc (int)  -- the number of channels in input images
@@ -82,20 +90,34 @@ class UnetGenerator(nn.Module):
         super(UnetGenerator, self).__init__()
         # construct unet structure
         unet_block = UnetSkipConnectionBlock(
-            ngf * 8, ngf * 8, input_nc=None, submodule=None, innermost=True)  # add the innermost layer
+            ngf * 8, ngf * 8, input_nc=None, submodule=None,
+            innermost=True)  # add the innermost layer
         # add intermediate layers with ngf * 8 filters
         for i in range(num_downs - 5):
-            unet_block = UnetSkipConnectionBlock(
-                ngf * 8, ngf * 8, input_nc=None, submodule=unet_block, use_dropout=use_dropout)
+            unet_block = UnetSkipConnectionBlock(ngf * 8,
+                                                 ngf * 8,
+                                                 input_nc=None,
+                                                 submodule=unet_block,
+                                                 use_dropout=use_dropout)
         # gradually reduce the number of filters from ngf * 8 to ngf
-        unet_block = UnetSkipConnectionBlock(
-            ngf * 4, ngf * 8, input_nc=None, submodule=unet_block)
-        unet_block = UnetSkipConnectionBlock(
-            ngf * 2, ngf * 4, input_nc=None, submodule=unet_block)
-        unet_block = UnetSkipConnectionBlock(
-            ngf, ngf * 2, input_nc=None, submodule=unet_block)
+        unet_block = UnetSkipConnectionBlock(ngf * 4,
+                                             ngf * 8,
+                                             input_nc=None,
+                                             submodule=unet_block)
+        unet_block = UnetSkipConnectionBlock(ngf * 2,
+                                             ngf * 4,
+                                             input_nc=None,
+                                             submodule=unet_block)
+        unet_block = UnetSkipConnectionBlock(ngf,
+                                             ngf * 2,
+                                             input_nc=None,
+                                             submodule=unet_block)
         self.model = UnetSkipConnectionBlock(
-            output_nc, ngf, input_nc=input_nc, submodule=unet_block, outermost=True)  # add the outermost layer
+            output_nc,
+            ngf,
+            input_nc=input_nc,
+            submodule=unet_block,
+            outermost=True)  # add the outermost layer
 
     def forward(self, input):
         """Standard forward"""
@@ -108,8 +130,14 @@ class UnetSkipConnectionBlock(nn.Module):
         |-- downsampling -- |submodule| -- upsampling --|
     """
 
-    def __init__(self, outer_nc, inner_nc, input_nc=None,
-                 submodule=None, outermost=False, innermost=False, use_dropout=False):
+    def __init__(self,
+                 outer_nc,
+                 inner_nc,
+                 input_nc=None,
+                 submodule=None,
+                 outermost=False,
+                 innermost=False,
+                 use_dropout=False):
         """Construct a Unet submodule with skip connections.
 
         Parameters:
@@ -126,30 +154,39 @@ class UnetSkipConnectionBlock(nn.Module):
         self.outermost = outermost
         if input_nc is None:
             input_nc = outer_nc
-        downconv = nn.Conv2d(input_nc, inner_nc, kernel_size=4,
-                             stride=2, padding=1)
+        downconv = nn.Conv2d(input_nc,
+                             inner_nc,
+                             kernel_size=4,
+                             stride=2,
+                             padding=1)
         downrelu = nn.LeakyReLU(0.2, True)
         downnorm = nn.BatchNorm2d(inner_nc)
         uprelu = nn.ReLU(True)
         upnorm = nn.BatchNorm2d(outer_nc)
 
         if outermost:
-            upconv = nn.ConvTranspose2d(inner_nc * 2, outer_nc,
-                                        kernel_size=4, stride=2,
+            upconv = nn.ConvTranspose2d(inner_nc * 2,
+                                        outer_nc,
+                                        kernel_size=4,
+                                        stride=2,
                                         padding=1)
             down = [downconv]
             up = [uprelu, upconv, nn.Tanh()]
             model = down + [submodule] + up
         elif innermost:
-            upconv = nn.ConvTranspose2d(inner_nc, outer_nc,
-                                        kernel_size=4, stride=2,
+            upconv = nn.ConvTranspose2d(inner_nc,
+                                        outer_nc,
+                                        kernel_size=4,
+                                        stride=2,
                                         padding=1)
             down = [downrelu, downconv]
             up = [uprelu, upconv, upnorm]
             model = down + up
         else:
-            upconv = nn.ConvTranspose2d(inner_nc * 2, outer_nc,
-                                        kernel_size=4, stride=2,
+            upconv = nn.ConvTranspose2d(inner_nc * 2,
+                                        outer_nc,
+                                        kernel_size=4,
+                                        stride=2,
                                         padding=1)
             down = [downrelu, downconv, downnorm]
             up = [uprelu, upconv, upnorm]
@@ -164,7 +201,7 @@ class UnetSkipConnectionBlock(nn.Module):
     def forward(self, x):
         if self.outermost:
             return self.model(x)
-        else:   # add skip connections
+        else:  # add skip connections
             return torch.cat([x, self.model(x)], 1)
 
 
@@ -178,15 +215,20 @@ class conv_block(nn.Module):
     def __init__(self, ch_in, ch_out):
         super(conv_block, self).__init__()
         self.conv = nn.Sequential(
-            nn.Conv2d(ch_in, ch_out, kernel_size=3,
-                      stride=1, padding=1, bias=True),
-            nn.BatchNorm2d(ch_out),
+            nn.Conv2d(ch_in,
+                      ch_out,
+                      kernel_size=3,
+                      stride=1,
+                      padding=1,
+                      bias=True), nn.BatchNorm2d(ch_out),
             nn.ReLU(inplace=True),
-            nn.Conv2d(ch_out, ch_out, kernel_size=3,
-                      stride=1, padding=1, bias=True),
-            nn.BatchNorm2d(ch_out),
-            nn.ReLU(inplace=True)
-        )
+            nn.Conv2d(ch_out,
+                      ch_out,
+                      kernel_size=3,
+                      stride=1,
+                      padding=1,
+                      bias=True), nn.BatchNorm2d(ch_out),
+            nn.ReLU(inplace=True))
 
     def forward(self, x):
         x = self.conv(x)
@@ -199,11 +241,13 @@ class up_conv(nn.Module):
         super(up_conv, self).__init__()
         self.up = nn.Sequential(
             nn.Upsample(scale_factor=2),
-            nn.Conv2d(ch_in, ch_out, kernel_size=3,
-                      stride=1, padding=1, bias=True),
-            nn.BatchNorm2d(ch_out),
-            nn.ReLU(inplace=True)
-        )
+            nn.Conv2d(ch_in,
+                      ch_out,
+                      kernel_size=3,
+                      stride=1,
+                      padding=1,
+                      bias=True), nn.BatchNorm2d(ch_out),
+            nn.ReLU(inplace=True))
 
     def forward(self, x):
         x = self.up(x)
@@ -215,32 +259,34 @@ class Attention_block(nn.Module):
     def __init__(self, F_g, F_l, F_int):
         super(Attention_block, self).__init__()
         self.W_g = nn.Sequential(
-            nn.Conv2d(F_g, F_int, kernel_size=1,
-                      stride=1, padding=0, bias=True),
-            nn.BatchNorm2d(F_int)
-        )
+            nn.Conv2d(F_g,
+                      F_int,
+                      kernel_size=1,
+                      stride=1,
+                      padding=0,
+                      bias=True), nn.BatchNorm2d(F_int))
 
         self.W_x = nn.Sequential(
-            nn.Conv2d(F_l, F_int, kernel_size=1,
-                      stride=1, padding=0, bias=True),
-            nn.BatchNorm2d(F_int)
-        )
+            nn.Conv2d(F_l,
+                      F_int,
+                      kernel_size=1,
+                      stride=1,
+                      padding=0,
+                      bias=True), nn.BatchNorm2d(F_int))
 
         self.psi = nn.Sequential(
             nn.Conv2d(F_int, 1, kernel_size=1, stride=1, padding=0, bias=True),
-            nn.BatchNorm2d(1),
-            nn.Sigmoid()
-        )
+            nn.BatchNorm2d(1), nn.Sigmoid())
 
         self.relu = nn.ReLU(inplace=True)
 
     def forward(self, g, x):
         g1 = self.W_g(g)
         x1 = self.W_x(x)
-        psi = self.relu(g1+x1)
+        psi = self.relu(g1 + x1)
         psi = self.psi(psi)
 
-        return x*psi
+        return x * psi
 
 
 class AttU_Net(nn.Module):
@@ -271,8 +317,11 @@ class AttU_Net(nn.Module):
         self.Att2 = Attention_block(F_g=64, F_l=64, F_int=32)
         self.Up_conv2 = conv_block(ch_in=128, ch_out=64)
 
-        self.Conv_1x1 = nn.Conv2d(
-            64, output_ch, kernel_size=1, stride=1, padding=0)
+        self.Conv_1x1 = nn.Conv2d(64,
+                                  output_ch,
+                                  kernel_size=1,
+                                  stride=1,
+                                  padding=0)
 
         init_net(self, "xavier")
 
@@ -323,8 +372,14 @@ class DenseLayer(nn.Sequential):
         super().__init__()
         self.add_module('norm', nn.BatchNorm2d(in_channels))
         self.add_module('relu', nn.ReLU(True))
-        self.add_module('conv', nn.Conv2d(in_channels, growth_rate, kernel_size=3,
-                                          stride=1, padding=1, bias=True))
+        self.add_module(
+            'conv',
+            nn.Conv2d(in_channels,
+                      growth_rate,
+                      kernel_size=3,
+                      stride=1,
+                      padding=1,
+                      bias=True))
         self.add_module('drop', nn.Dropout2d(0.2))
 
     def forward(self, x):
@@ -335,9 +390,10 @@ class DenseBlock(nn.Module):
     def __init__(self, in_channels, growth_rate, n_layers, upsample=False):
         super().__init__()
         self.upsample = upsample
-        self.layers = nn.ModuleList([DenseLayer(
-            in_channels + i*growth_rate, growth_rate)
-            for i in range(n_layers)])
+        self.layers = nn.ModuleList([
+            DenseLayer(in_channels + i * growth_rate, growth_rate)
+            for i in range(n_layers)
+        ])
 
     def forward(self, x):
         if self.upsample:
@@ -361,9 +417,14 @@ class TransitionDown(nn.Sequential):
         super().__init__()
         self.add_module('norm', nn.BatchNorm2d(num_features=in_channels))
         self.add_module('relu', nn.ReLU(inplace=True))
-        self.add_module('conv', nn.Conv2d(in_channels, in_channels,
-                                          kernel_size=1, stride=1,
-                                          padding=0, bias=True))
+        self.add_module(
+            'conv',
+            nn.Conv2d(in_channels,
+                      in_channels,
+                      kernel_size=1,
+                      stride=1,
+                      padding=0,
+                      bias=True))
         self.add_module('drop', nn.Dropout2d(0.2))
         self.add_module('maxpool', nn.MaxPool2d(2))
 
@@ -374,9 +435,12 @@ class TransitionDown(nn.Sequential):
 class TransitionUp(nn.Module):
     def __init__(self, in_channels, out_channels):
         super().__init__()
-        self.convTrans = nn.ConvTranspose2d(
-            in_channels=in_channels, out_channels=out_channels,
-            kernel_size=3, stride=2, padding=0, bias=True)
+        self.convTrans = nn.ConvTranspose2d(in_channels=in_channels,
+                                            out_channels=out_channels,
+                                            kernel_size=3,
+                                            stride=2,
+                                            padding=0,
+                                            bias=True)
 
     def forward(self, x, skip):
         out = self.convTrans(x)
@@ -388,8 +452,9 @@ class TransitionUp(nn.Module):
 class Bottleneck(nn.Sequential):
     def __init__(self, in_channels, growth_rate, n_layers):
         super().__init__()
-        self.add_module('bottleneck', DenseBlock(
-            in_channels, growth_rate, n_layers, upsample=True))
+        self.add_module(
+            'bottleneck',
+            DenseBlock(in_channels, growth_rate, n_layers, upsample=True))
 
     def forward(self, x):
         return super().forward(x)
@@ -403,9 +468,14 @@ def center_crop(layer, max_height, max_width):
 
 
 class FCDenseNet(nn.Module):
-    def __init__(self, in_channels=3, down_blocks=(5, 5, 5, 5, 5),
-                 up_blocks=(5, 5, 5, 5, 5), bottleneck_layers=5,
-                 growth_rate=16, out_chans_first_conv=48, n_classes=1):
+    def __init__(self,
+                 in_channels=3,
+                 down_blocks=(5, 5, 5, 5, 5),
+                 up_blocks=(5, 5, 5, 5, 5),
+                 bottleneck_layers=5,
+                 growth_rate=16,
+                 out_chans_first_conv=48,
+                 n_classes=1):
         super().__init__()
         self.down_blocks = down_blocks
         self.up_blocks = up_blocks
@@ -414,9 +484,14 @@ class FCDenseNet(nn.Module):
 
         ## First Convolution ##
 
-        self.add_module('firstconv', nn.Conv2d(in_channels=in_channels,
-                                               out_channels=out_chans_first_conv, kernel_size=3,
-                                               stride=1, padding=1, bias=True))
+        self.add_module(
+            'firstconv',
+            nn.Conv2d(in_channels=in_channels,
+                      out_channels=out_chans_first_conv,
+                      kernel_size=3,
+                      stride=1,
+                      padding=1,
+                      bias=True))
         cur_channels_count = out_chans_first_conv
 
         #####################
@@ -428,7 +503,7 @@ class FCDenseNet(nn.Module):
         for i in range(len(down_blocks)):
             self.denseBlocksDown.append(
                 DenseBlock(cur_channels_count, growth_rate, down_blocks[i]))
-            cur_channels_count += (growth_rate*down_blocks[i])
+            cur_channels_count += (growth_rate * down_blocks[i])
             skip_connection_channel_counts.insert(0, cur_channels_count)
             self.transDownBlocks.append(TransitionDown(cur_channels_count))
 
@@ -436,9 +511,10 @@ class FCDenseNet(nn.Module):
         #     Bottleneck    #
         #####################
 
-        self.add_module('bottleneck', Bottleneck(cur_channels_count,
-                                                 growth_rate, bottleneck_layers))
-        prev_block_channels = growth_rate*bottleneck_layers
+        self.add_module(
+            'bottleneck',
+            Bottleneck(cur_channels_count, growth_rate, bottleneck_layers))
+        prev_block_channels = growth_rate * bottleneck_layers
         cur_channels_count += prev_block_channels
 
         #######################
@@ -447,35 +523,42 @@ class FCDenseNet(nn.Module):
 
         self.transUpBlocks = nn.ModuleList([])
         self.denseBlocksUp = nn.ModuleList([])
-        for i in range(len(up_blocks)-1):
-            self.transUpBlocks.append(TransitionUp(
-                prev_block_channels, prev_block_channels))
+        for i in range(len(up_blocks) - 1):
+            self.transUpBlocks.append(
+                TransitionUp(prev_block_channels, prev_block_channels))
             cur_channels_count = prev_block_channels + \
                 skip_connection_channel_counts[i]
 
-            self.denseBlocksUp.append(DenseBlock(
-                cur_channels_count, growth_rate, up_blocks[i],
-                upsample=True))
-            prev_block_channels = growth_rate*up_blocks[i]
+            self.denseBlocksUp.append(
+                DenseBlock(cur_channels_count,
+                           growth_rate,
+                           up_blocks[i],
+                           upsample=True))
+            prev_block_channels = growth_rate * up_blocks[i]
             cur_channels_count += prev_block_channels
 
         ## Final DenseBlock ##
 
-        self.transUpBlocks.append(TransitionUp(
-            prev_block_channels, prev_block_channels))
+        self.transUpBlocks.append(
+            TransitionUp(prev_block_channels, prev_block_channels))
         cur_channels_count = prev_block_channels + \
             skip_connection_channel_counts[-1]
 
-        self.denseBlocksUp.append(DenseBlock(
-            cur_channels_count, growth_rate, up_blocks[-1],
-            upsample=False))
-        cur_channels_count += growth_rate*up_blocks[-1]
+        self.denseBlocksUp.append(
+            DenseBlock(cur_channels_count,
+                       growth_rate,
+                       up_blocks[-1],
+                       upsample=False))
+        cur_channels_count += growth_rate * up_blocks[-1]
 
         ## Softmax ##
 
         self.finalConv = nn.Conv2d(in_channels=cur_channels_count,
-                                   out_channels=n_classes, kernel_size=1, stride=1,
-                                   padding=0, bias=True)
+                                   out_channels=n_classes,
+                                   kernel_size=1,
+                                   stride=1,
+                                   padding=0,
+                                   bias=True)
 
         init_net(self, "kaiming")
 
@@ -499,24 +582,33 @@ class FCDenseNet(nn.Module):
 
 
 def FCDenseNet57(n_classes):
-    return FCDenseNet(
-        in_channels=3, down_blocks=(4, 4, 4, 4, 4),
-        up_blocks=(4, 4, 4, 4, 4), bottleneck_layers=4,
-        growth_rate=12, out_chans_first_conv=48, n_classes=n_classes)
+    return FCDenseNet(in_channels=3,
+                      down_blocks=(4, 4, 4, 4, 4),
+                      up_blocks=(4, 4, 4, 4, 4),
+                      bottleneck_layers=4,
+                      growth_rate=12,
+                      out_chans_first_conv=48,
+                      n_classes=n_classes)
 
 
 def FCDenseNet67(n_classes):
-    return FCDenseNet(
-        in_channels=3, down_blocks=(5, 5, 5, 5, 5),
-        up_blocks=(5, 5, 5, 5, 5), bottleneck_layers=5,
-        growth_rate=16, out_chans_first_conv=48, n_classes=n_classes)
+    return FCDenseNet(in_channels=3,
+                      down_blocks=(5, 5, 5, 5, 5),
+                      up_blocks=(5, 5, 5, 5, 5),
+                      bottleneck_layers=5,
+                      growth_rate=16,
+                      out_chans_first_conv=48,
+                      n_classes=n_classes)
 
 
 def FCDenseNet103(n_classes):
-    return FCDenseNet(
-        in_channels=3, down_blocks=(4, 5, 7, 10, 12),
-        up_blocks=(12, 10, 7, 5, 4), bottleneck_layers=15,
-        growth_rate=16, out_chans_first_conv=48, n_classes=n_classes)
+    return FCDenseNet(in_channels=3,
+                      down_blocks=(4, 5, 7, 10, 12),
+                      up_blocks=(12, 10, 7, 5, 4),
+                      bottleneck_layers=15,
+                      growth_rate=16,
+                      out_chans_first_conv=48,
+                      n_classes=n_classes)
 
 
 class B2B(nn.Module):
@@ -549,15 +641,17 @@ class SimpleSegmentationModel(nn.Module):
 
         x = self.backbone(x)["out"]
         x = self.classifier(x)
-        x = torch.nn.functional.interpolate(x, size=input_shape, mode='bicubic', align_corners=False)
+        x = torch.nn.functional.interpolate(x,
+                                            size=input_shape,
+                                            mode='bicubic',
+                                            align_corners=False)
 
         return x
 
 
 def deeplabv3_resnet101():
     backbone = resnet.__dict__['resnet50'](
-        pretrained=True,
-        replace_stride_with_dilation=[False, True, True])
+        pretrained=True, replace_stride_with_dilation=[False, True, True])
 
     return_layers = {'layer4': 'out'}
 
@@ -571,8 +665,7 @@ def deeplabv3_resnet101():
 
 def deeplabv3_resnet18():
     backbone = resnet.__dict__['resnet18'](
-        pretrained=False,
-        replace_stride_with_dilation=[False, True, True])
+        pretrained=False, replace_stride_with_dilation=[False, True, True])
 
     return_layers = {'layer4': 'out'}
 
@@ -586,8 +679,7 @@ def deeplabv3_resnet18():
 
 def fcn_resnet50():
     backbone = resnet.__dict__['resnet50'](
-        pretrained=True,
-        replace_stride_with_dilation=[False, True, True])
+        pretrained=True, replace_stride_with_dilation=[False, True, True])
 
     return_layers = {'layer4': 'out'}
 

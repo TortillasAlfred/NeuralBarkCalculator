@@ -46,13 +46,13 @@ def make_weight_map(masks):
         # compute the distance of each pixel from this boundary
         bounds = find_boundaries(mask, mode='inner')
         X2, Y2 = np.nonzero(bounds)
-        xSum = (X2.reshape(-1, 1) - X1.reshape(1, -1)) ** 2
-        ySum = (Y2.reshape(-1, 1) - Y1.reshape(1, -1)) ** 2
+        xSum = (X2.reshape(-1, 1) - X1.reshape(1, -1))**2
+        ySum = (Y2.reshape(-1, 1) - Y1.reshape(1, -1))**2
         distMap[:, i] = np.sqrt(xSum + ySum).min(axis=0)
     ix = np.arange(distMap.shape[0])
     if distMap.shape[1] == 1:
         d1 = distMap.ravel()
-        border_loss_map = w0 * np.exp((-1 * (d1) ** 2) / (2 * (sigma ** 2)))
+        border_loss_map = w0 * np.exp((-1 * (d1)**2) / (2 * (sigma**2)))
     else:
         if distMap.shape[1] == 2:
             d1_ix, d2_ix = np.argpartition(distMap, 1, axis=1)[:, :2].T
@@ -137,8 +137,9 @@ def make_dataset(dir, extensions):
     return make_dataset_for_dir(dir, extensions)
 
 
-IMG_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.ppm',
-                  '.bmp', '.pgm', '.tif', '.tiff', 'webp']
+IMG_EXTENSIONS = [
+    '.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm', '.tif', '.tiff', 'webp'
+]
 
 
 def pil_loader(path, grayscale=False):
@@ -186,12 +187,19 @@ class RegressionDatasetFolder(data.Dataset):
         samples (list): List of (sample path, target path) tuples
     """
 
-    def __init__(self, root, extensions=IMG_EXTENSIONS, loader=pil_loader,
-                 transform=None, input_only_transform=None, include_fname=False):
+    def __init__(self,
+                 root,
+                 extensions=IMG_EXTENSIONS,
+                 loader=pil_loader,
+                 transform=None,
+                 input_only_transform=None,
+                 include_fname=False):
         samples = make_dataset(root, extensions)
         if len(samples) == 0:
-            raise(RuntimeError("Found 0 files in subfolders of: " + root + "\n"
-                               "Supported extensions are: " + ",".join(extensions)))
+            raise (RuntimeError("Found 0 files in subfolders of: " + root +
+                                "\n"
+                                "Supported extensions are: " +
+                                ",".join(extensions)))
 
         self.root = root
         self.loader = loader
@@ -250,8 +258,11 @@ class RegressionDatasetFolder(data.Dataset):
         fmt_str += '    Root Location: {}\n'.format(self.root)
         tmp = '    Transforms (if any): '
         fmt_str += '{0}{1}\n'.format(
-            tmp, self.transform.__repr__().replace('\n', '\n' + ' ' * len(tmp)))
+            tmp,
+            self.transform.__repr__().replace('\n', '\n' + ' ' * len(tmp)))
         tmp = '    Target Transforms (if any): '
         fmt_str += '{0}{1}'.format(
-            tmp, self.target_transform.__repr__().replace('\n', '\n' + ' ' * len(tmp)))
+            tmp,
+            self.target_transform.__repr__().replace('\n',
+                                                     '\n' + ' ' * len(tmp)))
         return fmt_str

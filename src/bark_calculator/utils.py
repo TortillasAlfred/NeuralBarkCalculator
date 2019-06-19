@@ -45,7 +45,7 @@ def rotate_crop(image, angle_range=20):
 
     image = rotate(image, angle)
 
-    cropped_size = rotatedRectWithMaxArea(size, (angle + 180)/(180*np.pi))
+    cropped_size = rotatedRectWithMaxArea(size, (angle + 180) / (180 * np.pi))
 
     return center_crop(image, cropped_size)
 
@@ -57,15 +57,15 @@ def rotatedRectWithMaxArea(size, angle):
     axis-aligned rectangle (maximal area) within the rotated rectangle.
     """
     sin_a, cos_a = abs(sin(angle)), abs(cos(angle))
-    if 1 <= 2.*sin_a*cos_a or abs(sin_a-cos_a) < 1e-10:
-        x = 0.5*size
-        wr, hr = (x/sin_a, x/cos_a)
+    if 1 <= 2. * sin_a * cos_a or abs(sin_a - cos_a) < 1e-10:
+        x = 0.5 * size
+        wr, hr = (x / sin_a, x / cos_a)
     else:
-        cos_2a = cos_a*cos_a - sin_a*sin_a
+        cos_2a = cos_a * cos_a - sin_a * sin_a
         wr, hr = (size*cos_a - size*sin_a)/cos_2a, \
             (size*cos_a - size*sin_a)/cos_2a
 
-    return floor(wr/2), floor(hr/2)
+    return floor(wr / 2), floor(hr / 2)
 
 
 def elastic_transform(image):
@@ -77,15 +77,15 @@ def elastic_transform(image):
     """
     image = np.array(image)
 
-    image_deformed = elasticdeform.deform_random_grid(
-        image, sigma=10, axis=(0, 1))
+    image_deformed = elasticdeform.deform_random_grid(image,
+                                                      sigma=10,
+                                                      axis=(0, 1))
 
     return Image.fromarray(image_deformed)
 
 
 def compute_mean_std(working_dir: str):
-    train_dataset = RegressionDatasetFolder(working_dir,
-                                            transform=ToTensor())
+    train_dataset = RegressionDatasetFolder(working_dir, transform=ToTensor())
     loader = DataLoader(train_dataset, batch_size=1)
 
     mean = 0.
@@ -114,8 +114,7 @@ def get_mean_std():
 
 
 def compute_pos_weight(working_dir: str):
-    train_dataset = RegressionDatasetFolder(working_dir,
-                                            transform=ToTensor())
+    train_dataset = RegressionDatasetFolder(working_dir, transform=ToTensor())
     loader = DataLoader(train_dataset, batch_size=1)
 
     class_counts = [0, 0, 0]
@@ -131,7 +130,7 @@ def compute_pos_weight(working_dir: str):
     class_weights = [0, 0, 0]
 
     for y in range(3):
-        class_weights[y] = total_samples/(3 * class_counts[y])
+        class_weights[y] = total_samples / (3 * class_counts[y])
 
     return torch.tensor(class_weights)
 
@@ -177,7 +176,6 @@ class SoftDiceLoss(nn.Module):
 
 
 class MixedLoss(nn.Module):
-
     def __init__(self):
         super(MixedLoss, self).__init__()
         self.__name__ = "MixedLoss"
@@ -189,7 +187,6 @@ class MixedLoss(nn.Module):
 
 
 class CustomWeightedCrossEntropy(nn.Module):
-
     def __init__(self, weights):
         super(CustomWeightedCrossEntropy, self).__init__()
         self.__name__ = "CustomWeightedCrossEntropy"
@@ -200,7 +197,8 @@ class CustomWeightedCrossEntropy(nn.Module):
 
         max_classes = torch.max(torch.argmax(predict, dim=1), true).flatten()
 
-        class_weights = torch.index_select(self.weights, 0, max_classes).view(true.shape)
+        class_weights = torch.index_select(self.weights, 0,
+                                           max_classes).view(true.shape)
 
         return (entropies * class_weights).mean()
 
@@ -209,7 +207,8 @@ def remove_class_wise(img, class_idx, shape):
     binary_mapping = [0 if i != class_idx else 1 for i in range(3)]
     binary_mapping = torch.tensor(binary_mapping).to(img.device)
 
-    binary_img = torch.index_select(binary_mapping, 0, img.flatten()).reshape(shape)
+    binary_img = torch.index_select(binary_mapping, 0,
+                                    img.flatten()).reshape(shape)
 
     masks = torch.stack(list(map(remove_from_img, binary_img)))
 
@@ -238,7 +237,6 @@ def remove_small_zones(img):
 
 
 class IOU(nn.Module):
-
     def __init__(self, class_to_watch):
         super().__init__()
         self.class_to_watch = class_to_watch
@@ -246,7 +244,8 @@ class IOU(nn.Module):
         if self.class_to_watch is None:
             self.__name__ = "IntersectionOverUnion"
         else:
-            self.__name__ = "IntersectionOverUnion_class_{}".format(self.class_to_watch)
+            self.__name__ = "IntersectionOverUnion_class_{}".format(
+                self.class_to_watch)
 
     def forward(self, outputs, labels):
         outputs = torch.argmax(outputs, 1)
@@ -273,7 +272,6 @@ class IOU(nn.Module):
 
 
 class FocalLossWrapper(nn.Module):
-
     def __init__(self):
         super().__init__()
         self.criterion = FocalLoss(alpha=0.25,
@@ -290,9 +288,8 @@ TO_TENSOR = ToTensor()
 
 
 def pad_resize(image, width, height):
-    image = pad(image,
-                (ceil((width - image.width)/2),
-                 ceil((height - image.height)/2)),
+    image = pad(image, (ceil(
+        (width - image.width) / 2), ceil((height - image.height) / 2)),
                 padding_mode='reflect')
 
     return resize(image, (height, width))
@@ -303,7 +300,8 @@ def pad_to_biggest_image(tensor_data):
     width = max([img[0].width for img in images])
     height = max([img[0].height for img in images])
 
-    def resizer(img): return pad_resize(img, width, height)
+    def resizer(img):
+        return pad_resize(img, width, height)
 
     for i, (sample, target) in enumerate(images):
         sample = resizer(sample)
@@ -315,7 +313,6 @@ def pad_to_biggest_image(tensor_data):
 
 
 class ResetLR(Callback):
-
     def __init__(self, init_lr):
         super(ResetLR, self).__init__()
         self.init_lr = init_lr
