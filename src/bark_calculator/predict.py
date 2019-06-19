@@ -49,7 +49,7 @@ def main(args):
                                             transform=Compose([ToTensor()]),
                                             include_fname=True)
     pure_dataset = RegressionDatasetFolder(os.path.join(args.root_dir, "Images/dual_exp"),
-                                           input_only_transform=Compose([Normalize(mean, std)]),
+                                           input_only_transform=None,
                                            transform=Compose([ToTensor()]),
                                            include_fname=True)
 
