@@ -114,20 +114,22 @@ def make_dataset_for_dir(dir, extensions):
 
     images = []
 
-    for _, _, fnames in sorted(os.walk(samples_dir)):
-        for fname in sorted(fnames):
-            if has_file_allowed_extension(fname, extensions):
-                sample_path = os.path.join(samples_dir, fname)
-                fname = fname.replace("bmp", "png")
-                target_path = os.path.join(targets_dir, fname)
+    for wood_type in ["epinette_gelee", "epinette_non_gelee", "sapin"]:
+        type_dir = os.path.join(samples_dir, wood_type)
+        for _, _, fnames in sorted(os.walk(type_dir)):
+            for fname in sorted(fnames):
+                if has_file_allowed_extension(fname, extensions):
+                    sample_path = os.path.join(samples_dir, fname)
+                    fname = (fname.replace("bmp", "png"), wood_type)
+                    target_path = os.path.join(targets_dir, fname)
 
-                if not os.path.isfile(target_path):
-                    # raise IOError("No file found in 'targets' subfolder" " for image name {} !".format(fname))
-                    item = (sample_path, "", fname)
-                else:
-                    item = (sample_path, target_path, fname)
+                    if not os.path.isfile(target_path):
+                        # raise IOError("No file found in 'targets' subfolder" " for image name {} !".format(fname))
+                        item = (sample_path, "", fname)
+                    else:
+                        item = (sample_path, target_path, fname)
 
-                images.append(item)
+                    images.append(item)
 
     return images
 

@@ -18,12 +18,13 @@ import pickle
 from PIL import Image
 import os
 import argparse
+import csv
 
 
 def generate_output_folders(root_dir):
-    levels = [("combined_images", ["train", "valid", "test"]), ("outputs", ["train", "valid", "test"])]
+    levels = [('combined_images', ['train', 'valid', 'test']), ('outputs', ['train', 'valid', 'test'])]
 
-    results_dir = os.path.join(root_dir, "Images", "results", "fcn_decay")
+    results_dir = os.path.join(root_dir, 'Images', 'results', 'fcn_decay')
 
     def mkdirs_if_not_there(dir):
         if not os.path.isdir(dir):
@@ -43,7 +44,7 @@ def generate_output_folders(root_dir):
 def main(args):
     mean, std = get_mean_std()
     pos_weights = get_pos_weight()
-    test_dataset = RegressionDatasetFolder(os.path.join(args.root_dir, "Images/dual_exp"),
+    test_dataset = RegressionDatasetFolder(os.path.join(args.root_dir, 'Images/dual_exp'),
                                            input_only_transform=Compose([Normalize(mean, std)]),
                                            transform=Compose([ToTensor()]))
 
@@ -52,7 +53,7 @@ def main(args):
     module = fcn_resnet50()
 
     optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=5e-3)
-    exp = Experiment(directory=os.path.join(args.root_dir, "fcn_decay/"),
+    exp = Experiment(directory=os.path.join(args.root_dir, 'fcn_decay/'),
                      module=module,
                      device=torch.device(args.device),
                      optimizer=optim,
@@ -64,11 +65,11 @@ def main(args):
     lr_schedulers = [ExponentialLR(gamma=0.975)]
     callbacks = []
 
-    valid_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/dual_exp",
+    valid_dataset = RegressionDatasetFolder('/mnt/storage/mgodbout/Ecorcage/Images/dual_exp',
                                             input_only_transform=Compose([Normalize(mean, std)]),
                                             transform=Compose([ToTensor()]),
                                             include_fname=True)
-    pure_dataset = RegressionDatasetFolder(os.path.join(args.root_dir, "Images/dual_exp"),
+    pure_dataset = RegressionDatasetFolder(os.path.join(args.root_dir, 'Images/dual_exp'),
                                            input_only_transform=None,
                                            transform=Compose([ToTensor()]),
                                            include_fname=True)
@@ -84,15 +85,17 @@ def main(args):
 
     splits = [(train_split, 'train'), (valid_split, 'valid'), (test_split, 'test')]
 
+    results_csv = [['Name', 'Type', 'Split', 'F1_nothing', 'F1_bark', 'F1_node', 'F1_mean', 'Bark %', 'Node %']]
+
     with torch.no_grad():
         for image_number, (batch, pure_batch) in enumerate(zip(valid_loader, pure_loader)):
             input = pure_batch[0]
             target = pure_batch[1]
-            fname = pure_batch[2][0]
+            fname, wood_type = pure_batch[2]
 
             del pure_batch
 
-            # if os.path.isfile("/mnt/storage/mgodbout/Ecorcage/Images/results/fcn_decay/{}".format(fname)):
+            # if os.path.isfile('/mnt/storage/mgodbout/Ecorcage/Images/results/fcn_decay/{}'.format(fname)):
             #     continue
 
             outputs = module(batch[0].to(torch.device(args.device)))
@@ -101,7 +104,7 @@ def main(args):
 
             del batch
 
-            names = ["Input", "Target", "Generated image"]
+            names = ['Input', 'Target', 'Generated image']
 
             imgs = [input, target, outputs]
             imgs = [img.detach().cpu().squeeze().numpy() for img in imgs]
@@ -110,7 +113,7 @@ def main(args):
                 class_accs = f1_score(imgs[1].flatten(), imgs[2].flatten(), labels=[0, 1, 2], average=None)
                 acc = class_accs.mean()
             except ValueError:
-                print("Error on file {}".format(fname))
+                print('Error on file {}'.format(fname))
                 print(imgs[1].shape)
                 print(imgs[2].shape)
                 continue
@@ -127,31 +130,48 @@ def main(args):
                 ax.set_title(names[i])
                 ax.axis('off')
 
-            suptitle = "Mean f1 : {:.3f}".format(acc)
-
-            class_names = ["Nothing", "Bark", "Node"]
-
-            for c, c_acc in zip(class_names, class_accs):
-                suptitle += "\n{} : {:.3f}".format(c, c_acc)
+            suptitle = 'Mean f1 : {:.3f}'.format(acc)
 
             for split_idxs, split_name in splits:
                 if image_number in split_idxs:
                     split = split_name
 
+            running_csv_stats = [fname, wood_type, split_name]
+
+            class_names = ['Nothing', 'Bark', 'Node']
+
+            for c, c_acc in zip(class_names, class_accs):
+                suptitle += '\n{} : {:.3f}'.format(c, c_acc)
+                running_csv_stats.append('{:.3f}'.format(c_acc))
+
+            running_csv_stats.append('{:.3f}'.format(acc))
+
+            for class_idx in [1, 2]:
+                class_percent = (outputs == class_idx).float().mean().cpu()
+                running_csv_stats.append('{:.5f}'.format(class_percent))
+
             plt.suptitle(suptitle)
             plt.tight_layout()
             # plt.show()
             plt.savefig(os.path.join(args.root_dir,
-                                     "Images/results/combined_images/fcn_decay/{}/{}").format(split, fname),
-                        format="png",
+                                     'Images/results/combined_images/fcn_decay/{}/{}').format(split, fname),
+                        format='png',
                         dpi=900)
             plt.close()
 
             outputs = Image.fromarray(outputs, mode='L')
-            outputs.save(os.path.join(args.root_dir, "Images/results/outputs/fcn_decay/{}/{}").format(split, fname))
+            outputs.save(os.path.join(args.root_dir, 'Images/results/outputs/fcn_decay/{}/{}').format(split, fname))
+
+            results_csv.append(running_csv_stats)
+
+    csv_file = os.path.join(args.root_dir, 'Images', 'results', 'final_stats.csv')
+
+    with open(csv_file, 'w') as f:
+        csv_writer = csv.writer(f, delimiter='\t')
+        csv_writer.writerows(results_csv)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
     parser.add_argument('root_dir', type=str, help='root directory path.')
