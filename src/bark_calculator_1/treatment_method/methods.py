@@ -199,7 +199,7 @@ class BlackTrimmer(TreatmentMethod):
         clear_enough_lines_idx = np.mean(summed_image, axis=-1) > 0.85
 
         first_idx = np.argmax(clear_enough_lines_idx)
-        last_idx = 2048 - np.argmax(clear_enough_lines_idx[::-1])
+        last_idx = image.shape[0] - np.argmax(clear_enough_lines_idx[::-1])
 
         return first_idx, last_idx
 
@@ -276,9 +276,7 @@ class V2(TreatmentMethod):
         self.black_masker = BlackMask()
 
     def treat_image(self, image, image_type):
-        # h, l, h_2, l_2 = self.threshold_dict[image_type]
-
-        image = resize(image, (2048, 2048), order=3)
+        image = resize(image, (1024, 1024), order=3)
 
         first_idx, last_idx = BlackTrimmer().make_trimmer(image)
 
