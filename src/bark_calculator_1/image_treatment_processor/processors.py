@@ -25,8 +25,7 @@ class DisplayProcessor(Processor):
         fig, axes = plt.subplots(ncols=n_cols, nrows=n_rows)
 
         for idx, image in enumerate(treated_images):
-            ax = axes[idx] if n_rows == 1 else axes[idx // n_cols][idx %
-                                                                   n_cols]
+            ax = axes[idx] if n_rows == 1 else axes[idx // n_cols][idx % n_cols]
             ax.imshow(image, cmap=plt.get_cmap('binary'))
             ax.axis('off')
 
@@ -59,8 +58,7 @@ class Saver(Processor):
         #             format="png",
         #             dpi=900)
 
-        imsave("Images/processed/{}/{}".format(image_type, image_name),
-               treated_images)
+        imsave("Images/processed/{}/{}".format(image_type, image_name), treated_images)
 
 
 class DataViewing(Processor):
@@ -84,8 +82,7 @@ class HistogramViewing():
 
         for image, image_type, image_name in image_loader:
             treated_image = treatment_method.treat_image(image, image_type)
-            bins = np.histogram(treated_image[treated_image > 1e-1],
-                                bins=256)[0]
+            bins = np.histogram(treated_image[treated_image > 1e-1], bins=256)[0]
             hist = minmax_scale(bins)
             histograms.append(hist)
             plt.plot(hist_centers, hist, linewidth=3, color='r', alpha=0.3)

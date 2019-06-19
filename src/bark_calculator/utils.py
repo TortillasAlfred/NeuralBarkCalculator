@@ -77,9 +77,7 @@ def elastic_transform(image):
     """
     image = np.array(image)
 
-    image_deformed = elasticdeform.deform_random_grid(image,
-                                                      sigma=10,
-                                                      axis=(0, 1))
+    image_deformed = elasticdeform.deform_random_grid(image, sigma=10, axis=(0, 1))
 
     return Image.fromarray(image_deformed)
 
@@ -197,8 +195,7 @@ class CustomWeightedCrossEntropy(nn.Module):
 
         max_classes = torch.max(torch.argmax(predict, dim=1), true).flatten()
 
-        class_weights = torch.index_select(self.weights, 0,
-                                           max_classes).view(true.shape)
+        class_weights = torch.index_select(self.weights, 0, max_classes).view(true.shape)
 
         return (entropies * class_weights).mean()
 
@@ -207,8 +204,7 @@ def remove_class_wise(img, class_idx, shape):
     binary_mapping = [0 if i != class_idx else 1 for i in range(3)]
     binary_mapping = torch.tensor(binary_mapping).to(img.device)
 
-    binary_img = torch.index_select(binary_mapping, 0,
-                                    img.flatten()).reshape(shape)
+    binary_img = torch.index_select(binary_mapping, 0, img.flatten()).reshape(shape)
 
     masks = torch.stack(list(map(remove_from_img, binary_img)))
 
@@ -218,9 +214,7 @@ def remove_class_wise(img, class_idx, shape):
 
 
 def remove_from_img(img_i):
-    img_i = remove_small_objects(img_i.cpu().numpy().astype(bool),
-                                 min_size=250,
-                                 connectivity=2)
+    img_i = remove_small_objects(img_i.cpu().numpy().astype(bool), min_size=250, connectivity=2)
 
     return torch.from_numpy(img_i).long()
 
@@ -244,8 +238,7 @@ class IOU(nn.Module):
         if self.class_to_watch is None:
             self.__name__ = "IntersectionOverUnion"
         else:
-            self.__name__ = "IntersectionOverUnion_class_{}".format(
-                self.class_to_watch)
+            self.__name__ = "IntersectionOverUnion_class_{}".format(self.class_to_watch)
 
     def forward(self, outputs, labels):
         outputs = torch.argmax(outputs, 1)
@@ -274,9 +267,7 @@ class IOU(nn.Module):
 class FocalLossWrapper(nn.Module):
     def __init__(self):
         super().__init__()
-        self.criterion = FocalLoss(alpha=0.25,
-                                   gamma=torch.tensor(2.0).to('cuda:0'),
-                                   reduction='mean')
+        self.criterion = FocalLoss(alpha=0.25, gamma=torch.tensor(2.0).to('cuda:0'), reduction='mean')
         self.__name__ = "FocalLoss"
 
     def forward(self, outputs, labels):
@@ -288,9 +279,7 @@ TO_TENSOR = ToTensor()
 
 
 def pad_resize(image, width, height):
-    image = pad(image, (ceil(
-        (width - image.width) / 2), ceil((height - image.height) / 2)),
-                padding_mode='reflect')
+    image = pad(image, (ceil((width - image.width) / 2), ceil((height - image.height) / 2)), padding_mode='reflect')
 
     return resize(image, (height, width))
 

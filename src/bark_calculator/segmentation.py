@@ -9,8 +9,7 @@ import torch
 
 
 def deeplabv3_resnet101():
-    backbone = resnet.__dict__['resnet101'](
-        pretrained=False, replace_stride_with_dilation=[False, True, True])
+    backbone = resnet.__dict__['resnet101'](pretrained=False, replace_stride_with_dilation=[False, True, True])
 
     return_layers = {'layer4': 'out'}
 
@@ -30,8 +29,7 @@ module.to('cuda:0')
 module.eval()
 
 with torch.no_grad():
-    image = PIL.Image.open(
-        '/home/magod/Documents/Encorcage/Images/dual_exp/samples/145.bmp')
+    image = PIL.Image.open('/home/magod/Documents/Encorcage/Images/dual_exp/samples/145.bmp')
     image = torchvision.transforms.functional.resize(image, [2048, 2048])
     image = torchvision.transforms.functional.to_tensor(image)
     image = image.unsqueeze(0).to('cuda:0')

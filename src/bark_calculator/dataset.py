@@ -122,8 +122,7 @@ def make_dataset_for_dir(dir, extensions):
                 target_path = os.path.join(targets_dir, fname)
 
                 if not os.path.isfile(target_path):
-                    raise IOError("No file found in 'targets' subfolder"
-                                  " for image name {} !".format(fname))
+                    raise IOError("No file found in 'targets' subfolder" " for image name {} !".format(fname))
 
                 item = (sample_path, target_path, fname)
                 images.append(item)
@@ -137,9 +136,7 @@ def make_dataset(dir, extensions):
     return make_dataset_for_dir(dir, extensions)
 
 
-IMG_EXTENSIONS = [
-    '.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm', '.tif', '.tiff', 'webp'
-]
+IMG_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm', '.tif', '.tiff', 'webp']
 
 
 def pil_loader(path, grayscale=False):
@@ -187,10 +184,8 @@ class RegressionDatasetFolder(data.Dataset):
                  include_fname=False):
         samples = make_dataset(root, extensions)
         if len(samples) == 0:
-            raise (RuntimeError("Found 0 files in subfolders of: " + root +
-                                "\n"
-                                "Supported extensions are: " +
-                                ",".join(extensions)))
+            raise (RuntimeError("Found 0 files in subfolders of: " + root + "\n"
+                                "Supported extensions are: " + ",".join(extensions)))
 
         self.root = root
         self.loader = loader
@@ -259,12 +254,7 @@ class RegressionDatasetFolder(data.Dataset):
         fmt_str += '    Number of datapoints: {}\n'.format(self.__len__())
         fmt_str += '    Root Location: {}\n'.format(self.root)
         tmp = '    Transforms (if any): '
-        fmt_str += '{0}{1}\n'.format(
-            tmp,
-            self.transform.__repr__().replace('\n', '\n' + ' ' * len(tmp)))
+        fmt_str += '{0}{1}\n'.format(tmp, self.transform.__repr__().replace('\n', '\n' + ' ' * len(tmp)))
         tmp = '    Target Transforms (if any): '
-        fmt_str += '{0}{1}'.format(
-            tmp,
-            self.target_transform.__repr__().replace('\n',
-                                                     '\n' + ' ' * len(tmp)))
+        fmt_str += '{0}{1}'.format(tmp, self.target_transform.__repr__().replace('\n', '\n' + ' ' * len(tmp)))
         return fmt_str

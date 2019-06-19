@@ -22,10 +22,9 @@ import os
 def main(args):
     mean, std = get_mean_std()
     pos_weights = get_pos_weight()
-    test_dataset = RegressionDatasetFolder(
-        os.path.join(args.root_dir, "Images/dual_exp"),
-        input_only_transform=Compose([Normalize(mean, std)]),
-        transform=Compose([ToTensor()]))
+    test_dataset = RegressionDatasetFolder(os.path.join(args.root_dir, "Images/dual_exp"),
+                                           input_only_transform=Compose([Normalize(mean, std)]),
+                                           transform=Compose([ToTensor()]))
 
     module = fcn_resnet50()
 
@@ -34,8 +33,7 @@ def main(args):
                      module=module,
                      device=torch.device("cuda:1"),
                      optimizer=optim,
-                     loss_function=CustomWeightedCrossEntropy(
-                         torch.tensor(pos_weights).to('cuda:1')),
+                     loss_function=CustomWeightedCrossEntropy(torch.tensor(pos_weights).to('cuda:1')),
                      metrics=[IOU(None)],
                      monitor_metric='val_IntersectionOverUnion',
                      monitor_mode='max')
@@ -43,42 +41,32 @@ def main(args):
     lr_schedulers = [ExponentialLR(gamma=0.975)]
     callbacks = []
 
-    all_dataset = RegressionDatasetFolder(
-        os.path.join(args.root_dir, "Images/dual_exp"),
-        input_only_transform=Compose([Normalize(mean, std)]),
-        transform=Compose([ToTensor()]),
-        include_fname=True)
+    all_dataset = RegressionDatasetFolder(os.path.join(args.root_dir, "Images/dual_exp"),
+                                          input_only_transform=Compose([Normalize(mean, std)]),
+                                          transform=Compose([ToTensor()]),
+                                          include_fname=True)
 
     all_loader = DataLoader(all_dataset, batch_size=1, num_workers=4)
 
     module = exp.model.model
     module.eval()
 
-    if not os.path.isdir(
-            "/mnt/storage/mgodbout/Ecorcage/Images/results/best_model"):
+    if not os.path.isdir("/mnt/storage/mgodbout/Ecorcage/Images/results/best_model"):
         os.makedirs("/mnt/storage/mgodbout/Ecorcage/Images/results/best_model")
 
-    if not os.path.isdir(
-            "/mnt/storage/mgodbout/Ecorcage/Images/results/best_model/train"):
-        os.makedirs(
-            "/mnt/storage/mgodbout/Ecorcage/Images/results/best_model/train")
+    if not os.path.isdir("/mnt/storage/mgodbout/Ecorcage/Images/results/best_model/train"):
+        os.makedirs("/mnt/storage/mgodbout/Ecorcage/Images/results/best_model/train")
 
-    if not os.path.isdir(
-            "/mnt/storage/mgodbout/Ecorcage/Images/results/best_model/valid"):
-        os.makedirs(
-            "/mnt/storage/mgodbout/Ecorcage/Images/results/best_model/valid")
+    if not os.path.isdir("/mnt/storage/mgodbout/Ecorcage/Images/results/best_model/valid"):
+        os.makedirs("/mnt/storage/mgodbout/Ecorcage/Images/results/best_model/valid")
 
-    if not os.path.isdir(
-            "/mnt/storage/mgodbout/Ecorcage/Images/results/best_model/test"):
-        os.makedirs(
-            "/mnt/storage/mgodbout/Ecorcage/Images/results/best_model/test")
+    if not os.path.isdir("/mnt/storage/mgodbout/Ecorcage/Images/results/best_model/test"):
+        os.makedirs("/mnt/storage/mgodbout/Ecorcage/Images/results/best_model/test")
 
-    splits = [(train_split, 'train'), (valid_split, 'valid'),
-              (test_split, 'test')]
+    splits = [(train_split, 'train'), (valid_split, 'valid'), (test_split, 'test')]
 
     with torch.no_grad():
-        for image_number, (batch, pure_batch) in enumerate(
-                zip(valid_loader, pure_loader)):
+        for image_number, (batch, pure_batch) in enumerate(zip(valid_loader, pure_loader)):
             input = pure_batch[0]
             target = pure_batch[1]
             fname = pure_batch[2][0]
@@ -100,10 +88,7 @@ def main(args):
             imgs = [img.detach().cpu().squeeze().numpy() for img in imgs]
 
             try:
-                class_accs = f1_score(imgs[1].flatten(),
-                                      imgs[2].flatten(),
-                                      labels=[0, 1, 2],
-                                      average=None)
+                class_accs = f1_score(imgs[1].flatten(), imgs[2].flatten(), labels=[0, 1, 2], average=None)
                 acc = class_accs.mean()
             except ValueError:
                 print("Error on file {}".format(fname))
@@ -137,11 +122,9 @@ def main(args):
             plt.suptitle(suptitle)
             plt.tight_layout()
             # plt.show()
-            plt.savefig(
-                "/mnt/storage/mgodbout/Ecorcage/Images/results/best_model/{}/{}"
-                .format(split, fname),
-                format="png",
-                dpi=900)
+            plt.savefig("/mnt/storage/mgodbout/Ecorcage/Images/results/best_model/{}/{}".format(split, fname),
+                        format="png",
+                        dpi=900)
             plt.close()
 
 
@@ -150,9 +133,7 @@ if __name__ == "__main__":
 
     parser.add_argument('root_dir', type=str, help='root directory path.')
 
-    parser.add_argument('model_save_dir',
-                        type=str,
-                        help='root where computed data stats will be saved.')
+    parser.add_argument('model_save_dir', type=str, help='root where computed data stats will be saved.')
 
     parser.add_argument('--device',
                         type=str,

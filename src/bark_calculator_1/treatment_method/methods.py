@@ -31,10 +31,7 @@ class TreatmentMethod:
         raise NotImplementedError("Should be implemented by children classes.")
 
     def treat_images(self, images, image_types):
-        return [
-            self.treat_image(image, image_type)
-            for image, image_type in zip(images, image_types)
-        ]
+        return [self.treat_image(image, image_type) for image, image_type in zip(images, image_types)]
 
 
 class Grey(TreatmentMethod):
@@ -138,8 +135,7 @@ class Thresholding(TreatmentMethod):
 
         edges = sobel(final_image)
 
-        markers = threshold_adaptive(final_image,
-                                     block_size=35).astype(np.float)
+        markers = threshold_adaptive(final_image, block_size=35).astype(np.float)
         markers += 1
         markers[~black_mask] = 0
 
@@ -216,22 +212,15 @@ class ColorFilter(TreatmentMethod):
 
         kmeans = KMeans(n_clusters=4, n_jobs=-1, n_init=50)
 
-        k_means_4_image = kmeans.fit_predict(im).reshape(
-            (image.shape[0], image.shape[0]))
-        sorted_centers_args = np.argsort(
-            np.linalg.norm(kmeans.cluster_centers_, axis=-1))[::-1]
+        k_means_4_image = kmeans.fit_predict(im).reshape((image.shape[0], image.shape[0]))
+        sorted_centers_args = np.argsort(np.linalg.norm(kmeans.cluster_centers_, axis=-1))[::-1]
 
         for prev_number, sorted_number in enumerate(sorted_centers_args):
-            np.put(k_means_4_image, kmeans.labels_ == prev_number,
-                   sorted_number)
+            np.put(k_means_4_image, kmeans.labels_ == prev_number, sorted_number)
 
-        k_means_4_image_treated = grey2rgb(1 - (k_means_4_image /
-                                                k_means_4_image.max()))
+        k_means_4_image_treated = grey2rgb(1 - (k_means_4_image / k_means_4_image.max()))
 
-        return [
-            image, (k_means_4_image_treated + image) / 2,
-            k_means_4_image_treated, k_means_4_image
-        ]
+        return [image, (k_means_4_image_treated + image) / 2, k_means_4_image_treated, k_means_4_image]
 
 
 class Entropy(TreatmentMethod):
@@ -265,8 +254,7 @@ class V1(TreatmentMethod):
         markers_for_component_detection[markers == markers.max()] = 2
         markers_for_component_detection[markers == markers.min()] = 1
 
-        treated_list.append(ComponentDetection().treat_image_with_markers(
-            image, markers_for_component_detection)[2])
+        treated_list.append(ComponentDetection().treat_image_with_markers(image, markers_for_component_detection)[2])
 
         return treated_list
 

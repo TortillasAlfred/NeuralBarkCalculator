@@ -31,8 +31,7 @@ class GoodExamplesLoader(Loader):
         super().__init__()
         self.good_examples_path = good_examples_path
         self.target_images_names = [
-            image_name.split("\n")[0]
-            for image_name in open(self.good_examples_path, "r").readlines()
+            image_name.split("\n")[0] for image_name in open(self.good_examples_path, "r").readlines()
         ]
         self.build_images_list_from_names(self.target_images_names)
 
@@ -46,8 +45,7 @@ class FolderLoader(Loader):
 
         for wood_type in self.wood_types:
             type_path = Path(os.path.join(folder_path, wood_type))
-            self.image_paths.extend([(img_path, wood_type)
-                                     for img_path in type_path.rglob("*.bmp")])
+            self.image_paths.extend([(img_path, wood_type) for img_path in type_path.rglob("*.bmp")])
 
         self.idx = 0
 
