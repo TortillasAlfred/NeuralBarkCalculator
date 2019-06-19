@@ -31,13 +31,10 @@ def make_dual_images():
             bark_path = os.path.join(barks_dir, fname)
             node_path = os.path.join(nodes_dir, fname)
 
-            bark_image = np.asarray(pil_loader(bark_path,
-                                               grayscale=True)) / 255
-            node_image = np.asarray(pil_loader(node_path,
-                                               grayscale=True)) / 255
+            bark_image = np.asarray(pil_loader(bark_path, grayscale=True)) / 255
+            node_image = np.asarray(pil_loader(node_path, grayscale=True)) / 255
 
-            dual_png = np.zeros((bark_image.shape[0], bark_image.shape[1]),
-                                dtype=np.uint8)
+            dual_png = np.zeros((bark_image.shape[0], bark_image.shape[1]), dtype=np.uint8)
             dual_png[bark_image == 1.0] = 127
             dual_png[node_image == 1.0] = 255
 
@@ -46,32 +43,36 @@ def make_dual_images():
 
 
 def fine_tune_images():
-    duals_dir = "/mnt/storage/mgodbout/Ecorcage/Images/dual_exp/duals"
+    duals_dir = "./Images/1024_processed/duals/epinette_gelee/"
 
     for _, _, fnames in sorted(os.walk(duals_dir)):
         for fname in sorted(fnames):
+            print(fname)
+
             dual_path = os.path.join(duals_dir, fname)
 
-            dual_image = np.asarray(pil_loader(dual_path,
-                                               grayscale=True)) / 255
+            dual_image = np.asarray(pil_loader(dual_path, grayscale=True)) / 127
 
-            dual_image = remove_small_zones(dual_image)
+            dual_image = remove_small_zones(torch.from_numpy(dual_image).long())
+
+            dual_image = dual_image.numpy().astype(np.uint8)
+            dual_image[dual_image == 1] = 127
+            dual_image[dual_image == 2] = 255
 
             dual = Image.fromarray(dual_image, mode='L')
-            dual.save(os.path.join(duals_dir, fname.replace("bmp", "png")))
+            dual.save(dual_path)
 
 
 def get_loader_for_crop_batch(crop_size, batch_size, train_split, mean, std):
-    train_dataset = RegressionDatasetFolder(
-        "/mnt/storage/mgodbout/Ecorcage/Images/dual_exp",
-        input_only_transform=Compose([Normalize(mean, std)]),
-        transform=Compose([
-            Lambda(lambda img: pad_resize(img, 2048, 2048)),
-            RandomCrop(crop_size),
-            RandomHorizontalFlip(),
-            RandomVerticalFlip(),
-            ToTensor()
-        ]))
+    train_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/dual_exp",
+                                            input_only_transform=Compose([Normalize(mean, std)]),
+                                            transform=Compose([
+                                                Lambda(lambda img: pad_resize(img, 2048, 2048)),
+                                                RandomCrop(crop_size),
+                                                RandomHorizontalFlip(),
+                                                RandomVerticalFlip(),
+                                                ToTensor()
+                                            ]))
 
     return DataLoader(Subset(train_dataset, train_split.repeat(10)),
                       batch_size=batch_size,
@@ -85,16 +86,13 @@ def main():
     # pos_weights = compute_pos_weight("/mnt/storage/mgodbout/Ecorcage/Images/dual_exp")
     mean, std = get_mean_std()
     pos_weights = get_pos_weight()
-    test_dataset = RegressionDatasetFolder(
-        "/mnt/storage/mgodbout/Ecorcage/Images/dual_exp",
-        input_only_transform=Compose([Normalize(mean, std)]),
-        transform=Compose([ToTensor()]))
+    test_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/dual_exp",
+                                           input_only_transform=Compose([Normalize(mean, std)]),
+                                           transform=Compose([ToTensor()]))
 
     train_split, valid_split, test_split = get_splits(test_dataset)
 
-    valid_loader = DataLoader(Subset(test_dataset, valid_split),
-                              batch_size=1,
-                              num_workers=4)
+    valid_loader = DataLoader(Subset(test_dataset, valid_split), batch_size=1, num_workers=4)
 
     module = fcn_resnet50()
 
@@ -103,8 +101,7 @@ def main():
                      module=module,
                      device=torch.device("cuda:1"),
                      optimizer=optim,
-                     loss_function=CustomWeightedCrossEntropy(
-                         torch.tensor(pos_weights).to('cuda:1')),
+                     loss_function=CustomWeightedCrossEntropy(torch.tensor(pos_weights).to('cuda:1')),
                      metrics=[IOU(None)],
                      monitor_metric='val_IntersectionOverUnion',
                      monitor_mode='max')
@@ -113,8 +110,7 @@ def main():
     callbacks = []
 
     for i, (crop_size, batch_size) in enumerate(zip([448], [7])):
-        train_loader = get_loader_for_crop_batch(crop_size, batch_size,
-                                                 train_split, mean, std)
+        train_loader = get_loader_for_crop_batch(crop_size, batch_size, train_split, mean, std)
 
         exp.train(train_loader=train_loader,
                   valid_loader=valid_loader,
@@ -122,15 +118,13 @@ def main():
                   lr_schedulers=lr_schedulers,
                   callbacks=callbacks)
 
-    valid_dataset = RegressionDatasetFolder(
-        "/mnt/storage/mgodbout/Ecorcage/Images/dual_exp",
-        input_only_transform=Compose([Normalize(mean, std)]),
-        transform=Compose([ToTensor()]),
-        include_fname=True)
-    pure_dataset = RegressionDatasetFolder(
-        "/mnt/storage/mgodbout/Ecorcage/Images/dual_exp",
-        transform=Compose([ToTensor()]),
-        include_fname=True)
+    valid_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/dual_exp",
+                                            input_only_transform=Compose([Normalize(mean, std)]),
+                                            transform=Compose([ToTensor()]),
+                                            include_fname=True)
+    pure_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/dual_exp",
+                                           transform=Compose([ToTensor()]),
+                                           include_fname=True)
 
     test_loader = DataLoader(Subset(test_dataset, test_split), batch_size=1)
     valid_loader = DataLoader(valid_dataset, batch_size=1)
@@ -141,31 +135,22 @@ def main():
     module = exp.model.model
     module.eval()
 
-    if not os.path.isdir(
-            "/mnt/storage/mgodbout/Ecorcage/Images/results/best_model"):
+    if not os.path.isdir("/mnt/storage/mgodbout/Ecorcage/Images/results/best_model"):
         os.makedirs("/mnt/storage/mgodbout/Ecorcage/Images/results/best_model")
 
-    if not os.path.isdir(
-            "/mnt/storage/mgodbout/Ecorcage/Images/results/best_model/train"):
-        os.makedirs(
-            "/mnt/storage/mgodbout/Ecorcage/Images/results/best_model/train")
+    if not os.path.isdir("/mnt/storage/mgodbout/Ecorcage/Images/results/best_model/train"):
+        os.makedirs("/mnt/storage/mgodbout/Ecorcage/Images/results/best_model/train")
 
-    if not os.path.isdir(
-            "/mnt/storage/mgodbout/Ecorcage/Images/results/best_model/valid"):
-        os.makedirs(
-            "/mnt/storage/mgodbout/Ecorcage/Images/results/best_model/valid")
+    if not os.path.isdir("/mnt/storage/mgodbout/Ecorcage/Images/results/best_model/valid"):
+        os.makedirs("/mnt/storage/mgodbout/Ecorcage/Images/results/best_model/valid")
 
-    if not os.path.isdir(
-            "/mnt/storage/mgodbout/Ecorcage/Images/results/best_model/test"):
-        os.makedirs(
-            "/mnt/storage/mgodbout/Ecorcage/Images/results/best_model/test")
+    if not os.path.isdir("/mnt/storage/mgodbout/Ecorcage/Images/results/best_model/test"):
+        os.makedirs("/mnt/storage/mgodbout/Ecorcage/Images/results/best_model/test")
 
-    splits = [(train_split, 'train'), (valid_split, 'valid'),
-              (test_split, 'test')]
+    splits = [(train_split, 'train'), (valid_split, 'valid'), (test_split, 'test')]
 
     with torch.no_grad():
-        for image_number, (batch, pure_batch) in enumerate(
-                zip(valid_loader, pure_loader)):
+        for image_number, (batch, pure_batch) in enumerate(zip(valid_loader, pure_loader)):
             input = pure_batch[0]
             target = pure_batch[1]
             fname = pure_batch[2][0]
@@ -187,10 +172,7 @@ def main():
             imgs = [img.detach().cpu().squeeze().numpy() for img in imgs]
 
             try:
-                class_accs = f1_score(imgs[1].flatten(),
-                                      imgs[2].flatten(),
-                                      labels=[0, 1, 2],
-                                      average=None)
+                class_accs = f1_score(imgs[1].flatten(), imgs[2].flatten(), labels=[0, 1, 2], average=None)
                 acc = class_accs.mean()
             except ValueError:
                 print("Error on file {}".format(fname))
@@ -224,27 +206,17 @@ def main():
             plt.suptitle(suptitle)
             plt.tight_layout()
             # plt.show()
-            plt.savefig(
-                "/mnt/storage/mgodbout/Ecorcage/Images/results/best_model/{}/{}"
-                .format(split, fname),
-                format="png",
-                dpi=900)
+            plt.savefig("/mnt/storage/mgodbout/Ecorcage/Images/results/best_model/{}/{}".format(split, fname),
+                        format="png",
+                        dpi=900)
             plt.close()
 
 
 def fix_image(img_number, n_pixels_to_fix):
-    dual = imread(
-        "/home/magod/Documents/Encorcage/Images/dual_exp/duals/{}.png".format(
-            img_number))
-    bark = imread(
-        "/home/magod/Documents/Encorcage/Images/dual_exp/bark/{}.bmp".format(
-            img_number))
-    node = imread(
-        "/home/magod/Documents/Encorcage/Images/dual_exp/nodes/{}.bmp".format(
-            img_number))
-    sample = imread(
-        "/home/magod/Documents/Encorcage/Images/dual_exp/samples/{}.bmp".
-        format(img_number))
+    dual = imread("/home/magod/Documents/Encorcage/Images/dual_exp/duals/{}.png".format(img_number))
+    bark = imread("/home/magod/Documents/Encorcage/Images/dual_exp/bark/{}.bmp".format(img_number))
+    node = imread("/home/magod/Documents/Encorcage/Images/dual_exp/nodes/{}.bmp".format(img_number))
+    sample = imread("/home/magod/Documents/Encorcage/Images/dual_exp/samples/{}.bmp".format(img_number))
 
     if n_pixels_to_fix == 1:
         dual = dual[:-1]
@@ -257,18 +229,13 @@ def fix_image(img_number, n_pixels_to_fix):
     else:
         raise ValueError()
 
-    imsave(
-        "/home/magod/Documents/Encorcage/Images/dual_exp/duals/{}.png".format(
-            img_number), dual)
-    imsave(
-        "/home/magod/Documents/Encorcage/Images/dual_exp/bark/{}.bmp".format(
-            img_number), bark)
-    imsave(
-        "/home/magod/Documents/Encorcage/Images/dual_exp/nodes/{}.bmp".format(
-            img_number), node)
+    imsave("/home/magod/Documents/Encorcage/Images/dual_exp/duals/{}.png".format(img_number), dual)
+    imsave("/home/magod/Documents/Encorcage/Images/dual_exp/bark/{}.bmp".format(img_number), bark)
+    imsave("/home/magod/Documents/Encorcage/Images/dual_exp/nodes/{}.bmp".format(img_number), node)
 
 
 if __name__ == "__main__":
     # fix_image(264, 1)
     # make_dual_images()
-    main()
+    # main()
+    fine_tune_images()
