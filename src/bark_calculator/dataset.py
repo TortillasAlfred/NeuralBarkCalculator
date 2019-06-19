@@ -122,9 +122,11 @@ def make_dataset_for_dir(dir, extensions):
                 target_path = os.path.join(targets_dir, fname)
 
                 if not os.path.isfile(target_path):
-                    raise IOError("No file found in 'targets' subfolder" " for image name {} !".format(fname))
+                    # raise IOError("No file found in 'targets' subfolder" " for image name {} !".format(fname))
+                    item = (sample_path, "", fname)
+                else:
+                    item = (sample_path, target_path, fname)
 
-                item = (sample_path, target_path, fname)
                 images.append(item)
 
     return images
@@ -141,6 +143,9 @@ IMG_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm', '.tif', '.tif
 
 def pil_loader(path, grayscale=False):
     # open path as file to avoid ResourceWarning (https://github.com/python-pillow/Pillow/issues/835)
+    if not os.path.isfile(path):
+        return None
+
     with open(path, 'rb') as f:
         img = Image.open(f)
         target_format = 'L' if grayscale else 'RGB'
@@ -224,22 +229,24 @@ class RegressionDatasetFolder(data.Dataset):
             random.seed(random_seed)
             sample = self.transform(sample)
 
-            random.seed(random_seed)
-            target = self.transform(target)
+            if target is not None:
+                random.seed(random_seed)
+                target = self.transform(target)
 
         if self.input_only_transform is not None:
             sample = self.input_only_transform(sample)
 
-        if target.max() > 200:
-            target /= 255
+        if target is not None:
+            if target.max() > 200:
+                target /= 255
 
-        if sample.max() > 200:
-            sample /= 255
+            if sample.max() > 200:
+                sample /= 255
 
-        target = target * 2
-        target.round_()
+            target = target * 2
+            target.round_()
 
-        target = target.long().squeeze()
+            target = target.long().squeeze()
 
         if self.include_fname:
             return sample, target, fname
