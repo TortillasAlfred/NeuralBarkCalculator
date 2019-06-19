@@ -91,7 +91,8 @@ def main(args):
         for image_number, (batch, pure_batch) in enumerate(zip(valid_loader, pure_loader)):
             input = pure_batch[0]
             target = pure_batch[1]
-            fname, wood_type = pure_batch[2]
+            fname = pure_batch[2][0]
+            wood_type = pure_batch[3]
 
             del pure_batch
 

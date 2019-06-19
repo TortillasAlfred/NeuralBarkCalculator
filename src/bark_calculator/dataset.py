@@ -120,14 +120,14 @@ def make_dataset_for_dir(dir, extensions):
             for fname in sorted(fnames):
                 if has_file_allowed_extension(fname, extensions):
                     sample_path = os.path.join(samples_dir, fname)
-                    fname = (fname.replace("bmp", "png"), wood_type)
+                    fname = fname.replace("bmp", "png")
                     target_path = os.path.join(targets_dir, fname)
 
                     if not os.path.isfile(target_path):
                         # raise IOError("No file found in 'targets' subfolder" " for image name {} !".format(fname))
-                        item = (sample_path, "", fname)
+                        item = (sample_path, "", fname, wood_type)
                     else:
-                        item = (sample_path, target_path, fname)
+                        item = (sample_path, target_path, fname, wood_type)
 
                     images.append(item)
 
@@ -206,11 +206,11 @@ class RegressionDatasetFolder(data.Dataset):
     def put_samples_in_memory(self, samples):
         ram_samples = []
 
-        for path, target_path, fname in samples:
+        for path, target_path, fname, wood_type in samples:
             sample = self.loader(path)
             target = self.loader(target_path, grayscale=True)
 
-            ram_samples.append((sample, target, fname))
+            ram_samples.append((sample, target, fname, wood_type))
 
         return ram_samples
 
@@ -221,7 +221,7 @@ class RegressionDatasetFolder(data.Dataset):
         Returns:
             tuple: (sample, target) the sample and target images.
         """
-        sample, target, fname = self.samples[index]
+        sample, target, fname, wood_type = self.samples[index]
 
         if self.transform is not None:
             random_seed = np.random.randint(2147483647)
@@ -251,7 +251,7 @@ class RegressionDatasetFolder(data.Dataset):
             target = torch.zeros(sample.shape[1], sample.shape[2])
 
         if self.include_fname:
-            return sample, target, fname
+            return sample, target, fname, wood_type
         else:
             return sample, target
 
