@@ -20,6 +20,26 @@ import os
 import argparse
 
 
+def generate_output_folders(root_dir):
+    levels = [("combined_images", ["train", "valid", "test"]), ("outputs", ["train", "valid", "test"])]
+
+    results_dir = os.path.join(root_dir, "Images", "results", "fcn_decay")
+
+    def mkdirs_if_not_there(dir):
+        if not os.path.isdir(dir):
+            os.makedirs(dir)
+
+    for folder, children in levels:
+        current_dir = os.path.join(results_dir, folder)
+
+        mkdirs_if_not_there(current_dir)
+
+        for child in children:
+            child_dir = os.path.join(current_dir, child)
+
+            mkdirs_if_not_there(child_dir)
+
+
 def main(args):
     mean, std = get_mean_std()
     pos_weights = get_pos_weight()
@@ -60,17 +80,7 @@ def main(args):
     module = exp.model.model
     module.eval()
 
-    if not os.path.isdir(os.path.join(args.root_dir, "Images/results/fcn_decay")):
-        os.makedirs(os.path.join(args.root_dir, "Images/results/fcn_decay"))
-
-    if not os.path.isdir(os.path.join(args.root_dir, "Images/results/fcn_decay/train")):
-        os.makedirs(os.path.join(args.root_dir, "Images/results/fcn_decay/train"))
-
-    if not os.path.isdir(os.path.join(args.root_dir, "Images/results/fcn_decay/valid")):
-        os.makedirs(os.path.join(args.root_dir, "Images/results/fcn_decay/valid"))
-
-    if not os.path.isdir(os.path.join(args.root_dir, "Images/results/fcn_decay/test")):
-        os.makedirs(os.path.join(args.root_dir, "Images/results/fcn_decay/test"))
+    generate_output_folders(args.root_dir)
 
     splits = [(train_split, 'train'), (valid_split, 'valid'), (test_split, 'test')]
 
@@ -131,7 +141,8 @@ def main(args):
             plt.suptitle(suptitle)
             plt.tight_layout()
             # plt.show()
-            plt.savefig(os.path.join(args.root_dir, "Images/results/fcn_decay/{}/{}").format(split, fname),
+            plt.savefig(os.path.join(args.root_dir,
+                                     "Images/results/combined_images/fcn_decay/{}/{}").format(split, fname),
                         format="png",
                         dpi=900)
             plt.close()
