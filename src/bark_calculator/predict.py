@@ -155,17 +155,17 @@ def main(args):
             plt.tight_layout()
             # plt.show()
             plt.savefig(os.path.join(args.root_dir,
-                                     'Images/results/combined_images/fcn_decay/{}/{}').format(split, fname),
+                                     'Images/results/fcn_decay/combined_images/{}/{}').format(split, fname),
                         format='png',
                         dpi=900)
             plt.close()
 
             outputs = Image.fromarray(outputs, mode='L')
-            outputs.save(os.path.join(args.root_dir, 'Images/results/outputs/fcn_decay/{}/{}').format(split, fname))
+            outputs.save(os.path.join(args.root_dir, 'Images/results/fcn_decay/outputs/{}/{}').format(split, fname))
 
             results_csv.append(running_csv_stats)
 
-    csv_file = os.path.join(args.root_dir, 'Images', 'results', 'final_stats.csv')
+    csv_file = os.path.join(args.root_dir, 'Images', 'results', 'fcn_decay', 'final_stats.csv')
 
     with open(csv_file, 'w') as f:
         csv_writer = csv.writer(f, delimiter='\t')
