@@ -245,6 +245,8 @@ class RegressionDatasetFolder(data.Dataset):
             target.round_()
 
             target = target.long().squeeze()
+        else:
+            target = torch.zeros_like(sample)
 
         if self.include_fname:
             return sample, target, fname
