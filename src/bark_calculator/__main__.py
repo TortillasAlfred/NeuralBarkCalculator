@@ -96,7 +96,7 @@ def main():
 
     module = fcn_resnet50()
 
-    optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=5e-3)
+    optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-3)
     exp = Experiment(directory="/mnt/storage/mgodbout/Ecorcage/best_model/",
                      module=module,
                      device=torch.device("cuda:1"),
@@ -106,7 +106,7 @@ def main():
                      monitor_metric='val_IntersectionOverUnion',
                      monitor_mode='max')
 
-    lr_schedulers = [ExponentialLR(gamma=0.975)]
+    lr_schedulers = [ExponentialLR(gamma=0.95)]
     callbacks = []
 
     for i, (crop_size, batch_size) in enumerate(zip([448], [7])):
