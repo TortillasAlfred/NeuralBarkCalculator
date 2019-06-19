@@ -150,15 +150,6 @@ def pil_loader(path, grayscale=False):
         return img.convert(target_format)
 
 
-def accimage_loader(path):
-    import accimage
-    try:
-        return accimage.Image(path)
-    except IOError:
-        # Potentially a decoding problem, fall back to PIL.Image
-        return pil_loader(path)
-
-
 class RegressionDatasetFolder(data.Dataset):
     """A generic data loader where the samples are arranged in this way: ::
         root/samples/xxx.ext
