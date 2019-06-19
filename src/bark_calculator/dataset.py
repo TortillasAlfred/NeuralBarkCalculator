@@ -115,13 +115,15 @@ def make_dataset_for_dir(dir, extensions):
     images = []
 
     for wood_type in ["epinette_gelee", "epinette_non_gelee", "sapin"]:
-        type_dir = os.path.join(samples_dir, wood_type)
-        for _, _, fnames in sorted(os.walk(type_dir)):
+        samples_type_dir = os.path.join(samples_dir, wood_type)
+        targets_type_dir = os.path.join(targets_dir, wood_type)
+
+        for _, _, fnames in sorted(os.walk(samples_type_dir)):
             for fname in sorted(fnames):
                 if has_file_allowed_extension(fname, extensions):
-                    sample_path = os.path.join(samples_dir, fname)
+                    sample_path = os.path.join(samples_type_dir, fname)
                     fname = fname.replace("bmp", "png")
-                    target_path = os.path.join(targets_dir, fname)
+                    target_path = os.path.join(targets_type_dir, fname)
 
                     if not os.path.isfile(target_path):
                         # raise IOError("No file found in 'targets' subfolder" " for image name {} !".format(fname))
@@ -222,11 +224,6 @@ class RegressionDatasetFolder(data.Dataset):
             tuple: (sample, target) the sample and target images.
         """
         sample, target, fname, wood_type = self.samples[index]
-
-        print(sample)
-        print(target)
-        print(fname)
-        print(wood_type)
 
         if self.transform is not None:
             random_seed = np.random.randint(2147483647)
