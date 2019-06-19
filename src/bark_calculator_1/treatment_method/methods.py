@@ -203,7 +203,7 @@ class BlackTrimmer(TreatmentMethod):
         clear_enough_lines_idx = np.mean(summed_image, axis=-1) > 0.85
 
         first_idx = np.argmax(clear_enough_lines_idx)
-        last_idx = 4096 - np.argmax(clear_enough_lines_idx[::-1])
+        last_idx = 2048 - np.argmax(clear_enough_lines_idx[::-1])
 
         return first_idx, last_idx
 
@@ -290,55 +290,9 @@ class V2(TreatmentMethod):
     def treat_image(self, image, image_type):
         # h, l, h_2, l_2 = self.threshold_dict[image_type]
 
+        image = resize(image, (2048, 2048), order=3)
+
         first_idx, last_idx = BlackTrimmer().make_trimmer(image)
-
-        # big_image = np.copy(image)
-        # big_black_mask = self.black_masker.make_mask(image)
-        # big_image[~big_black_mask] = [1, 1, 1]
-
-        # adapt_image = equalize_adapthist(image)
-        # black_white = rgb2grey(adapt_image)
-
-        # treated_images = []
-        # treated_images.append(1 - black_white)
-
-        # block_shape = (16, 16)
-
-        # view = view_as_blocks(black_white, block_shape)
-
-        # flatten_view = view.reshape(view.shape[0], view.shape[1], -1)
-
-        # max_view = np.max(flatten_view, axis=2)
-
-        # hist = self.get_hist(max_view, h, l)
-        # black_mask = self.black_masker.make_mask(grey2rgb(max_view))
-        # hist_edges = np.copy(hist)
-        # hist_edges[hist == 0] = 1
-        # hist_edges[hist == 1] = 0
-        # hist_edges /= 2
-        # edges = minmax_scale(sobel((max_view + hist_edges)/2))
-        # markers = np.copy(hist)
-        # markers[~black_mask] = 0
-        # markers[np.logical_and(
-        #     np.logical_and(edges > h_2, edges < l_2),
-        #     hist == 0)] = 3
-
-        # ws_image = watershed(edges, markers, mask=black_mask)
-
-        # # treated_images.append(1 - max_view)
-        # treated_images.append(hist)
-        # # treated_images.append(edges)
-        # ws_image[~(ws_image == 1)] = 0
-
-        # ws_copy = np.repeat(ws_image, 16, axis=0).repeat(16, axis=1)
-        # treated_images.append(np.repeat(ws_image, 4, axis=0).repeat(
-        #     4, axis=1)[first_idx:last_idx])
-        # big_image_2 = np.copy(big_image)
-        # big_image[ws_copy == 1] = [0, 0, 0]
-        # big_image_2[~(ws_copy == 1)] = [0, 0, 0]
-        # treated_images.append(rescale(image, 1/4)[first_idx:last_idx])
-        # treated_images.append(big_image)
-        # treated_images.append(big_image_2)
 
         return image[first_idx:last_idx]
 

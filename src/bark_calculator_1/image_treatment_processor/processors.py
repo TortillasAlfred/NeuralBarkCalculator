@@ -59,7 +59,7 @@ class Saver(Processor):
         #             format="png",
         #             dpi=900)
 
-        imsave("Images/all/{}/nodes/{}".format(image_type, image_name),
+        imsave("Images/processed/{}/{}".format(image_type, image_name),
                treated_images)
 
 
