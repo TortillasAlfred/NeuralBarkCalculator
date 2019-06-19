@@ -37,12 +37,12 @@ def generate_output_folders(root_dir):
         mkdirs_if_not_there(current_dir)
 
         for wood_type in wood_types:
-            current_dir = os.path.join(current_dir, wood_type)
+            wood_dir = os.path.join(current_dir, wood_type)
 
-            mkdirs_if_not_there(current_dir)
+            mkdirs_if_not_there(wood_dir)
 
             for child in children:
-                child_dir = os.path.join(current_dir, child)
+                child_dir = os.path.join(wood_dir, child)
 
                 mkdirs_if_not_there(child_dir)
 
@@ -71,7 +71,7 @@ def main(args):
     lr_schedulers = [ExponentialLR(gamma=0.975)]
     callbacks = []
 
-    valid_dataset = RegressionDatasetFolder('/mnt/storage/mgodbout/Ecorcage/Images/dual_exp',
+    valid_dataset = RegressionDatasetFolder(os.path.join(args.root_dir, 'Images/dual_exp'),
                                             input_only_transform=Compose([Normalize(mean, std)]),
                                             transform=Compose([ToTensor()]),
                                             include_fname=True)
