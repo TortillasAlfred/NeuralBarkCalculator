@@ -1,6 +1,6 @@
 from dataset import RegressionDatasetFolder, make_weight_map, pil_loader
 from utils import *
-from models import cn_resnet50
+from models import fcn_resnet50
 
 from torchvision.transforms import *
 
