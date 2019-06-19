@@ -22,6 +22,7 @@ import csv
 
 
 def generate_output_folders(root_dir):
+    wood_types = ["epinette_gelee", "epinette_non_gelee", "sapin"]
     levels = [('combined_images', ['train', 'valid', 'test']), ('outputs', ['train', 'valid', 'test'])]
 
     results_dir = os.path.join(root_dir, 'Images', 'results', 'fcn_decay')
@@ -35,10 +36,15 @@ def generate_output_folders(root_dir):
 
         mkdirs_if_not_there(current_dir)
 
-        for child in children:
-            child_dir = os.path.join(current_dir, child)
+        for wood_type in wood_types:
+            current_dir = os.path.join(current_dir, wood_type)
 
-            mkdirs_if_not_there(child_dir)
+            mkdirs_if_not_there(current_dir)
+
+            for child in children:
+                child_dir = os.path.join(current_dir, child)
+
+                mkdirs_if_not_there(child_dir)
 
 
 def main(args):
@@ -154,8 +160,8 @@ def main(args):
             plt.suptitle(suptitle)
             plt.tight_layout()
             # plt.show()
-            plt.savefig(os.path.join(args.root_dir,
-                                     'Images/results/fcn_decay/combined_images/{}/{}').format(split, fname),
+            plt.savefig(os.path.join(args.root_dir, 'Images/results/fcn_decay/combined_images/{}/{}/{}').format(
+                wood_type, split, fname),
                         format='png',
                         dpi=900)
             plt.close()
@@ -166,7 +172,9 @@ def main(args):
             dual_outputs[outputs == 2] = 255
 
             dual = Image.fromarray(dual_outputs, mode='L')
-            dual.save(os.path.join(args.root_dir, 'Images/results/fcn_decay/outputs/{}/{}').format(split, fname))
+            dual.save(
+                os.path.join(args.root_dir,
+                             'Images/results/fcn_decay/outputs/{}/{}/{}').format(wood_type, split, fname))
 
             results_csv.append(running_csv_stats)
 
