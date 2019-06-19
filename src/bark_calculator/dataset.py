@@ -199,7 +199,18 @@ class RegressionDatasetFolder(data.Dataset):
         self.input_only_transform = input_only_transform
         self.include_fname = include_fname
 
-        self.samples = samples
+        self.samples = self.put_samples_in_memory(samples)
+
+    def put_samples_in_memory(self, samples):
+        ram_samples = []
+
+        for path, target_path, fname in samples:
+            sample = self.loader(path)
+            target = self.loader(target_path, grayscale=True)
+
+            ram_samples.append((sample, target, fname))
+
+        return ram_samples
 
     def __getitem__(self, index):
         """
