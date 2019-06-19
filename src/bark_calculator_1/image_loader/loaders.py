@@ -52,7 +52,7 @@ class FolderLoader(Loader):
         self.idx = 0
 
     def __next__(self):
-        if self.idx > len(self.image_paths):
+        if self.idx >= len(self.image_paths):
             raise StopIteration()
 
         p, t = self.image_paths[self.idx]
