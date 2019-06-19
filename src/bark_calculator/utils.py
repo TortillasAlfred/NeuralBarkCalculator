@@ -11,7 +11,6 @@ from skimage.morphology import remove_small_objects
 from poutyne.framework.callbacks import Callback
 
 from math import ceil, floor, sin, cos
-import elasticdeform
 import numpy as np
 import torch
 from torch import nn
