@@ -30,28 +30,31 @@ class GoodExamplesLoader(Loader):
     def __init__(self, good_examples_path=good_examples_path):
         super().__init__()
         self.good_examples_path = good_examples_path
-        self.target_images_names = [image_name.split("\n")[0] for image_name in
-                                    open(self.good_examples_path, "r").readlines()]
+        self.target_images_names = [
+            image_name.split("\n")[0]
+            for image_name in open(self.good_examples_path, "r").readlines()
+        ]
         self.build_images_list_from_names(self.target_images_names)
 
 
 class FolderLoader(Loader):
-
     def __init__(self, folder_path):
         super().__init__()
-        self.wood_types = ["epinette_gelee", "epinette_non_gelee",
-                           "sapin", "epinette_javel"]
+        self.wood_types = ["epinette_gelee", "epinette_non_gelee", "sapin"]
 
         self.image_paths = []
-        folder_path = Path(folder_path)
 
-        for wood_type in ['epinette_gelee']:
-            self.image_paths.extend([(img_path, wood_type) for img_path
-                                    in folder_path.rglob("*.bmp")])
+        for wood_type in self.wood_types:
+            type_path = Path(os.path.join(folder_path, wood_type))
+            self.image_paths.extend([(img_path, wood_type)
+                                     for img_path in type_path.rglob("*.bmp")])
 
         self.idx = 0
 
     def __next__(self):
+        if self.idx >= len(self.image_paths):
+            raise StopIteration()
+
         p, t = self.image_paths[self.idx]
         self.idx += 1
         return [imread(str(p)), t, p.name]

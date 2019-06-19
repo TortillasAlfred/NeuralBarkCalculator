@@ -27,29 +27,28 @@ import cv2
 
 
 class TreatmentMethod:
-
     def treat_image(self, image, image_type):
         raise NotImplementedError("Should be implemented by children classes.")
 
     def treat_images(self, images, image_types):
-        return [self.treat_image(image, image_type) for image, image_type
-                in zip(images, image_types)]
+        return [
+            self.treat_image(image, image_type)
+            for image, image_type in zip(images, image_types)
+        ]
 
 
 class Grey(TreatmentMethod):
-
     def treat_image(self, image, image_type):
         return rgb2grey(image)
 
 
 class EdgeDetection(TreatmentMethod):
-
     def __init__(self):
         super().__init__()
         self.black_masker = BlackMask()
 
     def treat_image(self, image, image_type):
-        image = rescale(image, 1/8)
+        image = rescale(image, 1 / 8)
 
         treated_list = [rgb2grey(image)]
 
@@ -80,9 +79,8 @@ class EdgeDetection(TreatmentMethod):
 
 
 class ComponentDetection(TreatmentMethod):
-
     def treat_image(self, image, image_type):
-        image = rescale(image, 1/8)
+        image = rescale(image, 1 / 8)
 
         black_mask = BlackMask().make_mask(image)
 
@@ -100,12 +98,12 @@ class ComponentDetection(TreatmentMethod):
         markers[final_image < 0.45] = 1
         markers[~black_mask] = 0
 
-        ws_image = grey2rgb(watershed(edges, markers, mask=black_mask)/2)
+        ws_image = grey2rgb(watershed(edges, markers, mask=black_mask) / 2)
 
-        return [image, (image + ws_image)/2, ws_image]
+        return [image, (image + ws_image) / 2, ws_image]
 
     def treat_image_with_markers(self, image, markers):
-        image = rescale(image, 1/8)
+        image = rescale(image, 1 / 8)
 
         black_mask = BlackMask().make_mask(image)
 
@@ -120,15 +118,14 @@ class ComponentDetection(TreatmentMethod):
 
         edges = sobel(final_image)
 
-        ws_image = grey2rgb(watershed(edges, markers, mask=black_mask)/2)
+        ws_image = grey2rgb(watershed(edges, markers, mask=black_mask) / 2)
 
-        return [image, (image + ws_image)/2, ws_image]
+        return [image, (image + ws_image) / 2, ws_image]
 
 
 class Thresholding(TreatmentMethod):
-
     def treat_image(self, image, image_type):
-        image = rescale(image, 1/8)
+        image = rescale(image, 1 / 8)
 
         black_mask = BlackMask().make_mask(image)
 
@@ -141,8 +138,8 @@ class Thresholding(TreatmentMethod):
 
         edges = sobel(final_image)
 
-        markers = threshold_adaptive(
-            final_image, block_size=35).astype(np.float)
+        markers = threshold_adaptive(final_image,
+                                     block_size=35).astype(np.float)
         markers += 1
         markers[~black_mask] = 0
 
@@ -152,13 +149,11 @@ class Thresholding(TreatmentMethod):
 
 
 class Identity(TreatmentMethod):
-
     def treat_image(self, image, image_type):
         return [image]
 
 
 class BlackFilter(TreatmentMethod):
-
     def treat_image(self, image, image_type):
         return [image, self.remove_black_regions(image)]
 
@@ -167,7 +162,7 @@ class BlackFilter(TreatmentMethod):
 
         black_points = black_image < 0.15
 
-        black_lines = np.mean(black_image, axis=1) < 10 ** -1
+        black_lines = np.mean(black_image, axis=1) < 10**-1
 
         black_mask = np.ones_like(image, dtype=bool)
 
@@ -181,7 +176,6 @@ class BlackFilter(TreatmentMethod):
 
 
 class BlackMask(TreatmentMethod):
-
     def treat_image(self, image, image_type):
         pipi = np.ma.array(rgb2grey(image), mask=self.make_mask(image))
         return [image, pipi]
@@ -191,7 +185,7 @@ class BlackMask(TreatmentMethod):
 
         black_points = black_image < 0.05
 
-        black_lines = np.mean(black_image, axis=1) < 10 ** -1
+        black_lines = np.mean(black_image, axis=1) < 10**-1
 
         black_mask = np.ones(image.shape[:-1], dtype=bool)
 
@@ -202,7 +196,6 @@ class BlackMask(TreatmentMethod):
 
 
 class BlackTrimmer(TreatmentMethod):
-
     def make_trimmer(self, image):
         summed_image = np.sum(image, axis=-1)
         summed_image = summed_image > 1e-3
@@ -210,37 +203,38 @@ class BlackTrimmer(TreatmentMethod):
         clear_enough_lines_idx = np.mean(summed_image, axis=-1) > 0.85
 
         first_idx = np.argmax(clear_enough_lines_idx)
-        last_idx = 4096 - np.argmax(clear_enough_lines_idx[::-1])
+        last_idx = 2048 - np.argmax(clear_enough_lines_idx[::-1])
 
         return first_idx, last_idx
 
 
 class ColorFilter(TreatmentMethod):
-
     def treat_image(self, image, image_type):
-        image = rescale(image, 1/8)
+        image = rescale(image, 1 / 8)
 
         im = image.reshape((image.shape[0] * image.shape[0], 3))
 
         kmeans = KMeans(n_clusters=4, n_jobs=-1, n_init=50)
 
-        k_means_4_image = kmeans.fit_predict(
-            im).reshape((image.shape[0], image.shape[0]))
-        sorted_centers_args = np.argsort(np.linalg.norm(
-            kmeans.cluster_centers_, axis=-1))[::-1]
+        k_means_4_image = kmeans.fit_predict(im).reshape(
+            (image.shape[0], image.shape[0]))
+        sorted_centers_args = np.argsort(
+            np.linalg.norm(kmeans.cluster_centers_, axis=-1))[::-1]
 
         for prev_number, sorted_number in enumerate(sorted_centers_args):
-            np.put(k_means_4_image, kmeans.labels_ ==
-                   prev_number, sorted_number)
+            np.put(k_means_4_image, kmeans.labels_ == prev_number,
+                   sorted_number)
 
-        k_means_4_image_treated = grey2rgb(
-            1 - (k_means_4_image / k_means_4_image.max()))
+        k_means_4_image_treated = grey2rgb(1 - (k_means_4_image /
+                                                k_means_4_image.max()))
 
-        return [image, (k_means_4_image_treated + image)/2, k_means_4_image_treated, k_means_4_image]
+        return [
+            image, (k_means_4_image_treated + image) / 2,
+            k_means_4_image_treated, k_means_4_image
+        ]
 
 
 class Entropy(TreatmentMethod):
-
     def treat_image(self, image, image_type):
         final_image = rgb2grey(image)
 
@@ -254,9 +248,8 @@ class Entropy(TreatmentMethod):
 
 
 class V1(TreatmentMethod):
-
     def treat_image(self, image, image_type):
-        treated_list = [rescale(image, 1/8)]
+        treated_list = [rescale(image, 1 / 8)]
 
         color_filtered = ColorFilter().treat_image(image)[1:]
 
@@ -272,80 +265,34 @@ class V1(TreatmentMethod):
         markers_for_component_detection[markers == markers.max()] = 2
         markers_for_component_detection[markers == markers.min()] = 1
 
-        treated_list.append(ComponentDetection().
-                            treat_image_with_markers(image, markers_for_component_detection)[2])
+        treated_list.append(ComponentDetection().treat_image_with_markers(
+            image, markers_for_component_detection)[2])
 
         return treated_list
 
 
 class Equalizer(TreatmentMethod):
-
     def treat_image(self, image, image_type):
         return rgb2grey(equalize_adapthist(image))
 
 
 class V2(TreatmentMethod):
-
     def __init__(self):
         super().__init__()
-        self.threshold_dict = {"epinette_gelee": [0.50, 0.65, 0.4, 0.6],
-                               "epinette_javel": [0.50, 0.65, 0.4, 0.6],
-                               "epinette_non_gelee": [0.4, 0.58, 0.5, 1.0],
-                               "sapin": [0.52, 0.64, 0.5, 0.7]}
+        self.threshold_dict = {
+            "epinette_gelee": [0.50, 0.65, 0.4, 0.6],
+            "epinette_javel": [0.50, 0.65, 0.4, 0.6],
+            "epinette_non_gelee": [0.4, 0.58, 0.5, 1.0],
+            "sapin": [0.52, 0.64, 0.5, 0.7]
+        }
         self.black_masker = BlackMask()
 
     def treat_image(self, image, image_type):
         # h, l, h_2, l_2 = self.threshold_dict[image_type]
 
+        image = resize(image, (2048, 2048), order=3)
+
         first_idx, last_idx = BlackTrimmer().make_trimmer(image)
-
-        # big_image = np.copy(image)
-        # big_black_mask = self.black_masker.make_mask(image)
-        # big_image[~big_black_mask] = [1, 1, 1]
-
-        # adapt_image = equalize_adapthist(image)
-        # black_white = rgb2grey(adapt_image)
-
-        # treated_images = []
-        # treated_images.append(1 - black_white)
-
-        # block_shape = (16, 16)
-
-        # view = view_as_blocks(black_white, block_shape)
-
-        # flatten_view = view.reshape(view.shape[0], view.shape[1], -1)
-
-        # max_view = np.max(flatten_view, axis=2)
-
-        # hist = self.get_hist(max_view, h, l)
-        # black_mask = self.black_masker.make_mask(grey2rgb(max_view))
-        # hist_edges = np.copy(hist)
-        # hist_edges[hist == 0] = 1
-        # hist_edges[hist == 1] = 0
-        # hist_edges /= 2
-        # edges = minmax_scale(sobel((max_view + hist_edges)/2))
-        # markers = np.copy(hist)
-        # markers[~black_mask] = 0
-        # markers[np.logical_and(
-        #     np.logical_and(edges > h_2, edges < l_2),
-        #     hist == 0)] = 3
-
-        # ws_image = watershed(edges, markers, mask=black_mask)
-
-        # # treated_images.append(1 - max_view)
-        # treated_images.append(hist)
-        # # treated_images.append(edges)
-        # ws_image[~(ws_image == 1)] = 0
-
-        # ws_copy = np.repeat(ws_image, 16, axis=0).repeat(16, axis=1)
-        # treated_images.append(np.repeat(ws_image, 4, axis=0).repeat(
-        #     4, axis=1)[first_idx:last_idx])
-        # big_image_2 = np.copy(big_image)
-        # big_image[ws_copy == 1] = [0, 0, 0]
-        # big_image_2[~(ws_copy == 1)] = [0, 0, 0]
-        # treated_images.append(rescale(image, 1/4)[first_idx:last_idx])
-        # treated_images.append(big_image)
-        # treated_images.append(big_image_2)
 
         return image[first_idx:last_idx]
 
@@ -358,6 +305,5 @@ class V2(TreatmentMethod):
 
 
 class Upsampling(TreatmentMethod):
-
     def treat_image(self, image, image_type):
         return rescale(image, 4)
