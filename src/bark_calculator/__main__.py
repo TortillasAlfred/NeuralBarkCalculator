@@ -45,6 +45,22 @@ def make_dual_images():
             dual.save(os.path.join(duals_dir, fname.replace("bmp", "png")))
 
 
+def fine_tune_images():
+    duals_dir = "/mnt/storage/mgodbout/Ecorcage/Images/dual_exp/duals"
+
+    for _, _, fnames in sorted(os.walk(duals_dir)):
+        for fname in sorted(fnames):
+            dual_path = os.path.join(duals_dir, fname)
+
+            dual_image = np.asarray(pil_loader(dual_path,
+                                               grayscale=True)) / 255
+
+            dual_image = remove_small_zones(dual_image)
+
+            dual = Image.fromarray(dual_image, mode='L')
+            dual.save(os.path.join(duals_dir, fname.replace("bmp", "png")))
+
+
 def get_loader_for_crop_batch(crop_size, batch_size, train_split, mean, std):
     train_dataset = RegressionDatasetFolder(
         "/mnt/storage/mgodbout/Ecorcage/Images/dual_exp",
