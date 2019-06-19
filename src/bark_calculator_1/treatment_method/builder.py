@@ -43,3 +43,6 @@ def build_from_treatment_method_arg(treatment_method):
 
     if treatment_method == "upsampling":
         return Upsampling()
+
+    if treatment_method == "downsampling":
+        return Downsampling()

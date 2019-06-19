@@ -293,3 +293,8 @@ class V2(TreatmentMethod):
 class Upsampling(TreatmentMethod):
     def treat_image(self, image, image_type):
         return rescale(image, 4)
+
+
+class Downsampling(TreatmentMethod):
+    def treat_image(self, image, image_type):
+        return rescale(image, 1 / 2)
