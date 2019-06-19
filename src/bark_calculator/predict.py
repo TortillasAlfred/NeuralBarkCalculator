@@ -160,7 +160,7 @@ def main(args):
                         dpi=900)
             plt.close()
 
-            outputs = Image.fromarray(outputs, mode='L')
+            outputs = Image.fromarray(outputs.cpu().numpy(), mode='L')
             outputs.save(os.path.join(args.root_dir, 'Images/results/fcn_decay/outputs/{}/{}').format(split, fname))
 
             results_csv.append(running_csv_stats)
