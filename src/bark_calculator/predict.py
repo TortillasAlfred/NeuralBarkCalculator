@@ -44,12 +44,17 @@ def main(args):
     lr_schedulers = [ExponentialLR(gamma=0.975)]
     callbacks = []
 
-    all_dataset = RegressionDatasetFolder(os.path.join(args.root_dir, "Images/dual_exp"),
-                                          input_only_transform=Compose([Normalize(mean, std)]),
-                                          transform=Compose([ToTensor()]),
-                                          include_fname=True)
+    valid_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/dual_exp",
+                                            input_only_transform=Compose([Normalize(mean, std)]),
+                                            transform=Compose([ToTensor()]),
+                                            include_fname=True)
+    pure_dataset = RegressionDatasetFolder(os.path.join(args.root_dir, "Images/dual_exp"),
+                                           input_only_transform=Compose([Normalize(mean, std)]),
+                                           transform=Compose([ToTensor()]),
+                                           include_fname=True)
 
-    all_loader = DataLoader(all_dataset, batch_size=1, num_workers=4)
+    pure_loader = DataLoader(pure_dataset, batch_size=1, num_workers=4)
+    valid_loader = DataLoader(valid_dataset, batch_size=1, num_workers=4)
 
     exp.load_best_checkpoint()
     module = exp.model.model
