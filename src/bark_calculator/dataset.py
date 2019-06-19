@@ -219,7 +219,7 @@ class RegressionDatasetFolder(data.Dataset):
         Returns:
             tuple: (sample, target) the sample and target images.
         """
-        path, target_path, fname = self.samples[index]
+        sample, target, fname = self.samples[index]
 
         if self.transform is not None:
             random_seed = np.random.randint(2147483647)
