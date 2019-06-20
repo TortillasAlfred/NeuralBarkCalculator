@@ -82,10 +82,11 @@ def get_loader_for_crop_batch(crop_size, batch_size, train_split, mean, std):
 
 
 def main():
-    # mean, std = compute_mean_std("/mnt/storage/mgodbout/Ecorcage/Images/dual_exp")
-    # pos_weights = compute_pos_weight("/mnt/storage/mgodbout/Ecorcage/Images/dual_exp")
-    mean, std = get_mean_std()
-    pos_weights = get_pos_weight()
+    raw_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/dual_exp",
+                                          input_only_transform=None,
+                                          transform=Compose([ToTensor()]))
+    mean, std = compute_mean_std(raw_dataset)
+    pos_weights = compute_pos_weight(raw_dataset)
     test_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/dual_exp",
                                            input_only_transform=Compose([Normalize(mean, std)]),
                                            transform=Compose([ToTensor()]))

@@ -81,9 +81,8 @@ def elastic_transform(image):
     return Image.fromarray(image_deformed)
 
 
-def compute_mean_std(working_dir: str):
-    train_dataset = RegressionDatasetFolder(working_dir, transform=ToTensor())
-    loader = DataLoader(train_dataset, batch_size=1)
+def compute_mean_std(working_dataset):
+    loader = DataLoader(working_dataset, batch_size=1)
 
     mean = 0.
     std = 0.
@@ -110,9 +109,8 @@ def get_mean_std():
     return mean, std
 
 
-def compute_pos_weight(working_dir: str):
-    train_dataset = RegressionDatasetFolder(working_dir, transform=ToTensor())
-    loader = DataLoader(train_dataset, batch_size=1)
+def compute_pos_weight(working_dataset):
+    loader = DataLoader(working_dataset, batch_size=1)
 
     class_counts = [0, 0, 0]
 
