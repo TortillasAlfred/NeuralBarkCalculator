@@ -72,7 +72,8 @@ def get_loader_for_crop_batch(crop_size, batch_size, train_split, mean, std):
                                                 RandomHorizontalFlip(),
                                                 RandomVerticalFlip(),
                                                 ToTensor()
-                                            ]))
+                                            ]),
+                                            in_memory=True)
 
     return DataLoader(Subset(train_dataset, train_split.repeat(10)),
                       batch_size=batch_size,
@@ -89,11 +90,12 @@ def main():
     pos_weights = compute_pos_weight(raw_dataset)
     test_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/dual_exp",
                                            input_only_transform=Compose([Normalize(mean, std)]),
-                                           transform=Compose([ToTensor()]))
+                                           transform=Compose([ToTensor()]),
+                                           in_memory=True)
 
     train_split, valid_split, test_split = get_splits(test_dataset)
 
-    valid_loader = DataLoader(Subset(test_dataset, valid_split), batch_size=1, num_workers=4)
+    valid_loader = DataLoader(Subset(test_dataset, valid_split), batch_size=4, num_workers=4)
 
     module = fcn_resnet50()
 
@@ -127,7 +129,7 @@ def main():
                                            transform=Compose([ToTensor()]),
                                            include_fname=True)
 
-    test_loader = DataLoader(Subset(test_dataset, test_split), batch_size=1)
+    test_loader = DataLoader(Subset(test_dataset, test_split), batch_size=4)
     valid_loader = DataLoader(valid_dataset, batch_size=1)
     pure_loader = DataLoader(pure_dataset, batch_size=1)
 

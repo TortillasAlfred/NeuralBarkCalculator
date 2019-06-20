@@ -190,7 +190,8 @@ class RegressionDatasetFolder(data.Dataset):
                  loader=pil_loader,
                  transform=None,
                  input_only_transform=None,
-                 include_fname=False):
+                 include_fname=False,
+                 in_memory=False):
         samples = make_dataset(root, extensions)
         if len(samples) == 0:
             raise (RuntimeError("Found 0 files in subfolders of: " + root + "\n"
@@ -202,8 +203,12 @@ class RegressionDatasetFolder(data.Dataset):
         self.transform = transform
         self.input_only_transform = input_only_transform
         self.include_fname = include_fname
+        self.in_memory = in_memory
 
-        self.samples = self.put_samples_in_memory(samples)
+        if self.in_memory:
+            self.samples = self.put_samples_in_memory(samples)
+        else:
+            self.samples = samples
 
     def put_samples_in_memory(self, samples):
         ram_samples = []
@@ -224,6 +229,10 @@ class RegressionDatasetFolder(data.Dataset):
             tuple: (sample, target) the sample and target images.
         """
         sample, target, fname, wood_type = self.samples[index]
+
+        if not self.in_memory:
+            sample = self.loader(sample)
+            target = self.loader(target, grayscale=True)
 
         if self.transform is not None:
             random_seed = np.random.randint(2147483647)
