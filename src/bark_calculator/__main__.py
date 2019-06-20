@@ -147,7 +147,7 @@ def main(args):
 
         exp.train(train_loader=train_loader,
                   valid_loader=valid_loader,
-                  epochs=(1 + i) * 400,
+                  epochs=(1 + i) * 250,
                   lr_schedulers=lr_schedulers,
                   callbacks=callbacks)
 
@@ -303,6 +303,10 @@ if __name__ == "__main__":
                         help='Which torch device to train with.',
                         choices=['cpu', 'cuda:0', 'cuda:1'])
 
+    parser.add_argument('--seed', type=int, default=42, help='Which random seed to use.')
+
     args = parser.parse_args()
+
+    make_training_deterministic(args.seed)
 
     main(args)

@@ -20,8 +20,7 @@ import torch.nn.functional as F
 import random
 
 
-def get_train_valid_samplers(dataset, train_percent, seed=69):
-    np.random.seed(seed)
+def get_train_valid_samplers(dataset, train_percent):
     n_items = len(dataset)
 
     all_idx = np.arange(n_items)
@@ -227,6 +226,14 @@ def remove_small_zones(img):
         img = remove_class_wise(img, class_idx, shape)
 
     return img
+
+
+def make_training_deterministic(seed):
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    random.seed(seed)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
 
 
 class IOU(nn.Module):
