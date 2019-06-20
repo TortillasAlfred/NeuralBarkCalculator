@@ -139,7 +139,7 @@ def main(args):
                      monitor_metric='val_IntersectionOverUnion',
                      monitor_mode='max')
 
-    lr_schedulers = [ExponentialLR(gamma=0.95)]
+    lr_schedulers = [ExponentialLR(gamma=0.975)]
     callbacks = []
 
     for i, (crop_size, batch_size) in enumerate(zip([448], [7])):
@@ -147,7 +147,7 @@ def main(args):
 
         exp.train(train_loader=train_loader,
                   valid_loader=valid_loader,
-                  epochs=(1 + i) * 300,
+                  epochs=(1 + i) * 400,
                   lr_schedulers=lr_schedulers,
                   callbacks=callbacks)
 
