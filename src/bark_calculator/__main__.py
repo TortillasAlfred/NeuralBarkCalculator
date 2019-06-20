@@ -215,30 +215,29 @@ def main():
             plt.close()
 
 
-def fix_image(img_number, n_pixels_to_fix):
-    dual = imread("/home/magod/Documents/Encorcage/Images/dual_exp/duals/{}.png".format(img_number))
-    bark = imread("/home/magod/Documents/Encorcage/Images/dual_exp/bark/{}.bmp".format(img_number))
-    node = imread("/home/magod/Documents/Encorcage/Images/dual_exp/nodes/{}.bmp".format(img_number))
-    sample = imread("/home/magod/Documents/Encorcage/Images/dual_exp/samples/{}.bmp".format(img_number))
+def fix_image(img_number, n_pixels_to_fix, which_to_reduce):
+    dual = imread("/home/magod/Documents/Encorcage/Images/dual_exp/duals/epinette_gelee/{}.png".format(img_number))
+    sample = imread("/home/magod/Documents/Encorcage/Images/dual_exp/samples/epinette_gelee/{}.bmp".format(img_number))
+
+    if which_to_reduce == 'sample':
+        img = sample
+        output_path = "/home/magod/Documents/Encorcage/Images/dual_exp/samples/epinette_gelee/{}.bmp".format(img_number)
+    else:
+        img = dual
+        output_path = "/home/magod/Documents/Encorcage/Images/dual_exp/duals/epinette_gelee/{}.png".format(img_number)
 
     if n_pixels_to_fix == 1:
-        dual = dual[:-1]
-        bark = bark[:-1]
-        node = node[:-1]
+        img = img[:-1]
     elif n_pixels_to_fix == 2:
-        dual = dual[1:-1]
-        bark = bark[1:-1]
-        node = node[1:-1]
+        img = img[1:-1]
     else:
         raise ValueError()
 
-    imsave("/home/magod/Documents/Encorcage/Images/dual_exp/duals/{}.png".format(img_number), dual)
-    imsave("/home/magod/Documents/Encorcage/Images/dual_exp/bark/{}.bmp".format(img_number), bark)
-    imsave("/home/magod/Documents/Encorcage/Images/dual_exp/nodes/{}.bmp".format(img_number), node)
+    imsave(output_path, img)
 
 
 if __name__ == "__main__":
-    # fix_image(264, 1)
+    # fix_image('EPN 9 A', 1, "smple")
     # make_dual_images()
     # fine_tune_images()
     main()
