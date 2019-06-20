@@ -126,7 +126,7 @@ def main(args):
 
     train_split, valid_split, test_split = get_splits(test_dataset)
 
-    valid_loader = DataLoader(Subset(test_dataset, valid_split), batch_size=6, num_workers=8, pin_memory=True)
+    valid_loader = DataLoader(Subset(test_dataset, valid_split), batch_size=8, num_workers=8, pin_memory=True)
 
     module = fcn_resnet50()
 
