@@ -238,5 +238,5 @@ def fix_image(img_number, n_pixels_to_fix):
 if __name__ == "__main__":
     # fix_image(264, 1)
     # make_dual_images()
-    # main()
-    fine_tune_images()
+    # fine_tune_images()
+    main()
