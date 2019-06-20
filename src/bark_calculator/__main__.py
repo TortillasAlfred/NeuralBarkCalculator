@@ -103,7 +103,7 @@ def get_loader_for_crop_batch(crop_size, batch_size, train_split, mean, std):
                                             ]),
                                             in_memory=True)
 
-    return DataLoader(Subset(train_dataset, train_split.repeat(5)),
+    return DataLoader(Subset(train_dataset, train_split.repeat(10)),
                       batch_size=batch_size,
                       shuffle=True,
                       num_workers=8,
@@ -130,7 +130,7 @@ def main(args):
 
     module = fcn_resnet50()
 
-    optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-4)
+    optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-3)
     exp = Experiment(directory=os.path.join(args.root_dir, 'essai_1024/'),
                      module=module,
                      device=torch.device(args.device),
@@ -140,7 +140,7 @@ def main(args):
                      monitor_metric='val_IntersectionOverUnion',
                      monitor_mode='max')
 
-    lr_schedulers = [ExponentialLR(gamma=0.95)]
+    lr_schedulers = [ExponentialLR(gamma=0.9)]
     callbacks = []
 
     for i, (crop_size, batch_size) in enumerate(zip([448], [7])):
@@ -148,7 +148,7 @@ def main(args):
 
         exp.train(train_loader=train_loader,
                   valid_loader=valid_loader,
-                  epochs=(1 + i) * 150,
+                  epochs=(1 + i) * 100,
                   lr_schedulers=lr_schedulers,
                   callbacks=callbacks)
 
