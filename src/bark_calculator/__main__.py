@@ -117,10 +117,10 @@ def main(args):
     mean, std = compute_mean_std(raw_dataset)
     pos_weights = compute_pos_weight(raw_dataset)
     test_dataset = RegressionDatasetFolder(os.path.join(args.root_dir, 'Images/dual_exp'),
-                                           input_only_transform=Compose(
+                                           input_only_transform=Compose([Normalize(mean, std)]),
+                                           transform=Compose(
                                                [Lambda(lambda img: pad_resize(img, 1024, 1024)),
-                                                Normalize(mean, std)]),
-                                           transform=Compose([ToTensor()]),
+                                                ToTensor()]),
                                            in_memory=True)
 
     train_split, valid_split, test_split = get_splits(test_dataset)
