@@ -27,7 +27,7 @@ def generate_output_folders(root_dir):
     wood_types = ["epinette_gelee", "epinette_non_gelee", "sapin"]
     levels = [('combined_images', ['train', 'valid', 'test']), ('outputs', ['train', 'valid', 'test'])]
 
-    results_dir = os.path.join(root_dir, 'Images', 'results', 'essai_1024')
+    results_dir = os.path.join(root_dir, 'Images', 'results', 'ng_5')
 
     def mkdirs_if_not_there(dir):
         if not os.path.isdir(dir):
@@ -50,9 +50,9 @@ def generate_output_folders(root_dir):
 
 
 def make_dual_images():
-    barks_dir = "/mnt/storage/mgodbout/Ecorcage/Images/dual_exp/bark"
-    nodes_dir = "/mnt/storage/mgodbout/Ecorcage/Images/dual_exp/nodes"
-    duals_dir = "/mnt/storage/mgodbout/Ecorcage/Images/dual_exp/duals"
+    barks_dir = "./Images/non_gelee/bark"
+    nodes_dir = "./Images/non_gelee/nodes"
+    duals_dir = "./Images/non_gelee/duals"
 
     for _, _, fnames in sorted(os.walk(barks_dir)):
         for fname in sorted(fnames):
@@ -71,7 +71,7 @@ def make_dual_images():
 
 
 def fine_tune_images():
-    duals_dir = "./Images/1024_processed/duals/epinette_gelee/"
+    duals_dir = "./Images/non_gelee/duals/"
 
     for _, _, fnames in sorted(os.walk(duals_dir)):
         for fname in sorted(fnames):
@@ -88,7 +88,8 @@ def fine_tune_images():
             dual_image[dual_image == 2] = 255
 
             dual = Image.fromarray(dual_image, mode='L')
-            dual.save(dual_path)
+            out_path = "./Images/essai_64/{}".format(fname)
+            dual.save(out_path)
 
 
 def get_loader_for_crop_batch(crop_size, batch_size, train_split, mean, std):
@@ -131,7 +132,7 @@ def main(args):
     module = fcn_resnet50()
 
     optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-5)
-    exp = Experiment(directory=os.path.join(args.root_dir, 'essai_1024/'),
+    exp = Experiment(directory=os.path.join(args.root_dir, 'ng_5/'),
                      module=module,
                      device=torch.device(args.device),
                      optimizer=optim,
@@ -299,7 +300,7 @@ def fix_image(img_number, n_pixels_to_fix, which_to_reduce):
 if __name__ == "__main__":
     # fix_image('EPN 9 A', 1, "smple")
     # make_dual_images()
-    # fine_tune_images()
+    fine_tune_images()
 
     parser = argparse.ArgumentParser()
 
@@ -317,4 +318,4 @@ if __name__ == "__main__":
 
     make_training_deterministic(args.seed)
 
-    main(args)
+    # main(args)
