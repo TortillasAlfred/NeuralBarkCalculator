@@ -103,7 +103,7 @@ def get_loader_for_crop_batch(crop_size, batch_size, train_split, mean, std):
                                             ]),
                                             in_memory=True)
 
-    return DataLoader(Subset(train_dataset, train_split.repeat(10)),
+    return DataLoader(Subset(train_dataset, train_split.repeat(5)),
                       batch_size=batch_size,
                       shuffle=True,
                       num_workers=8,
