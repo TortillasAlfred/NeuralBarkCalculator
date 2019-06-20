@@ -95,7 +95,7 @@ def get_loader_for_crop_batch(crop_size, batch_size, train_split, mean, std):
     train_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/dual_exp",
                                             input_only_transform=Compose([Normalize(mean, std)]),
                                             transform=Compose([
-                                                Lambda(lambda img: pad_resize(img, 2048, 2048)),
+                                                Lambda(lambda img: pad_resize(img, 1024, 1024)),
                                                 RandomCrop(crop_size),
                                                 RandomHorizontalFlip(),
                                                 RandomVerticalFlip(),
@@ -103,7 +103,7 @@ def get_loader_for_crop_batch(crop_size, batch_size, train_split, mean, std):
                                             ]),
                                             in_memory=True)
 
-    return DataLoader(Subset(train_dataset, train_split.repeat(2)),
+    return DataLoader(Subset(train_dataset, train_split.repeat(5)),
                       batch_size=batch_size,
                       shuffle=True,
                       num_workers=4,
@@ -129,7 +129,7 @@ def main(args):
 
     module = fcn_resnet50()
 
-    optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=5e-4)
+    optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-3)
     exp = Experiment(directory=os.path.join(args.root_dir, 'essai_1024/'),
                      module=module,
                      device=torch.device(args.device),
