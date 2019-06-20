@@ -114,8 +114,8 @@ def make_dataset_for_dir(dir, extensions):
 
     images = []
 
-    # for wood_type in ["epinette_gelee", "epinette_non_gelee", "sapin"]:
-    for wood_type in ["epinette_non_gelee"]:
+    for wood_type in ["epinette_gelee", "epinette_non_gelee", "sapin"]:
+        # for wood_type in ["epinette_non_gelee"]:
         samples_type_dir = os.path.join(samples_dir, wood_type)
         targets_type_dir = os.path.join(targets_dir, wood_type)
 
