@@ -54,7 +54,12 @@ def main(args):
                                            input_only_transform=Compose([Normalize(mean, std)]),
                                            transform=Compose([ToTensor()]))
 
-    train_split, valid_split, test_split = get_splits(test_dataset)
+    valid_dataset = RegressionDatasetFolder(os.path.join(args.root_dir, 'Images/dual_exp'),
+                                            input_only_transform=Compose([Normalize(mean, std)]),
+                                            transform=Compose([ToTensor()]),
+                                            include_fname=True)
+
+    train_split, valid_split, test_split = get_splits(valid_dataset)
 
     module = fcn_resnet50()
 
@@ -71,10 +76,6 @@ def main(args):
     lr_schedulers = [ExponentialLR(gamma=0.975)]
     callbacks = []
 
-    valid_dataset = RegressionDatasetFolder(os.path.join(args.root_dir, 'Images/dual_exp'),
-                                            input_only_transform=Compose([Normalize(mean, std)]),
-                                            transform=Compose([ToTensor()]),
-                                            include_fname=True)
     pure_dataset = RegressionDatasetFolder(os.path.join(args.root_dir, 'Images/dual_exp'),
                                            input_only_transform=None,
                                            transform=Compose([ToTensor()]),
