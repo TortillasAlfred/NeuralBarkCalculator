@@ -59,8 +59,6 @@ def main(args):
                                             transform=Compose([ToTensor()]),
                                             include_fname=True)
 
-    train_split, valid_split, test_split = get_splits(valid_dataset)
-
     module = fcn_resnet50()
 
     optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=5e-3)
@@ -90,10 +88,8 @@ def main(args):
 
     generate_output_folders(args.root_dir)
 
-    splits = [(train_split, 'train'), (valid_split, 'valid'), (test_split, 'test')]
-
     results_csv = [[
-        'Name', 'Type', 'Split', 'F1_nothing', 'F1_bark', 'F1_node', 'F1_mean', 'Output Bark %', 'Output Node %',
+        'Name', 'Type', 'F1_nothing', 'F1_bark', 'F1_node', 'F1_mean', 'Output Bark %', 'Output Node %',
         'Target Bark %', 'Target Node %'
     ]]
 
@@ -143,11 +139,7 @@ def main(args):
 
             suptitle = 'Mean f1 : {:.3f}'.format(acc)
 
-            for split_idxs, split_name in splits:
-                if image_number in split_idxs:
-                    split = split_name
-
-            running_csv_stats = [fname, wood_type, split]
+            running_csv_stats = [fname, wood_type]
 
             class_names = ['Nothing', 'Bark', 'Node']
 
@@ -169,7 +161,7 @@ def main(args):
             plt.tight_layout()
             # plt.show()
             plt.savefig(os.path.join(args.root_dir,
-                                     'Images/results/ng_2/combined_images/{}/{}/{}').format(wood_type, split, fname),
+                                     'Images/results/ng_2/combined_images/{}/{}').format(wood_type, fname),
                         format='png',
                         dpi=900)
             plt.close()
@@ -180,8 +172,7 @@ def main(args):
             dual_outputs[outputs == 2] = 255
 
             dual = Image.fromarray(dual_outputs, mode='L')
-            dual.save(
-                os.path.join(args.root_dir, 'Images/results/ng_2/outputs/{}/{}/{}').format(wood_type, split, fname))
+            dual.save(os.path.join(args.root_dir, 'Images/results/ng_2/outputs/{}/{}').format(wood_type, fname))
 
             results_csv.append(running_csv_stats)
 
