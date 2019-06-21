@@ -300,7 +300,7 @@ def fix_image(img_number, n_pixels_to_fix, which_to_reduce):
 if __name__ == "__main__":
     # fix_image('EPN 9 A', 1, "smple")
     # make_dual_images()
-    fine_tune_images()
+    # fine_tune_images()
 
     parser = argparse.ArgumentParser()
 
@@ -318,4 +318,4 @@ if __name__ == "__main__":
 
     make_training_deterministic(args.seed)
 
-    # main(args)
+    main(args)
