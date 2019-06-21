@@ -104,7 +104,7 @@ def get_loader_for_crop_batch(crop_size, batch_size, train_split, mean, std):
                                             ]),
                                             in_memory=True)
 
-    return DataLoader(Subset(train_dataset, train_split.repeat(5)),
+    return DataLoader(Subset(train_dataset, train_split.repeat(10)),
                       batch_size=batch_size,
                       shuffle=True,
                       num_workers=8,
@@ -149,7 +149,7 @@ def main(args):
 
         exp.train(train_loader=train_loader,
                   valid_loader=valid_loader,
-                  epochs=(1 + i) * 100,
+                  epochs=(1 + i) * 200,
                   lr_schedulers=lr_schedulers,
                   callbacks=callbacks)
 
