@@ -134,37 +134,51 @@ def get_pos_weight():
 
 
 def get_splits(dataset):
-    train_percent = 0.65
-    valid_percent = 0.20
-    test_percent = 0.15
+    train_percent = 0.7
+    valid_percent = 0.3
+    test_percent = 0
+    n_data = len(dataset)
 
-    total_items = len(dataset)
+    idxs = np.arange(n_data)
+    np.random.shuffle(idxs)
 
-    wood_type_to_idx = {'epinette_gelee': 0, 'epinette_non_gelee': 1, 'sapin': 2}
+    n_train = int(ceil(train_percent * n_data))
+    n_valid = int(floor(valid_percent * n_data))
 
-    idxs_by_type = [[] for _ in range(3)]
+    return idxs[:n_train], \
+        idxs[n_train:n_train + n_valid], \
+        idxs[n_train + n_valid:]
+    # train_percent = 0.65
+    # valid_percent = 0.20
+    # test_percent = 0.15
 
-    for i, (_, _, _, wood_type) in enumerate(dataset):
-        idxs_by_type[wood_type_to_idx[wood_type]].append(i)
+    # total_items = len(dataset)
 
-    train_split, valid_split, test_split, train_weights = [], [], [], []
+    # wood_type_to_idx = {'epinette_gelee': 0, 'epinette_non_gelee': 1, 'sapin': 2}
 
-    for idx in range(len(idxs_by_type)):
-        idxs_by_type[idx] = np.asarray(idxs_by_type[idx])
-        np.random.shuffle(idxs_by_type[idx])
-        n_data = len(idxs_by_type[idx])
+    # idxs_by_type = [[] for _ in range(3)]
 
-        idx_weight = total_items / (3 * n_data)
+    # for i, (_, _, _, wood_type) in enumerate(dataset):
+    #     idxs_by_type[wood_type_to_idx[wood_type]].append(i)
 
-        n_train = int(ceil(train_percent * n_data))
-        n_valid = int(floor(valid_percent * n_data))
+    # train_split, valid_split, test_split, train_weights = [], [], [], []
 
-        train_split.extend(idxs_by_type[idx][:n_train])
-        valid_split.extend(idxs_by_type[idx][n_train:n_train + n_valid])
-        test_split.extend(idxs_by_type[idx][n_train + n_valid:])
-        train_weights.extend([idx_weight] * n_train)
+    # for idx in range(len(idxs_by_type)):
+    #     idxs_by_type[idx] = np.asarray(idxs_by_type[idx])
+    #     np.random.shuffle(idxs_by_type[idx])
+    #     n_data = len(idxs_by_type[idx])
 
-    return train_split, valid_split, test_split, train_weights
+    #     idx_weight = total_items / (3 * n_data)
+
+    #     n_train = int(ceil(train_percent * n_data))
+    #     n_valid = int(floor(valid_percent * n_data))
+
+    #     train_split.extend(idxs_by_type[idx][:n_train])
+    #     valid_split.extend(idxs_by_type[idx][n_train:n_train + n_valid])
+    #     test_split.extend(idxs_by_type[idx][n_train + n_valid:])
+    #     train_weights.extend([idx_weight] * n_train)
+
+    # return train_split, valid_split, test_split, train_weights
 
 
 class SoftDiceLoss(nn.Module):

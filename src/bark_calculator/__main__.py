@@ -27,7 +27,7 @@ def generate_output_folders(root_dir):
     wood_types = ["epinette_gelee", "epinette_non_gelee", "sapin"]
     levels = [('combined_images', ['train', 'valid', 'test']), ('outputs', ['train', 'valid', 'test'])]
 
-    results_dir = os.path.join(root_dir, 'Images', 'results', 'complet_4')
+    results_dir = os.path.join(root_dir, 'Images', 'results', 'ng_2')
 
     def mkdirs_if_not_there(dir):
         if not os.path.isdir(dir):
@@ -104,11 +104,18 @@ def get_loader_for_crop_batch(crop_size, batch_size, train_split, mean, std, tra
                                             ]),
                                             in_memory=True)
 
-    batch_sampler = WeightedRandomSampler(train_weights, num_samples=batch_size, replacement=False)
+    # batch_sampler = WeightedRandomSampler(train_weights, num_samples=batch_size, replacement=False)
+
+    # return DataLoader(Subset(train_dataset, train_split.repeat(10)),
+    #                   batch_size=batch_size,
+    #                   batch_sampler=batch_sampler,
+    #                   num_workers=8,
+    #                   drop_last=True,
+    #                   pin_memory=False)
 
     return DataLoader(Subset(train_dataset, train_split.repeat(10)),
                       batch_size=batch_size,
-                      batch_sampler=batch_sampler,
+                      shuffle=True,
                       num_workers=8,
                       drop_last=True,
                       pin_memory=False)
@@ -132,14 +139,15 @@ def main(args):
                                             transform=Compose([ToTensor()]),
                                             include_fname=True)
 
-    train_split, valid_split, test_split, train_weights = get_splits(valid_dataset)
+    # train_split, valid_split, test_split, train_weights = get_splits(valid_dataset)
+    train_split, valid_split, test_split = get_splits(test_dataset)
 
     valid_loader = DataLoader(Subset(test_dataset, valid_split), batch_size=8, num_workers=8, pin_memory=False)
 
     module = fcn_resnet50()
 
-    optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-4)
-    exp = Experiment(directory=os.path.join(args.root_dir, 'complet_4/'),
+    optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-2)
+    exp = Experiment(directory=os.path.join(args.root_dir, 'ng_2/'),
                      module=module,
                      device=torch.device(args.device),
                      optimizer=optim,
@@ -148,7 +156,7 @@ def main(args):
                      monitor_metric='val_IntersectionOverUnion',
                      monitor_mode='max')
 
-    lr_schedulers = [ExponentialLR(gamma=0.9)]
+    lr_schedulers = [ExponentialLR(gamma=0.975)]
     callbacks = []
 
     for i, (crop_size, batch_size) in enumerate(zip([448], [7])):
@@ -156,7 +164,7 @@ def main(args):
 
         exp.train(train_loader=train_loader,
                   valid_loader=valid_loader,
-                  epochs=(1 + i) * 50,
+                  epochs=(1 + i) * 250,
                   lr_schedulers=lr_schedulers,
                   callbacks=callbacks)
 
