@@ -229,7 +229,7 @@ def remove_class_wise(img, class_idx, shape):
 
 
 def remove_from_img(img_i):
-    img_i = remove_small_objects(img_i.cpu().numpy().astype(bool), min_size=12, connectivity=2)
+    img_i = remove_small_objects(img_i.cpu().numpy().astype(bool), min_size=64, connectivity=2)
 
     return torch.from_numpy(img_i).long()
 
