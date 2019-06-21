@@ -131,7 +131,7 @@ def main(args):
 
     module = fcn_resnet50()
 
-    optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=2e-2)
+    optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=3e-2)
     exp = Experiment(directory=os.path.join(args.root_dir, 'ng_2.2/'),
                      module=module,
                      device=torch.device(args.device),
