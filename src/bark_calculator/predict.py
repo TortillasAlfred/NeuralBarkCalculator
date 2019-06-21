@@ -25,7 +25,7 @@ def generate_output_folders(root_dir):
     wood_types = ["epinette_gelee", "epinette_non_gelee", "sapin"]
     levels = [('combined_images', ['train', 'valid', 'test']), ('outputs', ['train', 'valid', 'test'])]
 
-    results_dir = os.path.join(root_dir, 'Images', 'results', 'fcn_decay')
+    results_dir = os.path.join(root_dir, 'Images', 'results', 'ng_2')
 
     def mkdirs_if_not_there(dir):
         if not os.path.isdir(dir):
@@ -59,7 +59,7 @@ def main(args):
     module = fcn_resnet50()
 
     optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=5e-3)
-    exp = Experiment(directory=os.path.join(args.root_dir, 'fcn_decay/'),
+    exp = Experiment(directory=os.path.join(args.root_dir, 'ng_2/'),
                      module=module,
                      device=torch.device(args.device),
                      optimizer=optim,
@@ -105,7 +105,7 @@ def main(args):
 
             del pure_batch
 
-            # if os.path.isfile('/mnt/storage/mgodbout/Ecorcage/Images/results/fcn_decay/{}'.format(fname)):
+            # if os.path.isfile('/mnt/storage/mgodbout/Ecorcage/Images/results/ng_2/{}'.format(fname)):
             #     continue
 
             outputs = module(batch[0].to(torch.device(args.device)))
@@ -167,8 +167,8 @@ def main(args):
             plt.suptitle(suptitle)
             plt.tight_layout()
             # plt.show()
-            plt.savefig(os.path.join(args.root_dir, 'Images/results/fcn_decay/combined_images/{}/{}/{}').format(
-                wood_type, split, fname),
+            plt.savefig(os.path.join(args.root_dir,
+                                     'Images/results/ng_2/combined_images/{}/{}/{}').format(wood_type, split, fname),
                         format='png',
                         dpi=900)
             plt.close()
@@ -180,12 +180,11 @@ def main(args):
 
             dual = Image.fromarray(dual_outputs, mode='L')
             dual.save(
-                os.path.join(args.root_dir,
-                             'Images/results/fcn_decay/outputs/{}/{}/{}').format(wood_type, split, fname))
+                os.path.join(args.root_dir, 'Images/results/ng_2/outputs/{}/{}/{}').format(wood_type, split, fname))
 
             results_csv.append(running_csv_stats)
 
-    csv_file = os.path.join(args.root_dir, 'Images', 'results', 'fcn_decay', 'final_stats.csv')
+    csv_file = os.path.join(args.root_dir, 'Images', 'results', 'ng_2', 'final_stats.csv')
 
     with open(csv_file, 'w') as f:
         csv_writer = csv.writer(f, delimiter='\t')
