@@ -92,7 +92,7 @@ def fine_tune_images():
             dual.save(out_path)
 
 
-def get_loader_for_crop_batch(crop_size, batch_size, train_split, mean, std, train_weights):
+def get_loader_for_crop_batch(crop_size, batch_size, train_split, mean, std):
     train_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/dual_exp",
                                             input_only_transform=Compose([Normalize(mean, std)]),
                                             transform=Compose([
