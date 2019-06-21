@@ -11,6 +11,7 @@ from torch.nn.modules.loss import CrossEntropyLoss
 from skimage.io import imread, imsave
 
 from sklearn.metrics import f1_score
+from skimage.transform import resize
 import torch
 
 from math import ceil
@@ -50,9 +51,9 @@ def generate_output_folders(root_dir):
 
 
 def make_dual_images():
-    barks_dir = "./Images/non_gelee/bark"
-    nodes_dir = "./Images/non_gelee/nodes"
-    duals_dir = "./Images/non_gelee/duals"
+    barks_dir = "./Images/sapin/bark"
+    nodes_dir = "./Images/sapin/nodes"
+    duals_dir = "./Images/sapin/duals"
 
     for _, _, fnames in sorted(os.walk(barks_dir)):
         for fname in sorted(fnames):
@@ -308,10 +309,23 @@ def fix_image(img_number, n_pixels_to_fix, which_to_reduce):
     imsave(output_path, img)
 
 
+def adjust_images(duals_folder, samples_folder):
+    for _, _, fnames in sorted(os.walk(duals_folder)):
+        for fname in sorted(fnames):
+            sample = imread(os.path.join(samples_folder, fname.replace(".png", ".bmp")))
+            dual = imread(os.path.join(duals_folder, fname), grayscale=True)
+
+            dual = resize(dual, sample.shape[:-1])
+
+            imsave(os.path.join(duals_folder, fname), dual)
+
+
 if __name__ == "__main__":
     # fix_image('EPN 9 A', 1, "smple")
     # make_dual_images()
     # fine_tune_images()
+    adjust_images("./Images/results/fcn_decay_output/outputs/epinette_gelee",
+                  "./Images/1024_processed/samples/epinette_gelee/")
 
     parser = argparse.ArgumentParser()
 
