@@ -5,7 +5,7 @@ from models import vanilla_unet, FCDenseNet103, FCDenseNet57, B2B, deeplabv3_res
 from torchvision.transforms import *
 
 from poutyne.framework import Experiment, ExponentialLR, EarlyStopping
-from torch.utils.data import DataLoader, Subset, ConcatDataset
+from torch.utils.data import DataLoader, Subset, ConcatDataset, WeightedRandomSampler
 import matplotlib.pyplot as plt
 from torch.nn.modules.loss import CrossEntropyLoss
 from skimage.io import imread, imsave
@@ -92,7 +92,7 @@ def fine_tune_images():
             dual.save(out_path)
 
 
-def get_loader_for_crop_batch(crop_size, batch_size, train_split, mean, std):
+def get_loader_for_crop_batch(crop_size, batch_size, train_split, mean, std, train_weights):
     train_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/dual_exp",
                                             input_only_transform=Compose([Normalize(mean, std)]),
                                             transform=Compose([
@@ -104,9 +104,11 @@ def get_loader_for_crop_batch(crop_size, batch_size, train_split, mean, std):
                                             ]),
                                             in_memory=True)
 
+    batch_sampler = WeightedRandomSampler(train_weights, num_samples=batch_size, replacement=False)
+
     return DataLoader(Subset(train_dataset, train_split.repeat(10)),
                       batch_size=batch_size,
-                      shuffle=True,
+                      batch_sampler=batch_sampler,
                       num_workers=8,
                       drop_last=True,
                       pin_memory=False)
@@ -125,7 +127,12 @@ def main(args):
                                                 ToTensor()]),
                                            in_memory=True)
 
-    train_split, valid_split, test_split = get_splits(test_dataset)
+    valid_dataset = RegressionDatasetFolder(os.path.join(args.root_dir, 'Images/dual_exp'),
+                                            input_only_transform=Compose([Normalize(mean, std)]),
+                                            transform=Compose([ToTensor()]),
+                                            include_fname=True)
+
+    train_split, valid_split, test_split, train_weights = get_splits(valid_dataset)
 
     valid_loader = DataLoader(Subset(test_dataset, valid_split), batch_size=8, num_workers=8, pin_memory=False)
 
@@ -145,7 +152,7 @@ def main(args):
     callbacks = []
 
     for i, (crop_size, batch_size) in enumerate(zip([448], [7])):
-        train_loader = get_loader_for_crop_batch(crop_size, batch_size, train_split, mean, std)
+        train_loader = get_loader_for_crop_batch(crop_size, batch_size, train_split, mean, std, train_weights)
 
         exp.train(train_loader=train_loader,
                   valid_loader=valid_loader,
@@ -153,10 +160,6 @@ def main(args):
                   lr_schedulers=lr_schedulers,
                   callbacks=callbacks)
 
-    valid_dataset = RegressionDatasetFolder(os.path.join(args.root_dir, 'Images/dual_exp'),
-                                            input_only_transform=Compose([Normalize(mean, std)]),
-                                            transform=Compose([ToTensor()]),
-                                            include_fname=True)
     pure_dataset = RegressionDatasetFolder(os.path.join(args.root_dir, 'Images/dual_exp'),
                                            transform=Compose([ToTensor()]),
                                            include_fname=True)
