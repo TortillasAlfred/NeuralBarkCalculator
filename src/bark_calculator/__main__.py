@@ -109,7 +109,7 @@ def get_loader_for_crop_batch(crop_size, batch_size, train_split, mean, std):
                       shuffle=True,
                       num_workers=8,
                       drop_last=True,
-                      pin_memory=True)
+                      pin_memory=False)
 
 
 def main(args):
@@ -127,7 +127,7 @@ def main(args):
 
     train_split, valid_split, test_split = get_splits(test_dataset)
 
-    valid_loader = DataLoader(Subset(test_dataset, valid_split), batch_size=8, num_workers=8, pin_memory=True)
+    valid_loader = DataLoader(Subset(test_dataset, valid_split), batch_size=8, num_workers=8, pin_memory=False)
 
     module = fcn_resnet50()
 
@@ -161,9 +161,9 @@ def main(args):
                                            transform=Compose([ToTensor()]),
                                            include_fname=True)
 
-    # test_loader = DataLoader(Subset(test_dataset, test_split), batch_size=8, num_workers=8, pin_memory=True)
-    valid_loader = DataLoader(valid_dataset, batch_size=1, num_workers=8, pin_memory=True)
-    pure_loader = DataLoader(pure_dataset, batch_size=1, num_workers=8, pin_memory=True)
+    # test_loader = DataLoader(Subset(test_dataset, test_split), batch_size=8, num_workers=8, pin_memory=False)
+    valid_loader = DataLoader(valid_dataset, batch_size=1, num_workers=8, pin_memory=False)
+    pure_loader = DataLoader(pure_dataset, batch_size=1, num_workers=8, pin_memory=False)
 
     # exp.test(test_loader)
 

@@ -80,8 +80,8 @@ def main(args):
                                            transform=Compose([ToTensor()]),
                                            include_fname=True)
 
-    pure_loader = DataLoader(pure_dataset, batch_size=1, num_workers=4, pin_memory=True)
-    valid_loader = DataLoader(valid_dataset, batch_size=1, num_workers=4, pin_memory=True)
+    pure_loader = DataLoader(pure_dataset, batch_size=1, num_workers=4, pin_memory=False)
+    valid_loader = DataLoader(valid_dataset, batch_size=1, num_workers=4, pin_memory=False)
 
     exp.load_best_checkpoint()
     module = exp.model.model
