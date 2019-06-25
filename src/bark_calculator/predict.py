@@ -23,7 +23,7 @@ import csv
 
 def generate_output_folders(root_dir):
     wood_types = ["epinette_gelee", "epinette_non_gelee", "sapin"]
-    levels = [('combined_images', ['train', 'valid', 'test']), ('outputs', ['train', 'valid', 'test'])]
+    levels = [('combined_images', []), ('outputs', [])]
 
     results_dir = os.path.join(root_dir, 'Images', 'results', 'ng_2')
 
