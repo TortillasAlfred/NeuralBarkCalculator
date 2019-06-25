@@ -1,12 +1,9 @@
-from kornia.losses import FocalLoss
 from sklearn.metrics import f1_score
 from dataset import RegressionDatasetFolder
 
 from torchvision.transforms import Compose, Resize, ToTensor, ToPILImage
 from torchvision.transforms.functional import pad, resize
 from torch.utils.data import DataLoader, SubsetRandomSampler
-from scipy.ndimage.interpolation import map_coordinates
-from scipy.ndimage.filters import gaussian_filter
 from skimage.morphology import remove_small_objects
 from poutyne.framework.callbacks import Callback
 
@@ -18,66 +15,6 @@ from torchvision.transforms.functional import rotate, center_crop
 from PIL import Image
 import torch.nn.functional as F
 import random
-
-
-def get_train_valid_samplers(dataset, train_percent):
-    n_items = len(dataset)
-
-    all_idx = np.arange(n_items)
-
-    np.random.shuffle(all_idx)
-
-    n_train = ceil(n_items * train_percent)
-    n_valid = n_items - n_train
-
-    train_idx = all_idx[:n_train]
-    valid_idx = all_idx[-n_valid:]
-
-    return SubsetRandomSampler(train_idx), SubsetRandomSampler(valid_idx)
-
-
-def rotate_crop(image, angle_range=20):
-    angle = random.random() * angle_range * 2 - angle_range
-
-    size, _ = image.size
-
-    image = rotate(image, angle)
-
-    cropped_size = rotatedRectWithMaxArea(size, (angle + 180) / (180 * np.pi))
-
-    return center_crop(image, cropped_size)
-
-
-def rotatedRectWithMaxArea(size, angle):
-    """
-    Given a rectangle of size wxh that has been rotated by 'angle' (in
-    radians), computes the width and height of the largest possible
-    axis-aligned rectangle (maximal area) within the rotated rectangle.
-    """
-    sin_a, cos_a = abs(sin(angle)), abs(cos(angle))
-    if 1 <= 2. * sin_a * cos_a or abs(sin_a - cos_a) < 1e-10:
-        x = 0.5 * size
-        wr, hr = (x / sin_a, x / cos_a)
-    else:
-        cos_2a = cos_a * cos_a - sin_a * sin_a
-        wr, hr = (size*cos_a - size*sin_a)/cos_2a, \
-            (size*cos_a - size*sin_a)/cos_2a
-
-    return floor(wr / 2), floor(hr / 2)
-
-
-def elastic_transform(image):
-    """Elastic deformation of image as described in [Simard2003]_.
-    .. [Simard2003] Simard, Steinkraus and Platt, "Best Practices for
-       Convolutional Neural Networks applied to Visual Document Analysis", in
-       Proc. of the International Conference on Document Analysis and
-       Recognition, 2003.
-    """
-    image = np.array(image)
-
-    image_deformed = elasticdeform.deform_random_grid(image, sigma=10, axis=(0, 1))
-
-    return Image.fromarray(image_deformed)
 
 
 def compute_mean_std(working_dataset):
@@ -172,36 +109,6 @@ def get_splits(dataset):
     return train_split, valid_split, test_split, train_weights
 
 
-class SoftDiceLoss(nn.Module):
-    def __init__(self, weight=None, size_average=True):
-        super(SoftDiceLoss, self).__init__()
-        self.__name__ = "dice_loss"
-
-    def forward(self, logits, targets):
-        smooth = 1
-        num = targets.size(0)
-        probs = torch.argmax(logits, dim=1)
-        m1 = probs.view(num, -1)
-        m2 = targets.view(num, -1)
-        intersection = (m1 * m2)
-
-        score = 2. * (intersection.sum(1) + smooth) / \
-            (m1.sum(1) + m2.sum(1) + smooth)
-        score = 1 - score.sum() / num
-        return score
-
-
-class MixedLoss(nn.Module):
-    def __init__(self):
-        super(MixedLoss, self).__init__()
-        self.__name__ = "MixedLoss"
-        self.dice = SoftDiceLoss()
-        self.bce = nn.modules.loss.CrossEntropyLoss(weight=get_pos_weight())
-
-    def forward(self, predict, true):
-        return self.bce(predict, true) + self.dice(predict, true)
-
-
 class CustomWeightedCrossEntropy(nn.Module):
     def __init__(self, weights):
         super(CustomWeightedCrossEntropy, self).__init__()
@@ -216,30 +123,6 @@ class CustomWeightedCrossEntropy(nn.Module):
         class_weights = torch.index_select(self.weights, 0, max_classes).view(true.shape)
 
         return (entropies * class_weights).mean()
-
-
-def remove_from_img(img_i):
-    img_i = remove_small_objects(img_i.cpu().numpy().astype(bool), min_size=5, connectivity=2)
-
-    return torch.from_numpy(img_i).long()
-
-
-def remove_small_zones(img):
-    shape = img.shape
-
-    img = img.cpu()
-
-    binary_mapping = [0, 1, 1]
-    binary_mapping = torch.tensor(binary_mapping).to(img.device)
-
-    binary_img = torch.index_select(binary_mapping, 0, img.flatten()).reshape(shape)
-
-    masks = torch.stack(list(map(remove_from_img, binary_img)))
-
-    img[(masks == 0) & ((img == 1) | (img == 2))] = 0
-    img[(masks == 1) & (img == 0)] = 1
-
-    return img
 
 
 def make_training_deterministic(seed):
@@ -284,16 +167,6 @@ class IOU(nn.Module):
             return scores[self.class_to_watch]
 
 
-class FocalLossWrapper(nn.Module):
-    def __init__(self):
-        super().__init__()
-        self.criterion = FocalLoss(alpha=0.25, gamma=torch.tensor(2.0).to('cuda:0'), reduction='mean')
-        self.__name__ = "FocalLoss"
-
-    def forward(self, outputs, labels):
-        return self.criterion(outputs, labels)
-
-
 TO_PIL = ToPILImage()
 TO_TENSOR = ToTensor()
 
@@ -319,13 +192,3 @@ def pad_to_biggest_image(tensor_data):
 
     return torch.stack([t[0] for t in tensor_data]), \
         torch.stack([t[1] for t in tensor_data])
-
-
-class ResetLR(Callback):
-    def __init__(self, init_lr):
-        super(ResetLR, self).__init__()
-        self.init_lr = init_lr
-
-    def on_train_begin(self, logs):
-        for param_group in self.model.optimizer.param_groups:
-            param_group['lr'] = self.init_lr

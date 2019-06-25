@@ -1,11 +1,11 @@
-from dataset import RegressionDatasetFolder, make_weight_map, pil_loader
+from dataset import RegressionDatasetFolder, pil_loader
 from utils import *
-from models import vanilla_unet, FCDenseNet103, FCDenseNet57, B2B, deeplabv3_resnet101, fcn_resnet50
+from models import fcn_resnet50
 
 from torchvision.transforms import *
 
-from poutyne.framework import Experiment, ExponentialLR, EarlyStopping
-from torch.utils.data import DataLoader, Subset, ConcatDataset, WeightedRandomSampler
+from poutyne.framework import Experiment, ExponentialLR
+from torch.utils.data import DataLoader, Subset, WeightedRandomSampler
 import matplotlib.pyplot as plt
 from torch.nn.modules.loss import CrossEntropyLoss
 from skimage.io import imread, imsave
@@ -202,7 +202,6 @@ def main(args):
 
             outputs = module(batch[0].to(torch.device(args.device)))
             outputs = torch.argmax(outputs, dim=1)
-            outputs = remove_small_zones(outputs)
 
             del batch
 
