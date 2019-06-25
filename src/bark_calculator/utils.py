@@ -164,6 +164,11 @@ def get_splits(dataset):
         test_split.extend(idxs_by_type[idx][n_train + n_valid:])
         train_weights.extend([idx_weight] * n_train)
 
+    train_split = np.asarray(train_split)
+    valid_split = np.asarray(valid_split)
+    test_split = np.asarray(test_split)
+    train_weights = np.asarray(train_weights)
+
     return train_split, valid_split, test_split, train_weights
 
 
