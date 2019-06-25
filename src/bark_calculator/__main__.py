@@ -250,7 +250,7 @@ def main(args):
 
             for class_idx in [1, 2]:
                 class_percent = (outputs == class_idx).float().mean().cpu()
-                running_csv_stats.append('{:.5f}'.format(class_percent))
+                running_csv_stats.append('{:.5f}'.format(class_percent * 100))
 
             for class_idx in [1, 2]:
                 class_percent = (target == class_idx).float().mean().cpu()
