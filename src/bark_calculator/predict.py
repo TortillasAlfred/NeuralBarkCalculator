@@ -88,10 +88,7 @@ def main(args):
 
     generate_output_folders(args.root_dir)
 
-    results_csv = [[
-        'Name', 'Type', 'F1_nothing', 'F1_bark', 'F1_node', 'F1_mean', 'Output Bark %', 'Output Node %',
-        'Target Bark %', 'Target Node %'
-    ]]
+    results_csv = [['Name', 'Type', 'F1_nothing', 'F1_bark', 'F1_node', 'F1_mean', 'Output Bark %', 'Output Node %']]
 
     with torch.no_grad():
         for image_number, (batch, pure_batch) in enumerate(zip(valid_loader, pure_loader)):
@@ -151,10 +148,6 @@ def main(args):
 
             for class_idx in [1, 2]:
                 class_percent = (outputs == class_idx).float().mean().cpu()
-                running_csv_stats.append('{:.5f}'.format(class_percent * 100))
-
-            for class_idx in [1, 2]:
-                class_percent = (target == class_idx).float().mean().cpu()
                 running_csv_stats.append('{:.5f}'.format(class_percent * 100))
 
             plt.suptitle(suptitle)
