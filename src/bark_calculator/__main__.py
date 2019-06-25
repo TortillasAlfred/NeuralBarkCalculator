@@ -113,7 +113,6 @@ def get_loader_for_crop_batch(crop_size, batch_size, train_split, mean, std, tra
                       batch_size=batch_size,
                       batch_sampler=batch_sampler,
                       num_workers=8,
-                      drop_last=True,
                       pin_memory=False)
 
 
