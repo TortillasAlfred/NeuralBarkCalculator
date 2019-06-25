@@ -169,11 +169,11 @@ def main(args):
                                            transform=Compose([ToTensor()]),
                                            include_fname=True)
 
-    # test_loader = DataLoader(Subset(test_dataset, test_split), batch_size=8, num_workers=8, pin_memory=False)
+    test_loader = DataLoader(Subset(test_dataset, test_split), batch_size=8, num_workers=8, pin_memory=False)
     valid_loader = DataLoader(valid_dataset, batch_size=1, num_workers=8, pin_memory=False)
     pure_loader = DataLoader(pure_dataset, batch_size=1, num_workers=8, pin_memory=False)
 
-    # exp.test(test_loader)
+    exp.test(test_loader)
 
     exp.load_best_checkpoint()
     module = exp.model.model
