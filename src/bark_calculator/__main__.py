@@ -72,7 +72,7 @@ def make_dual_images():
 
 
 def fine_tune_images():
-    duals_dir = "./Images/non_gelee/duals/"
+    duals_dir = "./Images/results/fcn_decay_output/outputs/epinette_gelee"
 
     for _, _, fnames in sorted(os.walk(duals_dir)):
         for fname in sorted(fnames):
@@ -80,7 +80,7 @@ def fine_tune_images():
 
             dual_path = os.path.join(duals_dir, fname)
 
-            dual_image = np.asarray(pil_loader(dual_path, grayscale=True)) / 127
+            dual_image = np.asarray(imread(dual_path, grayscale=True)) / 127
 
             dual_image = remove_small_zones(torch.from_numpy(dual_image).long())
 
@@ -89,7 +89,7 @@ def fine_tune_images():
             dual_image[dual_image == 2] = 255
 
             dual = Image.fromarray(dual_image, mode='L')
-            out_path = "./Images/essai_64/{}".format(fname)
+            out_path = "./Images/eg/{}".format(fname)
             dual.save(out_path)
 
 
@@ -127,7 +127,10 @@ def main(args):
                                           input_only_transform=None,
                                           transform=Compose([ToTensor()]))
     mean, std = compute_mean_std(raw_dataset)
+    print(mean)
+    print(std)
     pos_weights = compute_pos_weight(raw_dataset)
+    print(pos_weights)
     test_dataset = RegressionDatasetFolder(os.path.join(args.root_dir, 'Images/dual_exp'),
                                            input_only_transform=Compose([Normalize(mean, std)]),
                                            transform=Compose(
@@ -312,20 +315,24 @@ def fix_image(img_number, n_pixels_to_fix, which_to_reduce):
 def adjust_images(duals_folder, samples_folder):
     for _, _, fnames in sorted(os.walk(duals_folder)):
         for fname in sorted(fnames):
-            sample = imread(os.path.join(samples_folder, fname.replace(".png", ".bmp")))
-            dual = imread(os.path.join(duals_folder, fname), grayscale=True)
+            sample = pil_loader(os.path.join(samples_folder, fname.replace(".png", ".bmp")))
+            dual = pil_loader(os.path.join(duals_folder, fname), grayscale=True)
 
-            dual = resize(dual, sample.shape[:-1])
+            # dual = resize(dual, sample.shape[:-1], order=0)
+            dual = (dual.astype(float) / (np.iinfo(np.uint16).max / 2)).astype(np.uint8)
+            dual[dual == 1] = 127
+            dual[dual == 2] = 255
 
-            imsave(os.path.join(duals_folder, fname), dual)
+            dual = Image.fromarray(dual, mode='L')
+            dual.save(os.path.join(duals_folder, fname))
 
 
 if __name__ == "__main__":
     # fix_image('EPN 9 A', 1, "smple")
     # make_dual_images()
     # fine_tune_images()
-    adjust_images("./Images/results/fcn_decay_output/outputs/epinette_gelee",
-                  "./Images/1024_processed/samples/epinette_gelee/")
+    # adjust_images("./Images/results/fcn_decay_output/outputs/epinette_gelee",
+    #               "./Images/1024_processed/samples/epinette_gelee/")
 
     parser = argparse.ArgumentParser()
 
