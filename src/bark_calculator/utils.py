@@ -228,7 +228,7 @@ class CustomWeightedCrossEntropy(nn.Module):
 
 
 def remove_from_img(img_i):
-    img_i = remove_small_objects(img_i.cpu().numpy().astype(bool), min_size=100, connectivity=2)
+    img_i = remove_small_objects(img_i.cpu().numpy().astype(bool), min_size=5, connectivity=2)
 
     return torch.from_numpy(img_i).long()
 
@@ -272,7 +272,7 @@ class IOU(nn.Module):
     def forward(self, outputs, labels):
         outputs = torch.argmax(outputs, 1)
 
-        outputs = remove_small_zones(outputs)
+        # outputs = remove_small_zones(outputs)
 
         outputs = outputs.cpu().reshape(-1)
         labels = labels.cpu().reshape(-1)
