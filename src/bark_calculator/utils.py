@@ -227,23 +227,8 @@ class CustomWeightedCrossEntropy(nn.Module):
         return (entropies * class_weights).mean()
 
 
-def remove_class_wise(img, class_idx, shape):
-    replace_idx = 1 if class_idx == 0 else 1
-
-    binary_mapping = [0 if i != class_idx else 1 for i in range(3)]
-    binary_mapping = torch.tensor(binary_mapping).to(img.device)
-
-    binary_img = torch.index_select(binary_mapping, 0, img.flatten()).reshape(shape)
-
-    masks = torch.stack(list(map(remove_from_img, binary_img)))
-
-    img[(masks == 0) & (img == class_idx)] = replace_idx
-
-    return img
-
-
 def remove_from_img(img_i):
-    img_i = remove_small_objects(img_i.cpu().numpy().astype(bool), min_size=64, connectivity=2)
+    img_i = remove_small_objects(img_i.cpu().numpy().astype(bool), min_size=100, connectivity=2)
 
     return torch.from_numpy(img_i).long()
 
@@ -253,8 +238,15 @@ def remove_small_zones(img):
 
     img = img.cpu()
 
-    for class_idx in reversed(range(3)):
-        img = remove_class_wise(img, class_idx, shape)
+    binary_mapping = [0, 1, 1]
+    binary_mapping = torch.tensor(binary_mapping).to(img.device)
+
+    binary_img = torch.index_select(binary_mapping, 0, img.flatten()).reshape(shape)
+
+    masks = torch.stack(list(map(remove_from_img, binary_img)))
+
+    img[(masks == 0) & ((img == 1) | (img == 2))] = 0
+    img[(masks == 1) & (img == 0)] = 1
 
     return img
 
