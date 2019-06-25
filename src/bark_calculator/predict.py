@@ -93,7 +93,6 @@ def main(args):
     with torch.no_grad():
         for image_number, (batch, pure_batch) in enumerate(zip(valid_loader, pure_loader)):
             input = pure_batch[0]
-            target = pure_batch[1]
             fname = pure_batch[2][0]
             wood_type = pure_batch[3][0]
 
@@ -108,21 +107,12 @@ def main(args):
 
             del batch
 
-            names = ['Input', 'Target', 'Generated image']
+            names = ['Input', 'Generated image']
 
-            imgs = [input, target, outputs]
+            imgs = [input, outputs]
             imgs = [img.detach().cpu().squeeze().numpy() for img in imgs]
 
-            try:
-                class_accs = f1_score(imgs[1].flatten(), imgs[2].flatten(), labels=[0, 1, 2], average=None)
-                acc = class_accs.mean()
-            except ValueError:
-                print('Error on file {}'.format(fname))
-                print(imgs[1].shape)
-                print(imgs[2].shape)
-                continue
-
-            _, axs = plt.subplots(1, 3)
+            _, axs = plt.subplots(1, 2)
 
             for i, ax in enumerate(axs.flatten()):
                 img = imgs[i]
@@ -134,21 +124,20 @@ def main(args):
                 ax.set_title(names[i])
                 ax.axis('off')
 
-            suptitle = 'Mean f1 : {:.3f}'.format(acc)
-
             running_csv_stats = [fname, wood_type]
 
             class_names = ['Nothing', 'Bark', 'Node']
-
-            for c, c_acc in zip(class_names, class_accs):
-                suptitle += '\n{} : {:.3f}'.format(c, c_acc)
-                running_csv_stats.append('{:.3f}'.format(c_acc))
-
-            running_csv_stats.append('{:.3f}'.format(acc))
+            class_percents = []
 
             for class_idx in [1, 2]:
                 class_percent = (outputs == class_idx).float().mean().cpu()
+                class_percents.append(class_percent * 100)
                 running_csv_stats.append('{:.5f}'.format(class_percent * 100))
+
+            suptitle = "Estimated composition percentages\n"
+
+            for class_name, class_percent in zip(class_names[1:], class_percents):
+                suptitle += "{} : {:.3f}".format(class_name, class_percent * 100)
 
             plt.suptitle(suptitle)
             plt.tight_layout()
