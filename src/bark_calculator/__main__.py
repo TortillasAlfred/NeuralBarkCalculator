@@ -29,7 +29,7 @@ def generate_output_folders(root_dir):
     wood_types = ["epinette_gelee", "epinette_non_gelee", "sapin"]
     levels = [('combined_images', ['train', 'valid', 'test']), ('outputs', ['train', 'valid', 'test'])]
 
-    results_dir = os.path.join(root_dir, 'Images', 'results', 'tagged_2')
+    results_dir = os.path.join(root_dir, 'Images', 'results', 'tagged_2_3')
 
     def mkdirs_if_not_there(dir):
         if not os.path.isdir(dir):
@@ -143,8 +143,8 @@ def main(args):
 
     module = fcn_resnet50()
 
-    optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-2)
-    exp = Experiment(directory=os.path.join(args.root_dir, 'tagged_2/'),
+    optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=2e-3)
+    exp = Experiment(directory=os.path.join(args.root_dir, 'tagged_2_3/'),
                      module=module,
                      device=torch.device(args.device),
                      optimizer=optim,
