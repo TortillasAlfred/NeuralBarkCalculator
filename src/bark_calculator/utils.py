@@ -110,7 +110,7 @@ def get_splits(dataset):
 
 
 def remove_small_zones(img):
-    devie = img.device
+    device = img.device
     np_image = (img.cpu().numpy() == 0)
 
     remove_small_holes(np_image, min_size=100, connectivity=2, in_place=True)
