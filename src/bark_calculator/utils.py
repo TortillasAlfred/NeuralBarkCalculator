@@ -119,8 +119,8 @@ def remove_small_zones(img):
     print(np_image.shape)
     print(img.shape)
 
-    img[torch.from_numpy(np_image == 0).to(device) & (img == 0)] = 1
-    img[torch.from_numpy(np_image != 0).to(device) & (img != 0)] = 0
+    img[torch.from_numpy(np_image == 0).to(device).byte() & (img == 0)] = 1
+    img[torch.from_numpy(np_image != 0).to(device).byte() & (img != 0)] = 0
 
     return img
 
