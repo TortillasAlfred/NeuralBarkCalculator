@@ -29,7 +29,7 @@ def generate_output_folders(root_dir):
     wood_types = ["epinette_gelee", "epinette_non_gelee", "sapin"]
     levels = [('combined_images', ['train', 'valid', 'test']), ('outputs', ['train', 'valid', 'test'])]
 
-    results_dir = os.path.join(root_dir, 'Images', 'results', 'tagged_3_3')
+    results_dir = os.path.join(root_dir, 'Images', 'results', 'sz_5_3')
 
     def mkdirs_if_not_there(dir):
         if not os.path.isdir(dir):
@@ -73,26 +73,45 @@ def make_dual_images():
 
 
 def fine_tune_images():
-    duals_dir = "./Images/adjusted"
-    output_dir = "./Images/finetuned/"
+    duals_dir = "./Images/tagged_exp/duals/"
+    output_dir = "./Images/tagged_exp/duals/"
 
-    for _, _, fnames in sorted(os.walk(duals_dir)):
+    for wood_type in ["epinette_gelee", "epinette_non_gelee", "sapin"]:
+        type_duals_dir = os.path.join(duals_dir, wood_type)
+        type_output_dir = os.path.join(output_dir, wood_type)
+
+        for _, _, fnames in sorted(os.walk(type_duals_dir)):
+            for fname in sorted(fnames):
+                print(fname)
+
+                dual_path = os.path.join(type_duals_dir, fname)
+
+                dual_image = np.asarray(imread(dual_path, grayscale=True)) / 127
+
+                dual_image = remove_small_zones(torch.from_numpy(dual_image).long())
+
+                dual_image = dual_image.numpy().astype(np.uint8)
+                dual_image[dual_image == 1] = 127
+                dual_image[dual_image == 2] = 255
+
+                dual = Image.fromarray(dual_image, mode='L')
+                out_path = os.path.join(type_output_dir, fname)
+                dual.save(out_path)
+
+
+def adjust_images(duals_folder, samples_folder, out_folder):
+    for _, _, fnames in sorted(os.walk(duals_folder)):
         for fname in sorted(fnames):
-            print(fname)
+            sample = imread(os.path.join(samples_folder, fname.replace(".png", ".bmp")))
+            dual = imread(os.path.join(duals_folder, fname), grayscale=True)
 
-            dual_path = os.path.join(duals_dir, fname)
+            dual = img_as_ubyte(resize(dual, sample.shape[:-1], order=0))
 
-            dual_image = np.asarray(imread(dual_path, grayscale=True)) / 127
-
-            dual_image = remove_small_zones(torch.from_numpy(dual_image).long())
-
-            dual_image = dual_image.numpy().astype(np.uint8)
-            dual_image[dual_image == 1] = 127
-            dual_image[dual_image == 2] = 255
-
-            dual = Image.fromarray(dual_image, mode='L')
-            out_path = os.path.join(output_dir, fname)
-            dual.save(out_path)
+            try:
+                dual = Image.fromarray(dual, mode='L')
+                dual.save(os.path.join(out_folder, fname))
+            except ValueError:
+                print(fname)
 
 
 def get_loader_for_crop_batch(crop_size, batch_size, train_split, mean, std, train_weights):
@@ -144,7 +163,7 @@ def main(args):
     module = fcn_resnet50()
 
     optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=3e-3)
-    exp = Experiment(directory=os.path.join(args.root_dir, 'tagged_3_3/'),
+    exp = Experiment(directory=os.path.join(args.root_dir, 'sz_5_3/'),
                      module=module,
                      device=torch.device(args.device),
                      optimizer=optim,
@@ -197,11 +216,12 @@ def main(args):
 
             del pure_batch
 
-            # if os.path.isfile('/mnt/storage/mgodbout/Ecorcage/Images/results/tagged_3_3/{}'.format(fname)):
+            # if os.path.isfile('/mnt/storage/mgodbout/Ecorcage/Images/results/sz_5_3/{}'.format(fname)):
             #     continue
 
             outputs = module(batch[0].to(torch.device(args.device)))
             outputs = torch.argmax(outputs, dim=1)
+            outputs = remove_small_zones(outputs)
 
             del batch
 
@@ -258,7 +278,7 @@ def main(args):
             plt.suptitle(suptitle)
             plt.tight_layout()
             # plt.show()
-            plt.savefig(os.path.join(args.root_dir, 'Images/results/tagged_3_3/combined_images/{}/{}/{}').format(
+            plt.savefig(os.path.join(args.root_dir, 'Images/results/sz_5_3/combined_images/{}/{}/{}').format(
                 wood_type, split, fname),
                         format='png',
                         dpi=900)
@@ -272,11 +292,11 @@ def main(args):
             dual = Image.fromarray(dual_outputs, mode='L')
             dual.save(
                 os.path.join(args.root_dir,
-                             'Images/results/tagged_3_3/outputs/{}/{}/{}').format(wood_type, split, fname))
+                             'Images/results/sz_5_3/outputs/{}/{}/{}').format(wood_type, split, fname))
 
             results_csv.append(running_csv_stats)
 
-    csv_file = os.path.join(args.root_dir, 'Images', 'results', 'tagged_3_3', 'final_stats.csv')
+    csv_file = os.path.join(args.root_dir, 'Images', 'results', 'sz_5_3', 'final_stats.csv')
 
     with open(csv_file, 'w') as f:
         csv_writer = csv.writer(f, delimiter='\t')
@@ -304,21 +324,6 @@ def fix_image(img_number, n_pixels_to_fix, which_to_reduce):
         raise ValueError()
 
     imsave(output_path, img)
-
-
-def adjust_images(duals_folder, samples_folder, out_folder):
-    for _, _, fnames in sorted(os.walk(duals_folder)):
-        for fname in sorted(fnames):
-            sample = imread(os.path.join(samples_folder, fname.replace(".png", ".bmp")))
-            dual = imread(os.path.join(duals_folder, fname), grayscale=True)
-
-            dual = img_as_ubyte(resize(dual, sample.shape[:-1], order=0))
-
-            try:
-                dual = Image.fromarray(dual, mode='L')
-                dual.save(os.path.join(out_folder, fname))
-            except ValueError:
-                print(fname)
 
 
 if __name__ == "__main__":

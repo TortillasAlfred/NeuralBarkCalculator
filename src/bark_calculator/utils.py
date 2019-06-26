@@ -4,7 +4,7 @@ from dataset import RegressionDatasetFolder
 from torchvision.transforms import Compose, Resize, ToTensor, ToPILImage
 from torchvision.transforms.functional import pad, resize
 from torch.utils.data import DataLoader, SubsetRandomSampler
-from skimage.morphology import remove_small_objects
+from skimage.morphology import remove_small_objects, remove_small_holes
 from poutyne.framework.callbacks import Callback
 
 from math import ceil, floor, sin, cos
@@ -109,6 +109,18 @@ def get_splits(dataset):
     return train_split, valid_split, test_split, train_weights
 
 
+def remove_small_zones(img):
+    np_image = (img.cpu().numpy() == 0)
+
+    remove_small_holes(np_image, min_size=100, connectivity=2, in_place=True)
+    remove_small_objects(np_image, min_size=100, connectivity=2, in_place=True)
+
+    img[(np_image == 0) & (img == 0).cpu().numpy()] = 1
+    img[(np_image != 0) & (img != 0).cpu().numpy()] = 0
+
+    return img
+
+
 class CustomWeightedCrossEntropy(nn.Module):
     def __init__(self, weights):
         super(CustomWeightedCrossEntropy, self).__init__()
@@ -146,7 +158,7 @@ class IOU(nn.Module):
     def forward(self, outputs, labels):
         outputs = torch.argmax(outputs, 1)
 
-        # outputs = remove_small_zones(outputs)
+        outputs = remove_small_zones(outputs)
 
         outputs = outputs.cpu().reshape(-1)
         labels = labels.cpu().reshape(-1)
