@@ -115,8 +115,11 @@ def remove_small_zones(img):
     remove_small_holes(np_image, min_size=100, connectivity=2, in_place=True)
     remove_small_objects(np_image, min_size=100, connectivity=2, in_place=True)
 
-    img[(np_image == 0) & (img == 0).cpu().numpy()] = 1
-    img[(np_image != 0) & (img != 0).cpu().numpy()] = 0
+    print(np_image.shape)
+    print(img.shape)
+
+    img[torch.from_numpy(np_image == 0) & (img == 0)] = 1
+    img[torch.from_numpy(np_image != 0) & (img != 0)] = 0
 
     return img
 
