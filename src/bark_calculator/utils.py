@@ -110,6 +110,7 @@ def get_splits(dataset):
 
 
 def remove_small_zones(img):
+    devie = img.device
     np_image = (img.cpu().numpy() == 0)
 
     remove_small_holes(np_image, min_size=100, connectivity=2, in_place=True)
@@ -118,8 +119,8 @@ def remove_small_zones(img):
     print(np_image.shape)
     print(img.shape)
 
-    img[torch.from_numpy(np_image == 0) & (img == 0)] = 1
-    img[torch.from_numpy(np_image != 0) & (img != 0)] = 0
+    img[torch.from_numpy(np_image == 0).to(device) & (img == 0)] = 1
+    img[torch.from_numpy(np_image != 0).to(device) & (img != 0)] = 0
 
     return img
 
