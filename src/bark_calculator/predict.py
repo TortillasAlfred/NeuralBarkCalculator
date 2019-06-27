@@ -50,11 +50,11 @@ def generate_output_folders(root_dir):
 def main(args):
     mean, std = get_mean_std()
     pos_weights = get_pos_weight()
-    test_dataset = RegressionDatasetFolder(os.path.join(args.root_dir, 'Images/dual_exp'),
+    test_dataset = RegressionDatasetFolder(os.path.join(args.root_dir, 'Images/1024_processed'),
                                            input_only_transform=Compose([Normalize(mean, std)]),
                                            transform=Compose([ToTensor()]))
 
-    valid_dataset = RegressionDatasetFolder(os.path.join(args.root_dir, 'Images/dual_exp'),
+    valid_dataset = RegressionDatasetFolder(os.path.join(args.root_dir, 'Images/1024_processed'),
                                             input_only_transform=Compose([Normalize(mean, std)]),
                                             transform=Compose([ToTensor()]),
                                             include_fname=True)
@@ -74,7 +74,7 @@ def main(args):
     lr_schedulers = [ExponentialLR(gamma=0.975)]
     callbacks = []
 
-    pure_dataset = RegressionDatasetFolder(os.path.join(args.root_dir, 'Images/dual_exp'),
+    pure_dataset = RegressionDatasetFolder(os.path.join(args.root_dir, 'Images/1024_processed'),
                                            input_only_transform=None,
                                            transform=Compose([ToTensor()]),
                                            include_fname=True)
