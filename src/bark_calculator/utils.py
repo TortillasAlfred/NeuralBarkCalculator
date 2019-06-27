@@ -39,8 +39,8 @@ def compute_mean_std(working_dataset):
 def get_mean_std():
     # Util function to not have to recalculate them
     # every single time
-    mean = [0.778, 0.658, 0.502]
-    std = [0.095, 0.120, 0.130]
+    mean = [0.744, 0.620, 0.449]
+    std = [0.103, 0.122, 0.122]
 
     return mean, std
 
@@ -67,7 +67,7 @@ def compute_pos_weight(working_dataset):
 
 
 def get_pos_weight():
-    return torch.FloatTensor([0.4138, 1.7491, 84.8554])
+    return torch.FloatTensor([0.3895, 2.3723, 91.0560])
 
 
 def get_splits(dataset):
