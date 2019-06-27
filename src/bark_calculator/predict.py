@@ -1,10 +1,10 @@
-from dataset import RegressionDatasetFolder, make_weight_map, pil_loader
+from dataset import RegressionDatasetFolder, pil_loader
 from utils import *
 from models import fcn_resnet50
 
 from torchvision.transforms import *
 
-from poutyne.framework import Experiment, ExponentialLR, EarlyStopping
+from poutyne.framework import Experiment, ExponentialLR
 from torch.utils.data import DataLoader, Subset, ConcatDataset
 import matplotlib.pyplot as plt
 from torch.nn.modules.loss import CrossEntropyLoss
