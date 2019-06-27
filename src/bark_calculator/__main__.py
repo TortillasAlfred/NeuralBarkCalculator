@@ -29,7 +29,7 @@ def generate_output_folders(root_dir):
     wood_types = ["epinette_gelee", "epinette_non_gelee", "sapin"]
     levels = [('combined_images', ['train', 'valid', 'test']), ('outputs', ['train', 'valid', 'test'])]
 
-    results_dir = os.path.join(root_dir, 'Images', 'results', 'sz_3_3')
+    results_dir = os.path.join(root_dir, 'Images', 'results', 'all_3')
 
     def mkdirs_if_not_there(dir):
         if not os.path.isdir(dir):
@@ -73,8 +73,8 @@ def make_dual_images():
 
 
 def fine_tune_images():
-    duals_dir = "./Images/tagged_exp/duals/"
-    output_dir = "./Images/tagged_exp/duals/"
+    duals_dir = "./Images/generated_exp/duals/"
+    output_dir = "./Images/generated_exp/duals/"
 
     for wood_type in ["epinette_gelee", "epinette_non_gelee", "sapin"]:
         type_duals_dir = os.path.join(duals_dir, wood_type)
@@ -115,7 +115,7 @@ def adjust_images(duals_folder, samples_folder, out_folder):
 
 
 def get_loader_for_crop_batch(crop_size, batch_size, train_split, mean, std, train_weights):
-    train_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/tagged_exp",
+    train_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/generated_exp",
                                             input_only_transform=Compose([Normalize(mean, std)]),
                                             transform=Compose([
                                                 Lambda(lambda img: pad_resize(img, 1024, 1024)),
@@ -136,7 +136,7 @@ def get_loader_for_crop_batch(crop_size, batch_size, train_split, mean, std, tra
 
 
 def main(args):
-    raw_dataset = RegressionDatasetFolder(os.path.join(args.root_dir, 'Images/tagged_exp'),
+    raw_dataset = RegressionDatasetFolder(os.path.join(args.root_dir, 'Images/generated_exp'),
                                           input_only_transform=None,
                                           transform=Compose([ToTensor()]))
     mean, std = compute_mean_std(raw_dataset)
@@ -144,14 +144,14 @@ def main(args):
     print(std)
     pos_weights = compute_pos_weight(raw_dataset)
     print(pos_weights)
-    test_dataset = RegressionDatasetFolder(os.path.join(args.root_dir, 'Images/tagged_exp'),
+    test_dataset = RegressionDatasetFolder(os.path.join(args.root_dir, 'Images/generated_exp'),
                                            input_only_transform=Compose([Normalize(mean, std)]),
                                            transform=Compose(
                                                [Lambda(lambda img: pad_resize(img, 1024, 1024)),
                                                 ToTensor()]),
                                            in_memory=True)
 
-    valid_dataset = RegressionDatasetFolder(os.path.join(args.root_dir, 'Images/tagged_exp'),
+    valid_dataset = RegressionDatasetFolder(os.path.join(args.root_dir, 'Images/generated_exp'),
                                             input_only_transform=Compose([Normalize(mean, std)]),
                                             transform=Compose([ToTensor()]),
                                             include_fname=True)
@@ -162,8 +162,8 @@ def main(args):
 
     module = fcn_resnet50()
 
-    optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=3e-3)
-    exp = Experiment(directory=os.path.join(args.root_dir, 'sz_3_3/'),
+    optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-3)
+    exp = Experiment(directory=os.path.join(args.root_dir, 'all_3/'),
                      module=module,
                      device=torch.device(args.device),
                      optimizer=optim,
@@ -184,7 +184,7 @@ def main(args):
                   lr_schedulers=lr_schedulers,
                   callbacks=callbacks)
 
-    pure_dataset = RegressionDatasetFolder(os.path.join(args.root_dir, 'Images/tagged_exp'),
+    pure_dataset = RegressionDatasetFolder(os.path.join(args.root_dir, 'Images/generated_exp'),
                                            transform=Compose([ToTensor()]),
                                            include_fname=True)
 
@@ -216,7 +216,7 @@ def main(args):
 
             del pure_batch
 
-            # if os.path.isfile('/mnt/storage/mgodbout/Ecorcage/Images/results/sz_3_3/{}'.format(fname)):
+            # if os.path.isfile('/mnt/storage/mgodbout/Ecorcage/Images/results/all_3/{}'.format(fname)):
             #     continue
 
             outputs = module(batch[0].to(torch.device(args.device)))
@@ -279,7 +279,7 @@ def main(args):
             plt.tight_layout()
             # plt.show()
             plt.savefig(os.path.join(args.root_dir,
-                                     'Images/results/sz_3_3/combined_images/{}/{}/{}').format(wood_type, split, fname),
+                                     'Images/results/all_3/combined_images/{}/{}/{}').format(wood_type, split, fname),
                         format='png',
                         dpi=900)
             plt.close()
@@ -291,11 +291,11 @@ def main(args):
 
             dual = Image.fromarray(dual_outputs, mode='L')
             dual.save(
-                os.path.join(args.root_dir, 'Images/results/sz_3_3/outputs/{}/{}/{}').format(wood_type, split, fname))
+                os.path.join(args.root_dir, 'Images/results/all_3/outputs/{}/{}/{}').format(wood_type, split, fname))
 
             results_csv.append(running_csv_stats)
 
-    csv_file = os.path.join(args.root_dir, 'Images', 'results', 'sz_3_3', 'final_stats.csv')
+    csv_file = os.path.join(args.root_dir, 'Images', 'results', 'all_3', 'final_stats.csv')
 
     with open(csv_file, 'w') as f:
         csv_writer = csv.writer(f, delimiter='\t')
@@ -303,17 +303,18 @@ def main(args):
 
 
 def fix_image(img_number, n_pixels_to_fix, which_to_reduce):
-    dual = imread("/home/magod/Documents/Encorcage/Images/tagged_exp/duals/epinette_gelee/{}.png".format(img_number))
+    dual = imread("/home/magod/Documents/Encorcage/Images/generated_exp/duals/epinette_gelee/{}.png".format(img_number))
     sample = imread(
-        "/home/magod/Documents/Encorcage/Images/tagged_exp/samples/epinette_gelee/{}.bmp".format(img_number))
+        "/home/magod/Documents/Encorcage/Images/generated_exp/samples/epinette_gelee/{}.bmp".format(img_number))
 
     if which_to_reduce == 'sample':
         img = sample
-        output_path = "/home/magod/Documents/Encorcage/Images/tagged_exp/samples/epinette_gelee/{}.bmp".format(
+        output_path = "/home/magod/Documents/Encorcage/Images/generated_exp/samples/epinette_gelee/{}.bmp".format(
             img_number)
     else:
         img = dual
-        output_path = "/home/magod/Documents/Encorcage/Images/tagged_exp/duals/epinette_gelee/{}.png".format(img_number)
+        output_path = "/home/magod/Documents/Encorcage/Images/generated_exp/duals/epinette_gelee/{}.png".format(
+            img_number)
 
     if n_pixels_to_fix == 1:
         img = img[:-1]
