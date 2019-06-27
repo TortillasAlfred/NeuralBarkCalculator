@@ -88,7 +88,7 @@ def main(args):
 
     generate_output_folders(args.root_dir)
 
-    results_csv = [['Name', 'Type', 'F1_nothing', 'F1_bark', 'F1_node', 'F1_mean', 'Output Bark %', 'Output Node %']]
+    results_csv = [['Name', 'Type', 'Output Bark %', 'Output Node %']]
 
     with torch.no_grad():
         for image_number, (batch, pure_batch) in enumerate(zip(valid_loader, pure_loader)):
@@ -137,7 +137,7 @@ def main(args):
             suptitle = "Estimated composition percentages\n"
 
             for class_name, class_percent in zip(class_names[1:], class_percents):
-                suptitle += "{} : {:.3f}".format(class_name, class_percent * 100)
+                suptitle += "{} : {:.3f}".format(class_name, class_percent)
 
             plt.suptitle(suptitle)
             plt.tight_layout()
