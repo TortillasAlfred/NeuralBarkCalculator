@@ -137,7 +137,7 @@ def main(args):
             suptitle = "Estimated composition percentages\n"
 
             for class_name, class_percent in zip(class_names[1:], class_percents):
-                suptitle += "{} : {:.3f}".format(class_name, class_percent)
+                suptitle += "{} : {:.3f}\n".format(class_name, class_percent)
 
             plt.suptitle(suptitle)
             plt.tight_layout()
