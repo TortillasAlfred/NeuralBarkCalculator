@@ -2,6 +2,9 @@ from models import NeuralBarkCalculator
 
 import os
 import argparse
+import time
+import multiprocessing
+import torch
 
 
 def generate_folders(root_path):
@@ -64,5 +67,8 @@ if __name__ == '__main__':
                         choices=['cpu', 'cuda:0', 'cuda:1'])
 
     args = parser.parse_args()
+
+    if args.device == 'cpu':
+        torch.set_num_threads(multiprocessing.cpu_count())
 
     main(args)
