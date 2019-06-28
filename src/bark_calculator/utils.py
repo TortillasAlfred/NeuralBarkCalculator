@@ -113,7 +113,7 @@ def remove_small_zones(img):
     device = img.device
     np_image = (img.cpu().numpy() == 0)
 
-    remove_small_holes(np_image, min_size=100, connectivity=2, in_place=True)
+    remove_small_holes(np_image, area_threshold=100, connectivity=2, in_place=True)
     remove_small_objects(np_image, min_size=100, connectivity=2, in_place=True)
 
     img[torch.from_numpy(np_image == 0).to(device).byte() & (img == 0)] = 1
