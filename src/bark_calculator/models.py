@@ -82,18 +82,18 @@ class NeuralBarkCalculator():
     DEFAULT_MEAN = [0.7399, 0.6139, 0.4401]
     DEFAULT_STD = [0.1068, 0.1272, 0.1271]
 
-    def __init__(self, model_path, mean=DEFAULT_MEAN, std=DEFAULT_STD, target_size=1024):
+    def __init__(self, model_path, device, mean=DEFAULT_MEAN, std=DEFAULT_STD, target_size=1024):
         super().__init__()
+        self.model.to(device)
+        self.device = device
         self.model = fcn_resnet50(pretrained=False)
-        self.model.load_state_dict(torch.load(model_path))
+        self.model.load_state_dict(torch.load(model_path, map_location=device))
         self.mean = mean
         self.std = std
         self.target_size = 1024
         self.device = None
 
     def to(self, device):
-        self.model.to(device)
-        self.device = device
 
     def predict(self, root_path):
         processed_path = join(root_path, 'processed')
