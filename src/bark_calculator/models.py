@@ -52,8 +52,8 @@ def deeplabv3_resnet101():
     return SimpleSegmentationModel(backbone, classifier)
 
 
-def fcn_resnet50():
-    backbone = resnet.__dict__['resnet50'](pretrained=True, replace_stride_with_dilation=[False, True, True])
+def fcn_resnet50(pretrained=True):
+    backbone = resnet.__dict__['resnet50'](pretrained=pretrained, replace_stride_with_dilation=[False, True, True])
 
     return_layers = {'layer4': 'out'}
 
@@ -84,7 +84,7 @@ class NeuralBarkCalculator():
 
     def __init__(self, model_path, mean=DEFAULT_MEAN, std=DEFAULT_STD, target_size=1024):
         super().__init__()
-        self.model = fcn_resnet50()
+        self.model = fcn_resnet50(pretrained=False)
         self.model.load_state_dict(torch.load(model_path))
         self.mean = mean
         self.std = std
