@@ -25,7 +25,7 @@ def generate_output_folders(root_dir):
     wood_types = ["epinette_gelee", "epinette_non_gelee", "sapin"]
     levels = [('combined_images', []), ('outputs', [])]
 
-    results_dir = os.path.join(root_dir, 'Images', 'results', 'all_3')
+    results_dir = os.path.join(root_dir, 'Images', 'results', 'predict_all_3')
 
     def mkdirs_if_not_there(dir):
         if not os.path.isdir(dir):
@@ -143,7 +143,7 @@ def main(args):
             plt.tight_layout()
             # plt.show()
             plt.savefig(os.path.join(args.root_dir,
-                                     'Images/results/all_3/combined_images/{}/{}').format(wood_type, fname),
+                                     'Images/results/predict_all_3/combined_images/{}/{}').format(wood_type, fname),
                         format='png',
                         dpi=900)
             plt.close()
@@ -154,11 +154,12 @@ def main(args):
             dual_outputs[outputs == 2] = 255
 
             dual = Image.fromarray(dual_outputs, mode='L')
-            dual.save(os.path.join(args.root_dir, 'Images/results/all_3/outputs/{}/{}').format(wood_type, fname))
+            dual.save(
+                os.path.join(args.root_dir, 'Images/results/predict_all_3/outputs/{}/{}').format(wood_type, fname))
 
             results_csv.append(running_csv_stats)
 
-    csv_file = os.path.join(args.root_dir, 'Images', 'results', 'all_3', 'final_stats.csv')
+    csv_file = os.path.join(args.root_dir, 'Images', 'results', 'predict_all_3', 'final_stats.csv')
 
     with open(csv_file, 'w') as f:
         csv_writer = csv.writer(f, delimiter='\t')
