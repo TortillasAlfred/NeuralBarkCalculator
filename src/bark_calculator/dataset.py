@@ -45,9 +45,6 @@ def make_dataset_for_dir(dir, extensions):
     if not os.path.isdir(samples_dir):
         raise IOError("Root folder should have a 'samples' subfolder !")
 
-    if not os.path.isdir(targets_dir):
-        raise IOError("Root folder should have a 'targets' subfolder !")
-
     images = []
 
     for wood_type in ["epinette_gelee", "epinette_non_gelee", "sapin"]:
@@ -62,7 +59,6 @@ def make_dataset_for_dir(dir, extensions):
                     target_path = os.path.join(targets_type_dir, fname)
 
                     if not os.path.isfile(target_path):
-                        # raise IOError("No file found in 'targets' subfolder" " for image name {} !".format(fname))
                         item = (sample_path, "", fname, wood_type)
                     else:
                         item = (sample_path, target_path, fname, wood_type)
