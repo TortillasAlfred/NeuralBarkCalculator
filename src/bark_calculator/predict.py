@@ -62,7 +62,7 @@ if __name__ == '__main__':
 
     parser.add_argument('--device',
                         type=str,
-                        default='cuda:0',
+                        default='cpu',
                         help='Which torch device to train with.',
                         choices=['cpu', 'cuda:0', 'cuda:1'])
 
