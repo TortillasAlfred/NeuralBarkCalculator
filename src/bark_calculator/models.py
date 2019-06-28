@@ -1,17 +1,26 @@
+from utils import remove_small_zones
+from dataset import RegressionDatasetFolder
+
 import torch
 import torch.nn as nn
 from torchvision.models.segmentation.deeplabv3 import DeepLabHead
 from torchvision.models.segmentation.fcn import FCNHead
 from torchvision.models.detection.backbone_utils import IntermediateLayerGetter
 from torchvision.models import resnet
-from torchvision.transforms import ToTensor
+from torchvision.transforms import ToTensor, Normalize
+from torch.utils.data import DataLoader
 from os.path import join
 import numpy as np
 from skimage.transform import resize
 from skimage.io import imsave
-from dataset import RegressionDatasetFolder
 from tqdm import tqdm
 import warnings
+
+import matplotlib.pyplot as plt
+from skimage.io import imread, imsave
+import torch
+from PIL import Image
+import csv
 
 
 class SimpleSegmentationModel(nn.Module):
@@ -80,16 +89,28 @@ class NeuralBarkCalculator():
         self.mean = mean
         self.std = std
         self.target_size = 1024
+        self.device = None
 
     def to(self, device):
         self.model.to(device)
+        self.device = device
 
     def predict(self, root_path):
-        output_path = join(root_path, 'processed')
-        dataset = self._preprocess_images(root_path, output_path)
+        processed_path = join(root_path, 'processed')
+        dataset = self._preprocess_images(root_path, processed_path)
 
         output_path = join(root_path, 'results')
-        self._predict_images(dataset, output_path)
+        valid_dataset = RegressionDatasetFolder(processed_path,
+                                                input_only_transform=Normalize(self.mean, self.std),
+                                                transform=ToTensor(),
+                                                include_fname=True)
+
+        pure_dataset = RegressionDatasetFolder(processed_path,
+                                               input_only_transform=None,
+                                               transform=ToTensor(),
+                                               include_fname=True)
+
+        self._predict_images(valid_dataset, pure_dataset, output_path)
 
     def _preprocess_images(self, root_path, output_path):
         raw_dataset = RegressionDatasetFolder(root_path, input_only_transform=ToTensor(), include_fname=True)
@@ -111,9 +132,83 @@ class NeuralBarkCalculator():
         if max(image.shape) > 1024:
             image = resize(image, (1024, 1024), order=3, mode='reflect', anti_aliasing=False)
 
-        image = trim_black(image)
+        if image.shape[0] == image.shape[1]:  #Untrimmed
+            image = trim_black(image)
 
         imsave(output_path, image)
 
-    def _predict_images(self, dataset, output_path):
-        pass
+    def _predict_images(self, valid_dataset, pure_dataset, output_path):
+        pure_loader = DataLoader(pure_dataset, batch_size=1)
+        valid_loader = DataLoader(valid_dataset, batch_size=1)
+
+        results_csv = [['Name', 'Type', 'Output Bark %', 'Output Node %']]
+
+        with torch.no_grad():
+            for image_number, (batch, pure_batch) in tqdm(enumerate(zip(valid_loader, pure_loader)),
+                                                          total=len(pure_loader),
+                                                          ascii=True,
+                                                          desc='Predicted images'):
+                input = pure_batch[0]
+                fname = pure_batch[2][0]
+                wood_type = pure_batch[3][0]
+
+                del pure_batch
+
+                outputs = self.model(batch[0].to(self.device))
+                outputs = torch.argmax(outputs, dim=1)
+                outputs = remove_small_zones(outputs)
+
+                del batch
+
+                names = ['Input', 'Generated image']
+
+                imgs = [input, outputs]
+                imgs = [img.detach().cpu().squeeze().numpy() for img in imgs]
+
+                _, axs = plt.subplots(1, 2)
+
+                for i, ax in enumerate(axs.flatten()):
+                    img = imgs[i]
+
+                    if len(img.shape) == 3:
+                        img = img.transpose(1, 2, 0)
+
+                    ax.imshow(img)
+                    ax.set_title(names[i])
+                    ax.axis('off')
+
+                running_csv_stats = [fname, wood_type]
+
+                class_names = ['Nothing', 'Bark', 'Node']
+                class_percents = []
+
+                for class_idx in [1, 2]:
+                    class_percent = (outputs == class_idx).float().mean().cpu()
+                    class_percents.append(class_percent * 100)
+                    running_csv_stats.append('{:.5f}'.format(class_percent * 100))
+
+                suptitle = 'Estimated composition percentages\n'
+
+                for class_name, class_percent in zip(class_names[1:], class_percents):
+                    suptitle += '{} : {:.3f}\n'.format(class_name, class_percent)
+
+                plt.suptitle(suptitle)
+                plt.tight_layout()
+                plt.savefig(join(output_path, 'combined_images', wood_type, fname), format='png', dpi=900)
+                plt.close()
+
+                outputs = outputs.squeeze().cpu().numpy()
+                dual_outputs = np.zeros((outputs.shape[0], outputs.shape[1]), dtype=np.uint8)
+                dual_outputs[outputs == 1] = 127
+                dual_outputs[outputs == 2] = 255
+
+                dual = Image.fromarray(dual_outputs, mode='L')
+                dual.save(join(output_path, 'outputs', wood_type, fname))
+
+                results_csv.append(running_csv_stats)
+
+        csv_file = join(output_path, 'final_stats.csv')
+
+        with open(csv_file, 'w') as f:
+            csv_writer = csv.writer(f, delimiter='\t')
+            csv_writer.writerows(results_csv)

@@ -1,22 +1,7 @@
-from dataset import RegressionDatasetFolder, pil_loader
-from utils import *
 from models import NeuralBarkCalculator
 
-from torchvision.transforms import *
-
-from torch.utils.data import DataLoader, Subset
-import matplotlib.pyplot as plt
-from skimage.io import imread, imsave
-import torch
-
-import numpy as np
-import io
-import pickle
-from PIL import Image
 import os
 import argparse
-from tqdm import tqdm
-import csv
 
 
 def generate_folders(root_path):
@@ -61,104 +46,10 @@ def generate_folders(root_path):
 
 def main(args):
     generate_folders(args.root_path)
-    mean, std = get_mean_std()
 
     model = NeuralBarkCalculator('./best_model.ckpt')
     model.to(args.device)
     model.predict(args.root_path)
-
-    # valid_dataset = RegressionDatasetFolder(os.path.join(args.root_path, 'Images/1024_processed'),
-    #                                         input_only_transform=Compose([Normalize(mean, std)]),
-    #                                         transform=Compose([ToTensor()]),
-    #                                         include_fname=True)
-
-    # module = fcn_resnet50()
-
-    # pure_dataset = RegressionDatasetFolder(os.path.join(args.root_path, 'Images/1024_processed'),
-    #                                        input_only_transform=None,
-    #                                        transform=Compose([ToTensor()]),
-    #                                        include_fname=True)
-
-    # pure_loader = DataLoader(pure_dataset, batch_size=1)
-    # valid_loader = DataLoader(valid_dataset, batch_size=1)
-
-    # module.load_state_dict(torch.load('./best_model.ckpt'))
-
-    # results_csv = [['Name', 'Type', 'Output Bark %', 'Output Node %']]
-
-    # with torch.no_grad():
-    #     for image_number, (batch, pure_batch) in tqdm(enumerate(zip(valid_loader, pure_loader)),
-    #                                                   total=len(pure_loader),
-    #                                                   ascii=True,
-    #                                                   desc='Predicted images'):
-    #         input = pure_batch[0]
-    #         fname = pure_batch[2][0]
-    #         wood_type = pure_batch[3][0]
-
-    #         del pure_batch
-
-    #         outputs = module(batch[0].to(torch.device(args.device)))
-    #         outputs = torch.argmax(outputs, dim=1)
-    #         outputs = remove_small_zones(outputs)
-
-    #         del batch
-
-    #         names = ['Input', 'Generated image']
-
-    #         imgs = [input, outputs]
-    #         imgs = [img.detach().cpu().squeeze().numpy() for img in imgs]
-
-    #         _, axs = plt.subplots(1, 2)
-
-    #         for i, ax in enumerate(axs.flatten()):
-    #             img = imgs[i]
-
-    #             if len(img.shape) == 3:
-    #                 img = img.transpose(1, 2, 0)
-
-    #             ax.imshow(img)
-    #             ax.set_title(names[i])
-    #             ax.axis('off')
-
-    #         running_csv_stats = [fname, wood_type]
-
-    #         class_names = ['Nothing', 'Bark', 'Node']
-    #         class_percents = []
-
-    #         for class_idx in [1, 2]:
-    #             class_percent = (outputs == class_idx).float().mean().cpu()
-    #             class_percents.append(class_percent * 100)
-    #             running_csv_stats.append('{:.5f}'.format(class_percent * 100))
-
-    #         suptitle = 'Estimated composition percentages\n'
-
-    #         for class_name, class_percent in zip(class_names[1:], class_percents):
-    #             suptitle += '{} : {:.3f}\n'.format(class_name, class_percent)
-
-    #         plt.suptitle(suptitle)
-    #         plt.tight_layout()
-    #         plt.savefig(os.path.join(args.root_path,
-    #                                  'Images/results/predict_all_3/combined_images/{}/{}').format(wood_type, fname),
-    #                     format='png',
-    #                     dpi=900)
-    #         plt.close()
-
-    #         outputs = outputs.squeeze().cpu().numpy()
-    #         dual_outputs = np.zeros((outputs.shape[0], outputs.shape[1]), dtype=np.uint8)
-    #         dual_outputs[outputs == 1] = 127
-    #         dual_outputs[outputs == 2] = 255
-
-    #         dual = Image.fromarray(dual_outputs, mode='L')
-    #         dual.save(
-    #             os.path.join(args.root_path, 'Images/results/predict_all_3/outputs/{}/{}').format(wood_type, fname))
-
-    #         results_csv.append(running_csv_stats)
-
-    # csv_file = os.path.join(args.root_path, 'Images', 'results', 'predict_all_3', 'final_stats.csv')
-
-    # with open(csv_file, 'w') as f:
-    #     csv_writer = csv.writer(f, delimiter='\t')
-    #     csv_writer.writerows(results_csv)
 
 
 if __name__ == '__main__':
