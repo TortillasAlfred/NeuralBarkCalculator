@@ -4,20 +4,18 @@ from models import fcn_resnet50
 
 from torchvision.transforms import *
 
-from poutyne.framework import Experiment, ExponentialLR
-from torch.utils.data import DataLoader, Subset, ConcatDataset
+from torch.utils.data import DataLoader, Subset
 import matplotlib.pyplot as plt
-from torch.nn.modules.loss import CrossEntropyLoss
 from skimage.io import imread, imsave
 import torch
 
-from math import ceil
 import numpy as np
 import io
 import pickle
 from PIL import Image
 import os
 import argparse
+from tqdm import tqdm
 import csv
 
 
@@ -61,45 +59,30 @@ def main(args):
 
     module = fcn_resnet50()
 
-    optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=5e-3)
-    exp = Experiment(directory=os.path.join(args.root_dir, 'all_3/'),
-                     module=module,
-                     device=torch.device(args.device),
-                     optimizer=optim,
-                     loss_function=CustomWeightedCrossEntropy(torch.tensor(pos_weights).to(args.device)),
-                     metrics=[IOU(None)],
-                     monitor_metric='val_IntersectionOverUnion',
-                     monitor_mode='max')
-
-    lr_schedulers = [ExponentialLR(gamma=0.975)]
-    callbacks = []
-
     pure_dataset = RegressionDatasetFolder(os.path.join(args.root_dir, 'Images/1024_processed'),
                                            input_only_transform=None,
                                            transform=Compose([ToTensor()]),
                                            include_fname=True)
 
-    pure_loader = DataLoader(pure_dataset, batch_size=1, num_workers=4, pin_memory=True)
-    valid_loader = DataLoader(valid_dataset, batch_size=1, num_workers=4, pin_memory=True)
+    pure_loader = DataLoader(pure_dataset, batch_size=1)
+    valid_loader = DataLoader(valid_dataset, batch_size=1)
 
-    exp.load_checkpoint(64)
-    module = exp.model.model
-    module.eval()
+    module.load_state_dict(torch.load("./best_model.ckpt"))
 
     generate_output_folders(args.root_dir)
 
     results_csv = [['Name', 'Type', 'Output Bark %', 'Output Node %']]
 
     with torch.no_grad():
-        for image_number, (batch, pure_batch) in enumerate(zip(valid_loader, pure_loader)):
+        for image_number, (batch, pure_batch) in tqdm(enumerate(zip(valid_loader, pure_loader)),
+                                                      total=len(pure_loader),
+                                                      ascii=True,
+                                                      desc="Predicted images"):
             input = pure_batch[0]
             fname = pure_batch[2][0]
             wood_type = pure_batch[3][0]
 
             del pure_batch
-
-            # if os.path.isfile('/mnt/storage/mgodbout/Ecorcage/Images/results/all_3/{}'.format(fname)):
-            #     continue
 
             outputs = module(batch[0].to(torch.device(args.device)))
             outputs = torch.argmax(outputs, dim=1)
@@ -141,7 +124,6 @@ def main(args):
 
             plt.suptitle(suptitle)
             plt.tight_layout()
-            # plt.show()
             plt.savefig(os.path.join(args.root_dir,
                                      'Images/results/predict_all_3/combined_images/{}/{}').format(wood_type, fname),
                         format='png',
