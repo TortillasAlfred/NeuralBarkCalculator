@@ -4,11 +4,14 @@ from torchvision.models.segmentation.deeplabv3 import DeepLabHead
 from torchvision.models.segmentation.fcn import FCNHead
 from torchvision.models.detection.backbone_utils import IntermediateLayerGetter
 from torchvision.models import resnet
+from torchvision.transforms import ToTensor
 from os.path import join
 import numpy as np
 from skimage.transform import resize
 from skimage.io import imsave
 from dataset import RegressionDatasetFolder
+from tqdm import tqdm
+import warnings
 
 
 class SimpleSegmentationModel(nn.Module):
@@ -53,7 +56,7 @@ def fcn_resnet50():
     return SimpleSegmentationModel(backbone, classifier)
 
 
-def trim_black(self, image):
+def trim_black(image):
     summed_image = np.sum(image, axis=-1)
     summed_image = summed_image > 1e-3
 
@@ -78,6 +81,9 @@ class NeuralBarkCalculator():
         self.std = std
         self.target_size = 1024
 
+    def to(self, device):
+        self.model.to(device)
+
     def predict(self, root_path):
         output_path = join(root_path, 'processed')
         dataset = self._preprocess_images(root_path, output_path)
@@ -86,15 +92,24 @@ class NeuralBarkCalculator():
         self._predict_images(dataset, output_path)
 
     def _preprocess_images(self, root_path, output_path):
-        raw_dataset = RegressionDatasetFolder(root_path, include_fname=True)
+        raw_dataset = RegressionDatasetFolder(root_path, input_only_transform=ToTensor(), include_fname=True)
 
-        for img, _, fname, wood_type in iter(raw_dataset):
-            img_output_path = join(output_path, wood_type, fname)
-            self._preprocess_image(img, output_path)
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore')
+            for img, _, fname, wood_type in tqdm(iter(raw_dataset),
+                                                 total=len(raw_dataset),
+                                                 ascii=True,
+                                                 desc='Preprocessing images'):
+                fname = str.replace(fname, '.bmp', '.png')
+                img_output_path = join(output_path, 'samples', wood_type, fname)
+
+                self._preprocess_image(img, img_output_path)
 
     def _preprocess_image(self, image, output_path):
+        image = image.detach().cpu().numpy().transpose(1, 2, 0)
+
         if max(image.shape) > 1024:
-            image = resize(image, (1024, 1024), order=3)
+            image = resize(image, (1024, 1024), order=3, mode='reflect', anti_aliasing=False)
 
         image = trim_black(image)
 
