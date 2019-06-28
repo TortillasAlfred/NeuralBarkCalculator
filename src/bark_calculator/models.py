@@ -93,8 +93,6 @@ class NeuralBarkCalculator():
         self.target_size = 1024
         self.device = None
 
-    def to(self, device):
-
     def predict(self, root_path):
         processed_path = join(root_path, 'processed')
         dataset = self._preprocess_images(root_path, processed_path)

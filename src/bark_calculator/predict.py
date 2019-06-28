@@ -50,8 +50,7 @@ def generate_folders(root_path):
 def main(args):
     generate_folders(args.root_path)
 
-    model = NeuralBarkCalculator('./best_model.pt')
-    model.to(args.device)
+    model = NeuralBarkCalculator('./best_model.pt', args.device)
     model.predict(args.root_path)
 
 
