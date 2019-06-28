@@ -5,7 +5,10 @@ from torchvision.models.segmentation.fcn import FCNHead
 from torchvision.models.detection.backbone_utils import IntermediateLayerGetter
 from torchvision.models import resnet
 from os.path import join
-from poutyne.framework import Experiment
+import numpy as np
+from skimage.transform import resize
+from skimage.io import imsave
+from dataset import RegressionDatasetFolder
 
 
 class SimpleSegmentationModel(nn.Module):
@@ -50,7 +53,19 @@ def fcn_resnet50():
     return SimpleSegmentationModel(backbone, classifier)
 
 
-class NeuralBarkCalculator(nn.Module):
+def trim_black(self, image):
+    summed_image = np.sum(image, axis=-1)
+    summed_image = summed_image > 1e-3
+
+    clear_enough_lines_idx = np.mean(summed_image, axis=-1) > 0.85
+
+    first_idx = np.argmax(clear_enough_lines_idx)
+    last_idx = image.shape[0] - np.argmax(clear_enough_lines_idx[::-1])
+
+    return image[first_idx:last_idx]
+
+
+class NeuralBarkCalculator():
 
     DEFAULT_MEAN = [0.7399, 0.6139, 0.4401]
     DEFAULT_STD = [0.1068, 0.1272, 0.1271]
@@ -64,13 +79,26 @@ class NeuralBarkCalculator(nn.Module):
         self.target_size = 1024
 
     def predict(self, root_path):
-        dataset = self._preprocess_images(root_path)
+        output_path = join(root_path, 'processed')
+        dataset = self._preprocess_images(root_path, output_path)
 
         output_path = join(root_path, 'results')
         self._predict_images(dataset, output_path)
 
-    def _preprocess_images(self, root_path):
-        pass
+    def _preprocess_images(self, root_path, output_path):
+        raw_dataset = RegressionDatasetFolder(root_path, include_fname=True)
+
+        for img, _, fname, wood_type in iter(raw_dataset):
+            img_output_path = join(output_path, wood_type, fname)
+            self._preprocess_image(img, output_path)
+
+    def _preprocess_image(self, image, output_path):
+        if max(image.shape) > 1024:
+            image = resize(image, (1024, 1024), order=3)
+
+        image = trim_black(image)
+
+        imsave(output_path, image)
 
     def _predict_images(self, dataset, output_path):
         pass
