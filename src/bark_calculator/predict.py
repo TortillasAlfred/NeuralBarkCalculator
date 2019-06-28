@@ -47,7 +47,6 @@ def generate_output_folders(root_dir):
 
 def main(args):
     mean, std = get_mean_std()
-    pos_weights = get_pos_weight()
     test_dataset = RegressionDatasetFolder(os.path.join(args.root_dir, 'Images/1024_processed'),
                                            input_only_transform=Compose([Normalize(mean, std)]),
                                            transform=Compose([ToTensor()]))
