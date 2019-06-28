@@ -1,6 +1,6 @@
 from dataset import RegressionDatasetFolder, pil_loader
 from utils import *
-from models import fcn_resnet50
+from models import NeuralBarkCalculator
 
 from torchvision.transforms import *
 
@@ -19,17 +19,17 @@ from tqdm import tqdm
 import csv
 
 
-def generate_output_folders(root_dir):
-    wood_types = ["epinette_gelee", "epinette_non_gelee", "sapin"]
-    levels = [('combined_images', []), ('outputs', [])]
-
-    results_dir = os.path.join(root_dir, 'Images', 'results', 'predict_all_3')
-
+def generate_folders(root_dir):
     def mkdirs_if_not_there(dir):
         if not os.path.isdir(dir):
             os.makedirs(dir)
 
-    for folder, children in levels:
+    wood_types = ['epinette_gelee', 'epinette_non_gelee', 'sapin']
+
+    # Processed folders
+    levels = ['processed']
+
+    for folder in levels:
         current_dir = os.path.join(results_dir, folder)
 
         mkdirs_if_not_there(current_dir)
@@ -39,17 +39,25 @@ def generate_output_folders(root_dir):
 
             mkdirs_if_not_there(wood_dir)
 
-            for child in children:
-                child_dir = os.path.join(wood_dir, child)
+    # Results folders
+    levels = ['combined_images', 'outputs']
 
-                mkdirs_if_not_there(child_dir)
+    results_dir = os.path.join(root_dir, 'results')
+
+    for folder in levels:
+        current_dir = os.path.join(results_dir, folder)
+
+        mkdirs_if_not_there(current_dir)
+
+        for wood_type in wood_types:
+            wood_dir = os.path.join(current_dir, wood_type)
+
+            mkdirs_if_not_there(wood_dir)
 
 
 def main(args):
+    generate_folders(args.root_dir)
     mean, std = get_mean_std()
-    test_dataset = RegressionDatasetFolder(os.path.join(args.root_dir, 'Images/1024_processed'),
-                                           input_only_transform=Compose([Normalize(mean, std)]),
-                                           transform=Compose([ToTensor()]))
 
     valid_dataset = RegressionDatasetFolder(os.path.join(args.root_dir, 'Images/1024_processed'),
                                             input_only_transform=Compose([Normalize(mean, std)]),
@@ -66,9 +74,7 @@ def main(args):
     pure_loader = DataLoader(pure_dataset, batch_size=1)
     valid_loader = DataLoader(valid_dataset, batch_size=1)
 
-    module.load_state_dict(torch.load("./best_model.ckpt"))
-
-    generate_output_folders(args.root_dir)
+    module.load_state_dict(torch.load('./best_model.ckpt'))
 
     results_csv = [['Name', 'Type', 'Output Bark %', 'Output Node %']]
 
@@ -76,7 +82,7 @@ def main(args):
         for image_number, (batch, pure_batch) in tqdm(enumerate(zip(valid_loader, pure_loader)),
                                                       total=len(pure_loader),
                                                       ascii=True,
-                                                      desc="Predicted images"):
+                                                      desc='Predicted images'):
             input = pure_batch[0]
             fname = pure_batch[2][0]
             wood_type = pure_batch[3][0]
@@ -116,10 +122,10 @@ def main(args):
                 class_percents.append(class_percent * 100)
                 running_csv_stats.append('{:.5f}'.format(class_percent * 100))
 
-            suptitle = "Estimated composition percentages\n"
+            suptitle = 'Estimated composition percentages\n'
 
             for class_name, class_percent in zip(class_names[1:], class_percents):
-                suptitle += "{} : {:.3f}\n".format(class_name, class_percent)
+                suptitle += '{} : {:.3f}\n'.format(class_name, class_percent)
 
             plt.suptitle(suptitle)
             plt.tight_layout()
@@ -150,7 +156,7 @@ def main(args):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('root_dir', type=str, help='root directory path.')
+    parser.add_argument('root_path', type=str, help='root directory path.')
 
     parser.add_argument('--device',
                         type=str,
