@@ -7,7 +7,7 @@ This repository contains a PyTorch based bark calculator for flattened wood log 
 
 First clone the repository with 
 
-``git clone https://github.com/TortillasAlfred/Encorcage.git ``
+``git clone https://github.com/TortillasAlfred/NeuralBarkCalculator.git ``
 
 Then, move inside the project 
 
