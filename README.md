@@ -25,7 +25,7 @@ and for torchvision it is
 
 ``pip3 install https://download.pytorch.org/whl/cu90/torchvision-0.3.0-cp36-cp36m-win_amd64.whl``
 
-# Usage
+## Usage
 
 The tool lets you predict entire folders at the same time using a single command line instruction. For example, if we want to run the neural network predictions using the computer's CPU, we can type
 
@@ -53,7 +53,7 @@ The first step of the prediction process is the image preprocessing, where each 
 
 Once the images are all processed, they are then fed one by one to the neural network, which generates the estimated bark and node regions. The results are all grouped under a ``results`` subfolder, which contains combined images as the one seen above as well as raw outputs. A ``.csv`` file is also created which contains the estimated region percentages for each input image, sorted by name and wood type.
 
-# End notes
+## End notes
 
 This document has been created in order to assist a specific group of users, which are all using Windows. Some commands might be slightly different on a Linux distribution.
 
