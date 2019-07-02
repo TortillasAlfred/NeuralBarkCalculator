@@ -81,7 +81,7 @@ class NeuralBarkCalculator():
 
     DEFAULT_MEAN = [0.7399, 0.6139, 0.4401]
     DEFAULT_STD = [0.1068, 0.1272, 0.1271]
-    DEFAULT_MM_PER_PIXEL = 0.9 * 0.9
+    DEFAULT_MM_PER_PIXEL = 3.6 * 3.6
 
     def __init__(self,
                  model_path,
