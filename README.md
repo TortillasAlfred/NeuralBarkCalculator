@@ -1,4 +1,4 @@
-# Bark Calculator
+# Neural Bark Calculator
 This repository contains a PyTorch based bark calculator for flattened wood log images. Given an input image, the neural network identifies bark and node regions as part of a semantic segmentation task. The input and output images are then combined into a more expressive format :
 
 ![Example of network output](res/136.png)
@@ -11,7 +11,7 @@ First clone the repository with
 
 Then, move inside the project 
 
-``cd Encorcage``
+``cd NeuralBarkCalculator``
 
 and install all of the project's dependencies with 
 
