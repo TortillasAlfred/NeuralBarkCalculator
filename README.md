@@ -5,7 +5,9 @@ This repository contains a PyTorch based bark calculator for flattened wood log 
 
 ## Installation
 
-First clone the repository with 
+The installation process requires both [Git](https://git-scm.com/download/win) and [Python](https://www.python.org/downloads/). Begin by download them with the provided links.
+
+After that, clone the repository with 
 
 ``git clone https://github.com/TortillasAlfred/NeuralBarkCalculator.git ``
 
