@@ -53,6 +53,10 @@ The first step of the prediction process is the image preprocessing, where each 
 
 Once the images are all processed, they are then fed one by one to the neural network, which generates the estimated bark and node regions. The results are all grouped under a ``results`` subfolder, which contains combined images as the one seen above as well as raw outputs. A ``.csv`` file is also created which contains the estimated region percentages for each input image, sorted by name and wood type.
 
+## Under the hood
+
+The neural network architecture used as bark calculator is based on torchvision's implementation of the [FCN](https://people.eecs.berkeley.edu/~jonlong/long_shelhamer_fcn.pdf) with a [ResNet-50](https://arxiv.org/abs/1512.03385) backbone. The network is trained following a weighted cross-entropy loss, where a specific pixel's weight is set to the maximum weight of either the predicted pixel or the expected pixel to ensure a correct precision-recall mixture. The model is selected according to the best average pixel-wise [F1-score](https://en.wikipedia.org/wiki/F1_score) on a validation set. Lastly, the images are postprocessed to eliminate any region smaller than 100 pixels from the output image.
+
 ## End notes
 
 This document has been created in order to assist a specific group of users, which are all using Windows. Some commands might be slightly different on a Linux distribution.
