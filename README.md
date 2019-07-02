@@ -13,17 +13,17 @@ Then, move inside the project
 
 ``cd NeuralBarkCalculator``
 
-and install all of the project's dependencies with 
-
-``pip3 install -r requirements.txt``
-
-Since PyTorch is not installed in the same way for different OS, we recommend you then install the required PyTorch and torchvision libraries according to the [suggested commands](https://pytorch.org/). For example, on a Windows PC, the command for PyTorch is
+Since PyTorch is not installed in the same way for different OS, we recommend you first install the required PyTorch and torchvision libraries according to the [suggested commands](https://pytorch.org/). For example, on a Windows PC, the command for PyTorch is
 
 ``pip3 install https://download.pytorch.org/whl/cu90/torch-1.1.0-cp37-cp37m-win_amd64.whl``
 
 and for torchvision it is
 
 ``pip3 install https://download.pytorch.org/whl/cu90/torchvision-0.3.0-cp37-cp37m-win_amd64.whl``
+
+We can then download the remaining project dependencies with 
+
+``pip3 install -r requirements.txt``
 
 ## Usage
 
