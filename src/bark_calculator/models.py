@@ -81,8 +81,15 @@ class NeuralBarkCalculator():
 
     DEFAULT_MEAN = [0.7399, 0.6139, 0.4401]
     DEFAULT_STD = [0.1068, 0.1272, 0.1271]
+    DEFAULT_MM_PER_PIXEL = 0.9 * 0.9
 
-    def __init__(self, model_path, device, mean=DEFAULT_MEAN, std=DEFAULT_STD, target_size=1024):
+    def __init__(self,
+                 model_path,
+                 device,
+                 mean=DEFAULT_MEAN,
+                 std=DEFAULT_STD,
+                 target_size=1024,
+                 mm_per_pix=DEFAULT_MM_PER_PIXEL):
         super().__init__()
         self.device = device
         self.model = fcn_resnet50(pretrained=False)
@@ -91,7 +98,7 @@ class NeuralBarkCalculator():
         self.mean = mean
         self.std = std
         self.target_size = 1024
-        self.device = None
+        self.mm_per_pix = mm_per_pix
 
     def predict(self, root_path):
         processed_path = join(root_path, 'processed')
@@ -139,7 +146,9 @@ class NeuralBarkCalculator():
         pure_loader = DataLoader(pure_dataset, batch_size=1)
         valid_loader = DataLoader(valid_dataset, batch_size=1)
 
-        results_csv = [['Name', 'Type', 'Output Bark %', 'Output Node %']]
+        results_csv = [[
+            'Name', 'Type', 'Image Size', 'Output Bark %', 'Bark area (mm^2)', 'Output Node %', 'Node area (mm^2)'
+        ]]
 
         with torch.no_grad():
             for image_number, (batch, pure_batch) in tqdm(enumerate(zip(valid_loader, pure_loader)),
@@ -175,15 +184,22 @@ class NeuralBarkCalculator():
                     ax.set_title(names[i])
                     ax.axis('off')
 
-                running_csv_stats = [fname, wood_type]
+                img_size = '{} x {}'.format(img.shape[0], img.shape[1])
+
+                running_csv_stats = [fname, wood_type, img_size]
 
                 class_names = ['Nothing', 'Bark', 'Node']
                 class_percents = []
 
                 for class_idx in [1, 2]:
-                    class_percent = (outputs == class_idx).float().mean().cpu()
+                    n_pixels = (outputs == class_idx).float().cpu()
+
+                    class_percent = n_pixels.mean()
                     class_percents.append(class_percent * 100)
                     running_csv_stats.append('{:.5f}'.format(class_percent * 100))
+
+                    class_area = (n_pixels.sum() * self.mm_per_pix).item()
+                    running_csv_stats.append('{:.5f}'.format(class_area))
 
                 suptitle = 'Estimated composition percentages\n'
 
