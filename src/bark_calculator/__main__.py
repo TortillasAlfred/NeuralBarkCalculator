@@ -135,12 +135,8 @@ def test_color_jitter(root_dir):
 
 def get_loader_for_crop_batch(crop_size, batch_size, train_split, mean, std, train_weights, root_dir):
     train_dataset = RegressionDatasetFolder(os.path.join(root_dir, "Images/generated_exp"),
-                                            input_only_transform=Compose([
-                                                Normalize(mean, std),
-                                                ToPILImage(),
-                                                ColorJitter(brightness=0., saturation=0.),
-                                                ToTensor()
-                                            ]),
+                                            input_only_transform=Compose([Normalize(mean, std),
+                                                                          ToTensor()]),
                                             transform=Compose([
                                                 Lambda(lambda img: pad_resize(img, 1024, 1024)),
                                                 RandomCrop(crop_size),
