@@ -17,6 +17,7 @@ from tqdm import tqdm
 import warnings
 
 import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
 from skimage.io import imread, imsave
 import torch
 from PIL import Image
@@ -163,22 +164,35 @@ class NeuralBarkCalculator():
                 imgs = [input, outputs]
                 imgs = [img.detach().cpu().squeeze().numpy() for img in imgs]
 
-                _, axs = plt.subplots(1, 2)
+                fig, axs = plt.subplots(1, 2)
+
+                class_names = ['Nothing', 'Bark', 'Node']
+                class_percents = []
 
                 for i, ax in enumerate(axs.flatten()):
                     img = imgs[i]
 
-                    if len(img.shape) == 3:
+                    raw = (len(img.shape) == 3)
+
+                    if raw:  # Raw input
                         img = img.transpose(1, 2, 0)
 
-                    ax.imshow(img)
+                    values = np.unique(img.ravel())
+
+                    img = ax.imshow(img)
                     ax.set_title(names[i])
                     ax.axis('off')
 
-                running_csv_stats = [fname, wood_type]
+                    if not raw:  # Predicted image
+                        colors = [img.cmap(img.norm(value)) for value in values]
+                        patches = [
+                            mpatches.Patch(color=color, label='{} zone'.format(class_name))
+                            for color, class_name in zip(colors, class_names)
+                        ]
 
-                class_names = ['Nothing', 'Bark', 'Node']
-                class_percents = []
+                        fig.legend(handles=patches, title='Classes', bbox_to_anchor=(0.4, -0.2, 0.5, 0.5))
+
+                running_csv_stats = [fname, wood_type]
 
                 for class_idx in [1, 2]:
                     class_percent = (outputs == class_idx).float().mean().cpu()
