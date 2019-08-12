@@ -165,9 +165,6 @@ class RegressionDatasetFolder(data.Dataset):
             sample = self.loader(sample)
             target = self.loader(target, grayscale=True)
 
-        if self.input_only_transform is not None:
-            sample = self.input_only_transform(sample)
-
         if self.transform is not None:
             random_seed = np.random.randint(2147483647)
 
@@ -177,6 +174,9 @@ class RegressionDatasetFolder(data.Dataset):
             if target is not None:
                 random.seed(random_seed)
                 target = self.transform(target)
+
+        if self.input_only_transform is not None:
+            sample = self.input_only_transform(sample)
 
         if target is not None:
             if target.max() > 200:
