@@ -29,7 +29,7 @@ def generate_output_folders(root_dir):
     wood_types = ["epinette_gelee", "epinette_non_gelee", "sapin"]
     levels = [('combined_images', ['train', 'valid', 'test']), ('outputs', ['train', 'valid', 'test'])]
 
-    results_dir = os.path.join(root_dir, 'Images', 'results', 'all_2')
+    results_dir = os.path.join(root_dir, 'Images', 'results', 'aug_3')
 
     def mkdirs_if_not_there(dir):
         if not os.path.isdir(dir):
@@ -114,9 +114,28 @@ def adjust_images(duals_folder, samples_folder, out_folder):
                 print(fname)
 
 
-def get_loader_for_crop_batch(crop_size, batch_size, train_split, mean, std, train_weights):
-    train_dataset = RegressionDatasetFolder("/mnt/storage/mgodbout/Ecorcage/Images/generated_exp",
-                                            input_only_transform=Compose([Normalize(mean, std)]),
+def test_color_jitter(root_dir):
+    train_dataset = RegressionDatasetFolder(
+        os.path.join(root_dir, "Images/generated_exp"),
+        input_only_transform=Compose([ColorJitter(brightness=0.25, saturation=0.5)]),
+        transform=Compose([Lambda(lambda img: pad_resize(img, 1024, 1024)),
+                           ToTensor()]),
+        in_memory=True)
+
+    loader = DataLoader(train_dataset, batch_size=1, num_workers=8, pin_memory=False)
+
+    for imgs in loader:
+        input = imgs[0][0]
+        input = ToPILImage()(input)
+        plt.imshow(input)
+        plt.show()
+
+
+def get_loader_for_crop_batch(crop_size, batch_size, train_split, mean, std, train_weights, root_dir):
+    train_dataset = RegressionDatasetFolder(os.path.join(root_dir, "Images/generated_exp"),
+                                            input_only_transform=Compose(
+                                                [Normalize(mean, std),
+                                                 ColorJitter(brightness=0.25, saturation=0.5)]),
                                             transform=Compose([
                                                 Lambda(lambda img: pad_resize(img, 1024, 1024)),
                                                 RandomCrop(crop_size),
@@ -162,8 +181,8 @@ def main(args):
 
     module = fcn_resnet50()
 
-    optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-2)
-    exp = Experiment(directory=os.path.join(args.root_dir, 'all_2/'),
+    optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-3)
+    exp = Experiment(directory=os.path.join(args.root_dir, 'aug_3/'),
                      module=module,
                      device=torch.device(args.device),
                      optimizer=optim,
@@ -176,7 +195,8 @@ def main(args):
     callbacks = []
 
     for i, (crop_size, batch_size) in enumerate(zip([448], [7])):
-        train_loader = get_loader_for_crop_batch(crop_size, batch_size, train_split, mean, std, train_weights)
+        train_loader = get_loader_for_crop_batch(crop_size, batch_size, train_split, mean, std, train_weights,
+                                                 args.root_dir)
 
         exp.train(train_loader=train_loader,
                   valid_loader=valid_loader,
@@ -216,7 +236,7 @@ def main(args):
 
             del pure_batch
 
-            # if os.path.isfile('/mnt/storage/mgodbout/Ecorcage/Images/results/all_2/{}'.format(fname)):
+            # if os.path.isfile('/mnt/storage/mgodbout/Ecorcage/Images/results/aug_3/{}'.format(fname)):
             #     continue
 
             outputs = module(batch[0].to(torch.device(args.device)))
@@ -279,7 +299,7 @@ def main(args):
             plt.tight_layout()
             # plt.show()
             plt.savefig(os.path.join(args.root_dir,
-                                     'Images/results/all_2/combined_images/{}/{}/{}').format(wood_type, split, fname),
+                                     'Images/results/aug_3/combined_images/{}/{}/{}').format(wood_type, split, fname),
                         format='png',
                         dpi=900)
             plt.close()
@@ -291,11 +311,11 @@ def main(args):
 
             dual = Image.fromarray(dual_outputs, mode='L')
             dual.save(
-                os.path.join(args.root_dir, 'Images/results/all_2/outputs/{}/{}/{}').format(wood_type, split, fname))
+                os.path.join(args.root_dir, 'Images/results/aug_3/outputs/{}/{}/{}').format(wood_type, split, fname))
 
             results_csv.append(running_csv_stats)
 
-    csv_file = os.path.join(args.root_dir, 'Images', 'results', 'all_2', 'final_stats.csv')
+    csv_file = os.path.join(args.root_dir, 'Images', 'results', 'aug_3', 'final_stats.csv')
 
     with open(csv_file, 'w') as f:
         csv_writer = csv.writer(f, delimiter='\t')
@@ -349,4 +369,5 @@ if __name__ == "__main__":
 
     make_training_deterministic(args.seed)
 
+    # test_color_jitter(args.root_dir)
     main(args)
