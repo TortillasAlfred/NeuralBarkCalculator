@@ -102,7 +102,7 @@ class NeuralBarkCalculator():
         self.device = device
         self.mm_per_pix = mm_per_pix
 
-    def predict(self, root_path):
+    def predict(self, root_path, excludes_nodes):
         processed_path = join(root_path, 'processed')
         dataset = self._preprocess_images(root_path, processed_path)
 
@@ -117,7 +117,7 @@ class NeuralBarkCalculator():
                                                transform=ToTensor(),
                                                include_fname=True)
 
-        self._predict_images(valid_dataset, pure_dataset, output_path)
+        self._predict_images(valid_dataset, pure_dataset, output_path, excludes_nodes)
 
     def _preprocess_images(self, root_path, output_path):
         raw_dataset = RegressionDatasetFolder(root_path, input_only_transform=ToTensor(), include_fname=True)
@@ -144,7 +144,7 @@ class NeuralBarkCalculator():
 
         imsave(output_path, image)
 
-    def _predict_images(self, valid_dataset, pure_dataset, output_path):
+    def _predict_images(self, valid_dataset, pure_dataset, output_path, excludes_nodes):
         pure_loader = DataLoader(pure_dataset, batch_size=1)
         valid_loader = DataLoader(valid_dataset, batch_size=1)
 
@@ -166,6 +166,11 @@ class NeuralBarkCalculator():
                 outputs = self.model(batch[0].to(self.device))
                 outputs = torch.argmax(outputs, dim=1)
                 outputs = remove_small_zones(outputs)
+
+                if excludes_nodes:
+                    node_class = 2
+                    nothing_class = 0
+                    outputs[outputs == node_class] = nothing_class
 
                 del batch
 
@@ -189,7 +194,7 @@ class NeuralBarkCalculator():
 
                     values = np.unique(img.ravel())
 
-                    plotted_img = ax.imshow(img)
+                    plotted_img = ax.imshow(img, vmax=2)
                     ax.set_title(names[i])
                     ax.axis('off')
 

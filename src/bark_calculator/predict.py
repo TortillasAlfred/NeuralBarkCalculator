@@ -51,7 +51,7 @@ def main(args):
     generate_folders(args.root_path)
 
     model = NeuralBarkCalculator('./best_model.pt', args.device)
-    model.predict(args.root_path)
+    model.predict(args.root_path, args.exclude_nodes)
 
 
 if __name__ == '__main__':
@@ -64,6 +64,8 @@ if __name__ == '__main__':
                         default='cpu',
                         help='Which torch device to train with.',
                         choices=['cpu', 'cuda:0', 'cuda:1'])
+
+    parser.add_argument('--exclude_nodes', action='store_true', default=False)
 
     args = parser.parse_args()
 
