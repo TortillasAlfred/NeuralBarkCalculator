@@ -189,15 +189,14 @@ class NeuralBarkCalculator():
 
                     values = np.unique(img.ravel())
 
-                    img = ax.imshow(img)
+                    plotted_img = ax.imshow(img)
                     ax.set_title(names[i])
                     ax.axis('off')
 
                     if not raw:  # Predicted image
-                        colors = [img.cmap(img.norm(value)) for value in values]
                         patches = [
-                            mpatches.Patch(color=color, label='{} zone'.format(class_name))
-                            for color, class_name in zip(colors, class_names)
+                            mpatches.Patch(color=plotted_img.cmap(plotted_img.norm(value)),
+                                           label='{} zone'.format(class_names[value])) for value in values
                         ]
 
                 img_size = '{} x {}'.format(img.shape[0], img.shape[1])
