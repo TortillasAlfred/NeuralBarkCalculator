@@ -181,6 +181,9 @@ def main(args):
                                             include_fname=True)
 
     train_split, valid_split, test_split, train_weights = get_splits(valid_dataset)
+    print(train_split)
+    print(valid_split)
+    print(test_split)
 
     valid_loader = DataLoader(Subset(test_dataset, valid_split), batch_size=8, num_workers=8, pin_memory=False)
 
