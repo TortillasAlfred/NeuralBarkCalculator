@@ -199,7 +199,7 @@ def main(args):
     lr_schedulers = [ExponentialLR(gamma=0.95)]
     callbacks = []
 
-    for i, (crop_size, batch_size) in enumerate(zip([224], [16])):
+    for i, (crop_size, batch_size) in enumerate(zip([448], [7])):
         train_loader = get_loader_for_crop_batch(crop_size, batch_size, train_split, mean, std, train_weights,
                                                  args.root_dir)
 
