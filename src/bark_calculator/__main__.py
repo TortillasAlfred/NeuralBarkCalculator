@@ -29,7 +29,7 @@ def generate_output_folders(root_dir):
     wood_types = ["epinette_gelee", "epinette_non_gelee", "sapin"]
     levels = [('combined_images', ['train', 'valid', 'test']), ('outputs', ['train', 'valid', 'test'])]
 
-    results_dir = os.path.join(root_dir, 'Images', 'results', 'jit_3')
+    results_dir = os.path.join(root_dir, 'Images', 'results', 'jit_224')
 
     def mkdirs_if_not_there(dir):
         if not os.path.isdir(dir):
@@ -187,7 +187,7 @@ def main(args):
     module = fcn_resnet50()
 
     optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-3)
-    exp = Experiment(directory=os.path.join(args.root_dir, 'jit_3/'),
+    exp = Experiment(directory=os.path.join(args.root_dir, 'jit_224/'),
                      module=module,
                      device=torch.device(args.device),
                      optimizer=optim,
@@ -199,7 +199,7 @@ def main(args):
     lr_schedulers = [ExponentialLR(gamma=0.95)]
     callbacks = []
 
-    for i, (crop_size, batch_size) in enumerate(zip([448], [7])):
+    for i, (crop_size, batch_size) in enumerate(zip([224], [16])):
         train_loader = get_loader_for_crop_batch(crop_size, batch_size, train_split, mean, std, train_weights,
                                                  args.root_dir)
 
@@ -241,7 +241,7 @@ def main(args):
 
             del pure_batch
 
-            # if os.path.isfile('/mnt/storage/mgodbout/Ecorcage/Images/results/jit_3/{}'.format(fname)):
+            # if os.path.isfile('/mnt/storage/mgodbout/Ecorcage/Images/results/jit_224/{}'.format(fname)):
             #     continue
 
             outputs = module(batch[0].to(torch.device(args.device)))
@@ -304,7 +304,7 @@ def main(args):
             plt.tight_layout()
             # plt.show()
             plt.savefig(os.path.join(args.root_dir,
-                                     'Images/results/jit_3/combined_images/{}/{}/{}').format(wood_type, split, fname),
+                                     'Images/results/jit_224/combined_images/{}/{}/{}').format(wood_type, split, fname),
                         format='png',
                         dpi=900)
             plt.close()
@@ -316,11 +316,11 @@ def main(args):
 
             dual = Image.fromarray(dual_outputs, mode='L')
             dual.save(
-                os.path.join(args.root_dir, 'Images/results/jit_3/outputs/{}/{}/{}').format(wood_type, split, fname))
+                os.path.join(args.root_dir, 'Images/results/jit_224/outputs/{}/{}/{}').format(wood_type, split, fname))
 
             results_csv.append(running_csv_stats)
 
-    csv_file = os.path.join(args.root_dir, 'Images', 'results', 'jit_3', 'final_stats.csv')
+    csv_file = os.path.join(args.root_dir, 'Images', 'results', 'jit_224', 'final_stats.csv')
 
     with open(csv_file, 'w') as f:
         csv_writer = csv.writer(f, delimiter='\t')
