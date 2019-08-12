@@ -5,7 +5,9 @@ This repository contains a PyTorch based bark calculator for flattened wood log 
 
 ## Installation
 
-First clone the repository with 
+The installation process requires both [Git](https://git-scm.com/download/win) and [Python](https://www.python.org/downloads/). Begin by download them with the provided links.
+
+After that, clone the repository with 
 
 ``git clone https://github.com/TortillasAlfred/NeuralBarkCalculator.git ``
 
@@ -13,17 +15,17 @@ Then, move inside the project
 
 ``cd NeuralBarkCalculator``
 
-and install all of the project's dependencies with 
+Since PyTorch is not installed in the same way for different OS, we recommend you first install the required PyTorch and torchvision libraries according to the [suggested commands](https://pytorch.org/). For example, on a Windows PC, the command for PyTorch is
 
-``pip3 install -r requirements.txt``
-
-Since PyTorch is not installed in the same way for different OS, we recommend you then install the required PyTorch and torchvision libraries according to the [suggested commands](https://pytorch.org/). For example, on a Windows PC, the command for PyTorch is
-
-``pip3 install https://download.pytorch.org/whl/cu90/torch-1.1.0-cp36-cp36m-win_amd64.whl``
+``pip3 install https://download.pytorch.org/whl/cu90/torch-1.1.0-cp37-cp37m-win_amd64.whl``
 
 and for torchvision it is
 
-``pip3 install https://download.pytorch.org/whl/cu90/torchvision-0.3.0-cp36-cp36m-win_amd64.whl``
+``pip3 install https://download.pytorch.org/whl/cu90/torchvision-0.3.0-cp37-cp37m-win_amd64.whl``
+
+We can then download the remaining project dependencies with 
+
+``pip3 install -r requirements.txt``
 
 ## Usage
 
