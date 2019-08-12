@@ -91,7 +91,7 @@ class NeuralBarkCalculator():
         self.mean = mean
         self.std = std
         self.target_size = 1024
-        self.device = None
+        self.device = device
 
     def predict(self, root_path):
         processed_path = join(root_path, 'processed')
