@@ -138,7 +138,7 @@ def get_loader_for_crop_batch(crop_size, batch_size, train_split, mean, std, tra
                                             input_only_transform=Compose([
                                                 Normalize(mean, std),
                                                 ToPILImage(),
-                                                ColorJitter(brightness=(0.95, 1.15), saturation=(0.8, 1.25)),
+                                                ColorJitter(brightness=0., saturation=0.),
                                                 ToTensor()
                                             ]),
                                             transform=Compose([
