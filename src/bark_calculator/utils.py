@@ -1,7 +1,7 @@
 from sklearn.metrics import f1_score
 from dataset import RegressionDatasetFolder
 
-from torchvision.transforms import Compose, Resize, ToTensor, ToPILImage
+from torchvision.transforms import Compose, Resize, ToTensor, ToPILImage, Lambda
 from torchvision.transforms.functional import pad, resize
 from torch.utils.data import DataLoader, SubsetRandomSampler
 from skimage.morphology import remove_small_objects, remove_small_holes
@@ -11,7 +11,7 @@ from math import ceil, floor, sin, cos
 import numpy as np
 import torch
 from torch import nn
-from torchvision.transforms.functional import rotate, center_crop
+from torchvision.transforms.functional import rotate, center_crop, adjust_brightness, adjust_contrast, adjust_saturation
 from PIL import Image
 import torch.nn.functional as F
 import random
@@ -205,3 +205,83 @@ def pad_to_biggest_image(tensor_data):
 
     return torch.stack([t[0] for t in tensor_data]), \
         torch.stack([t[1] for t in tensor_data])
+
+
+class NormColorJitter(object):
+    """Copy-pasta from PyTorch except that random values are sampled according to a normal instead of a uniform distribution.
+    
+        Args:
+            brightness (float): How much to jitter brightness.
+                brightness_factor is chosen form a normal distribution centered in 1 with
+                variance of the input float.
+            contrast (float): How much to jitter contrast.
+                contrast_factor is chosen from a normal distribution centered in 1 with
+                variance of the input float.
+            saturation (float or tuple of float (min, max)): How much to jitter saturation.
+                saturation_factor is chosen from a normal distribution centered in 1 with
+                variance of the input float.
+        """
+    def __init__(self, brightness=0, contrast=0, saturation=0):
+        self.brightness = self._check_input(brightness, 'brightness')
+        self.contrast = self._check_input(contrast, 'contrast')
+        self.saturation = self._check_input(saturation, 'saturation')
+
+    def _check_input(self, value, name, center=1):
+        if value < 0:
+            raise ValueError("If {} is a single number, it must be non negative.".format(name))
+        value = [1, value]
+
+        # if value is 0 for brightness/contrast/saturation
+        if value[1] == 0:
+            value = None
+
+        return value
+
+    @staticmethod
+    def get_params(brightness, contrast, saturation):
+        """Get a randomized transform to be applied on image.
+    
+            Arguments are same as that of __init__.
+    
+            Returns:
+                Transform which randomly adjusts brightness, contrast and
+                saturation in a random order.
+            """
+        transforms = []
+
+        if brightness is not None:
+            brightness_factor = random.gauss(brightness[0], brightness[1])
+            transforms.append(Lambda(lambda img: adjust_brightness(img, brightness_factor)))
+
+        if contrast is not None:
+            contrast_factor = random.gauss(contrast[0], contrast[1])
+            transforms.append(Lambda(lambda img: adjust_contrast(img, contrast_factor)))
+
+        if saturation is not None:
+            saturation_factor = random.gauss(saturation[0], saturation[1])
+            transforms.append(Lambda(lambda img: adjust_saturation(img, saturation_factor)))
+
+        random.shuffle(transforms)
+        transform = Compose(transforms)
+
+        print(brightness_factor)
+
+        return transform
+
+    def __call__(self, img):
+        """
+            Args:
+                img (PIL Image): Input image.
+    
+            Returns:
+                PIL Image: Color jittered image.
+            """
+        transform = self.get_params(self.brightness, self.contrast, self.saturation)
+        return transform(img)
+
+    def __repr__(self):
+        format_string = self.__class__.__name__ + '('
+        format_string += 'brightness={0}'.format(self.brightness)
+        format_string += ', contrast={0}'.format(self.contrast)
+        format_string += ', saturation={0}'.format(self.saturation)
+        return format_string

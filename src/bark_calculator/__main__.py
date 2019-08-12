@@ -117,12 +117,14 @@ def adjust_images(duals_folder, samples_folder, out_folder):
 def test_color_jitter(root_dir):
     train_dataset = RegressionDatasetFolder(
         os.path.join(root_dir, "Images/generated_exp"),
-        input_only_transform=Compose([ColorJitter(brightness=0.25, saturation=0.5)]),
+        input_only_transform=Compose(
+            [ToPILImage(), ColorJitter(brightness=(0.95, 1.15), saturation=(0.8, 1.25)),
+             ToTensor()]),
         transform=Compose([Lambda(lambda img: pad_resize(img, 1024, 1024)),
                            ToTensor()]),
         in_memory=True)
 
-    loader = DataLoader(train_dataset, batch_size=1, num_workers=8, pin_memory=False)
+    loader = DataLoader(train_dataset, batch_size=1, num_workers=1, pin_memory=False)
 
     for imgs in loader:
         input = imgs[0][0]
@@ -136,7 +138,7 @@ def get_loader_for_crop_batch(crop_size, batch_size, train_split, mean, std, tra
                                             input_only_transform=Compose([
                                                 Normalize(mean, std),
                                                 ToPILImage(),
-                                                ColorJitter(brightness=0.25, saturation=0.5),
+                                                ColorJitter(brightness=(0.95, 1.15), saturation=(0.8, 1.25)),
                                                 ToTensor()
                                             ]),
                                             transform=Compose([
