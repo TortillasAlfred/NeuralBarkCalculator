@@ -143,12 +143,12 @@ class JaccardLoss(nn.Module):
         true_1_hot = torch.eye(num_classes)[true.squeeze(1)]
         true_1_hot = true_1_hot.permute(0, 3, 1, 2).float()
 
-        probas = F.softmax(probas, dim=1)
-        true_1_hot = true_1_hot.type(predict.type())
+        predict = F.softmax(predict, dim=1)
+        true_1_hot = true_1_hot.type(true.type())
         dims = (0, ) + tuple(range(2, true.ndimension()))
 
-        intersection = torch.sum(probas * true_1_hot, dims)
-        cardinality = torch.sum(probas + true_1_hot, dims)
+        intersection = torch.sum(predict * true_1_hot, dims)
+        cardinality = torch.sum(predict + true_1_hot, dims)
         union = cardinality - intersection
 
         jacc_loss = (intersection / (union + eps)).mean()
