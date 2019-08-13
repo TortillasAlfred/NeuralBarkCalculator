@@ -157,6 +157,7 @@ class JaccardLoss(nn.Module):
 
 class MixedLoss(nn.Module):
     def __init__(self, cwe_weights):
+        super(MixedLoss, self).__init__()
         self.cwe = CustomWeightedCrossEntropy(cwe_weights)
         self.jaccard = JaccardLoss()
 
