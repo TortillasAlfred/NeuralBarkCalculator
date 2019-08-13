@@ -144,7 +144,7 @@ class JaccardLoss(nn.Module):
         true_1_hot = true_1_hot.permute(0, 3, 1, 2).float()
 
         predict = F.softmax(predict, dim=1)
-        true_1_hot = true_1_hot.type(true.type())
+        true_1_hot = true_1_hot.type(predict.type())
         dims = (0, ) + tuple(range(2, true.ndimension()))
 
         intersection = torch.sum(predict * true_1_hot, dims)
