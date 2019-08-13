@@ -1,7 +1,7 @@
 from dataset import RegressionDatasetFolder, pil_loader
 from utils import *
 from models import fcn_resnet50
-from fastscnn import FastSCNN
+from fast_scnn import FastSCNN
 
 from torchvision.transforms import *
 
