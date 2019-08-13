@@ -1,7 +1,6 @@
 from dataset import RegressionDatasetFolder, pil_loader
 from utils import *
 from models import fcn_resnet50
-from fast_scnn import FastSCNN
 
 from torchvision.transforms import *
 
@@ -30,7 +29,7 @@ def generate_output_folders(root_dir):
     wood_types = ["epinette_gelee", "epinette_non_gelee", "sapin"]
     levels = [('combined_images', ['train', 'valid', 'test']), ('outputs', ['train', 'valid', 'test'])]
 
-    results_dir = os.path.join(root_dir, 'Images', 'results', 'scnn')
+    results_dir = os.path.join(root_dir, 'Images', 'results', 'raw_448')
 
     def mkdirs_if_not_there(dir):
         if not os.path.isdir(dir):
@@ -138,7 +137,7 @@ def get_loader_for_crop_batch(crop_size, batch_size, train_split, mean, std, tra
     train_dataset = RegressionDatasetFolder(os.path.join(root_dir, "Images/generated_exp"),
                                             input_only_transform=Compose([
                                                 ToPILImage(),
-                                                ColorJitter(brightness=0.25, saturation=0.25),
+                                                ColorJitter(brightness=0.25, saturation=0.5),
                                                 ToTensor(),
                                                 Normalize(mean, std)
                                             ]),
@@ -151,7 +150,7 @@ def get_loader_for_crop_batch(crop_size, batch_size, train_split, mean, std, tra
                                             ]),
                                             in_memory=True)
 
-    sampler = WeightedRandomSampler(train_weights, num_samples=1 * len(train_weights), replacement=True)
+    sampler = WeightedRandomSampler(train_weights, num_samples=10 * len(train_weights), replacement=True)
 
     return DataLoader(Subset(train_dataset, train_split),
                       batch_size=batch_size,
@@ -186,12 +185,12 @@ def main(args):
     print(valid_split)
     print(test_split)
 
-    valid_loader = DataLoader(Subset(test_dataset, valid_split), batch_size=16, num_workers=8, pin_memory=False)
+    valid_loader = DataLoader(Subset(test_dataset, valid_split), batch_size=8, num_workers=8, pin_memory=False)
 
-    module = FastSCNN(3)
+    module = fcn_resnet50()
 
     optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-3)
-    exp = Experiment(directory=os.path.join(args.root_dir, 'scnn/'),
+    exp = Experiment(directory=os.path.join(args.root_dir, 'raw_448/'),
                      module=module,
                      device=torch.device(args.device),
                      optimizer=optim,
@@ -203,7 +202,7 @@ def main(args):
     lr_schedulers = [ExponentialLR(gamma=0.95)]
     callbacks = []
 
-    for i, (crop_size, batch_size) in enumerate(zip([1024], [10])):
+    for i, (crop_size, batch_size) in enumerate(zip([448], [6])):
         train_loader = get_loader_for_crop_batch(crop_size, batch_size, train_split, mean, std, train_weights,
                                                  args.root_dir)
 
@@ -245,7 +244,7 @@ def main(args):
 
             del pure_batch
 
-            # if os.path.isfile('/mnt/storage/mgodbout/Ecorcage/Images/results/scnn/{}'.format(fname)):
+            # if os.path.isfile('/mnt/storage/mgodbout/Ecorcage/Images/results/raw_448/{}'.format(fname)):
             #     continue
 
             outputs = module(batch[0].to(torch.device(args.device)))
@@ -308,7 +307,7 @@ def main(args):
             plt.tight_layout()
             # plt.show()
             plt.savefig(os.path.join(args.root_dir,
-                                     'Images/results/scnn/combined_images/{}/{}/{}').format(wood_type, split, fname),
+                                     'Images/results/raw_448/combined_images/{}/{}/{}').format(wood_type, split, fname),
                         format='png',
                         dpi=900)
             plt.close()
@@ -320,11 +319,11 @@ def main(args):
 
             dual = Image.fromarray(dual_outputs, mode='L')
             dual.save(
-                os.path.join(args.root_dir, 'Images/results/scnn/outputs/{}/{}/{}').format(wood_type, split, fname))
+                os.path.join(args.root_dir, 'Images/results/raw_448/outputs/{}/{}/{}').format(wood_type, split, fname))
 
             results_csv.append(running_csv_stats)
 
-    csv_file = os.path.join(args.root_dir, 'Images', 'results', 'scnn', 'final_stats.csv')
+    csv_file = os.path.join(args.root_dir, 'Images', 'results', 'raw_448', 'final_stats.csv')
 
     with open(csv_file, 'w') as f:
         csv_writer = csv.writer(f, delimiter='\t')
