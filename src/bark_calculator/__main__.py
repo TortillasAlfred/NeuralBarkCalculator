@@ -191,8 +191,7 @@ def main(args):
                      device=torch.device(args.device),
                      optimizer=optim,
                      loss_function=MixedLoss(torch.tensor(pos_weights).to(args.device)),
-                     metrics=[IOU(None)],
-                     monitor_mode='max')
+                     metrics=[IOU(None)])
 
     lr_schedulers = [ExponentialLR(gamma=0.95)]
     callbacks = []
