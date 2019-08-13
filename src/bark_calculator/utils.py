@@ -138,6 +138,32 @@ class CustomWeightedCrossEntropy(nn.Module):
         return (entropies * class_weights).mean()
 
 
+class JaccardLoss(nn.Module):
+    def forward(self, predict, true, eps=1e-7, num_classes=3):
+        true_1_hot = torch.eye(num_classes)[true.squeeze(1)]
+        true_1_hot = true_1_hot.permute(0, 3, 1, 2).float()
+
+        probas = F.softmax(probas, dim=1)
+        true_1_hot = true_1_hot.type(predict.type())
+        dims = (0, ) + tuple(range(2, true.ndimension()))
+
+        intersection = torch.sum(probas * true_1_hot, dims)
+        cardinality = torch.sum(probas + true_1_hot, dims)
+        union = cardinality - intersection
+
+        jacc_loss = (intersection / (union + eps)).mean()
+        return (1 - jacc_loss)
+
+
+class MixedLoss(nn.Module):
+    def __init__(self, cwe_weights):
+        self.cwe = CustomWeightedCrossEntropy(cwe_weights)
+        self.jaccard = JaccardLoss()
+
+    def forward(self, predict, true):
+        return self.cwe(predict, true) + self.jaccard(predict, true)
+
+
 def make_training_deterministic(seed):
     np.random.seed(seed)
     torch.manual_seed(seed)
