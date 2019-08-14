@@ -4,6 +4,7 @@ from dataset import RegressionDatasetFolder
 from torchvision.transforms import Compose, Resize, ToTensor, ToPILImage, Lambda
 from torchvision.transforms.functional import pad, resize
 from torch.utils.data import DataLoader, SubsetRandomSampler
+from torch.nn import CrossEntropyLoss
 from skimage.morphology import remove_small_objects, remove_small_holes
 from poutyne.framework.callbacks import Callback
 
@@ -158,11 +159,12 @@ class JaccardLoss(nn.Module):
 class MixedLoss(nn.Module):
     def __init__(self, cwe_weights):
         super(MixedLoss, self).__init__()
-        self.cwe = CustomWeightedCrossEntropy(cwe_weights)
+        # self.cwe = CustomWeightedCrossEntropy(cwe_weights)
+        self.we = CrossEntropyLoss(weight=cwe_weights)
         self.jaccard = JaccardLoss()
 
     def forward(self, predict, true):
-        return self.cwe(predict, true) + self.jaccard(predict, true)
+        return self.we(predict, true) + self.jaccard(predict, true)
 
 
 def make_training_deterministic(seed):
