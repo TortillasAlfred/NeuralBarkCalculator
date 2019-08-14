@@ -202,7 +202,7 @@ class IOU(nn.Module):
                 scores[i] = np.delete(scores, i).mean()
 
         if self.class_to_watch is None:
-            return scores.mean()
+            return min(scores)
         elif self.class_to_watch == 'loss':
             return 1 - scores.mean()
         else:
