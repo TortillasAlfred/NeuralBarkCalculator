@@ -137,7 +137,7 @@ def get_loader_for_crop_batch(crop_size, batch_size, train_split, mean, std, tra
     train_dataset = RegressionDatasetFolder(os.path.join(root_dir, "Images/generated_exp"),
                                             input_only_transform=Compose([
                                                 ToPILImage(),
-                                                ColorJitter(brightness=0.15, saturation=0.25),
+                                                ColorJitter(brightness=0.05, saturation=0.1),
                                                 ToTensor(),
                                                 Normalize(mean, std)
                                             ]),
@@ -185,7 +185,7 @@ def main(args):
 
     module = fcn_resnet50()
 
-    optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=2e-3)
+    optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-3)
     exp = Experiment(directory=os.path.join(args.root_dir, 'mix_3/'),
                      module=module,
                      device=torch.device(args.device),
