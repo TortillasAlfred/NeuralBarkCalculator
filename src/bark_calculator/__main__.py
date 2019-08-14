@@ -1,6 +1,7 @@
 from dataset import RegressionDatasetFolder, pil_loader
 from utils import *
 from models import fcn_resnet50
+from lovasz_losses import LovaszSoftmax
 
 from torchvision.transforms import *
 
@@ -29,7 +30,7 @@ def generate_output_folders(root_dir):
     wood_types = ["epinette_gelee", "epinette_non_gelee", "sapin"]
     levels = [('combined_images', ['train', 'valid', 'test']), ('outputs', ['train', 'valid', 'test'])]
 
-    results_dir = os.path.join(root_dir, 'Images', 'results', 'mix_3')
+    results_dir = os.path.join(root_dir, 'Images', 'results', 'lovasz')
 
     def mkdirs_if_not_there(dir):
         if not os.path.isdir(dir):
@@ -186,11 +187,11 @@ def main(args):
     module = fcn_resnet50()
 
     optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-3)
-    exp = Experiment(directory=os.path.join(args.root_dir, 'mix_3/'),
+    exp = Experiment(directory=os.path.join(args.root_dir, 'lovasz/'),
                      module=module,
                      device=torch.device(args.device),
                      optimizer=optim,
-                     loss_function=MixedLoss(torch.tensor(pos_weights).to(args.device)),
+                     loss_function=LovaszSoftmax(),
                      metrics=[IOU(None)],
                      monitor_metric='val_IntersectionOverUnion',
                      monitor_mode='max')
@@ -240,7 +241,7 @@ def main(args):
 
             del pure_batch
 
-            # if os.path.isfile('/mnt/storage/mgodbout/Ecorcage/Images/results/mix_3/{}'.format(fname)):
+            # if os.path.isfile('/mnt/storage/mgodbout/Ecorcage/Images/results/lovasz/{}'.format(fname)):
             #     continue
 
             outputs = module(batch[0].to(torch.device(args.device)))
@@ -303,7 +304,7 @@ def main(args):
             plt.tight_layout()
             # plt.show()
             plt.savefig(os.path.join(args.root_dir,
-                                     'Images/results/mix_3/combined_images/{}/{}/{}').format(wood_type, split, fname),
+                                     'Images/results/lovasz/combined_images/{}/{}/{}').format(wood_type, split, fname),
                         format='png',
                         dpi=900)
             plt.close()
@@ -315,11 +316,11 @@ def main(args):
 
             dual = Image.fromarray(dual_outputs, mode='L')
             dual.save(
-                os.path.join(args.root_dir, 'Images/results/mix_3/outputs/{}/{}/{}').format(wood_type, split, fname))
+                os.path.join(args.root_dir, 'Images/results/lovasz/outputs/{}/{}/{}').format(wood_type, split, fname))
 
             results_csv.append(running_csv_stats)
 
-    csv_file = os.path.join(args.root_dir, 'Images', 'results', 'mix_3', 'final_stats.csv')
+    csv_file = os.path.join(args.root_dir, 'Images', 'results', 'lovasz', 'final_stats.csv')
 
     with open(csv_file, 'w') as f:
         csv_writer = csv.writer(f, delimiter='\t')
