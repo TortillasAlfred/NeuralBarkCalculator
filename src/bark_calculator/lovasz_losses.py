@@ -155,7 +155,7 @@ def binary_xloss(logits, labels, ignore=None):
 
 class LovaszSoftmax(nn.Module):
     def forward(self, predict, true):
-        predict = F.softmax(predict, dim=-1)
+        predict = F.softmax(predict)
 
         return lovasz_softmax(predict, true)
 
