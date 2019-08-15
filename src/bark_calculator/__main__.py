@@ -1,7 +1,7 @@
 from dataset import RegressionDatasetFolder, pil_loader
 from utils import *
 from models import fcn_resnet50
-from lovasz_losses import lovaszSoftmax
+from lovasz_losses import LovaszSoftmax
 
 from torchvision.transforms import *
 
