@@ -1,7 +1,7 @@
 from dataset import RegressionDatasetFolder, pil_loader
 from utils import *
 from models import fcn_resnet50
-from raw_losses import rawSoftmax
+from lovasz_losses import lovaszSoftmax
 
 from torchvision.transforms import *
 
@@ -186,7 +186,7 @@ def main(args):
                      module=module,
                      device=torch.device(args.device),
                      optimizer=optim,
-                     loss_function=rawSoftmax(),
+                     loss_function=lovaszSoftmax(),
                      metrics=[IOU(None)],
                      monitor_metric='val_IntersectionOverUnion',
                      monitor_mode='max')
