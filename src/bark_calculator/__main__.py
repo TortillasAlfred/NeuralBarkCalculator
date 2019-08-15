@@ -1,7 +1,7 @@
 from dataset import RegressionDatasetFolder, pil_loader
 from utils import *
 from models import fcn_resnet50
-from lovasz_losses import LovaszSoftmax
+from raw_losses import rawSoftmax
 
 from torchvision.transforms import *
 
@@ -30,7 +30,7 @@ def generate_output_folders(root_dir):
     wood_types = ["epinette_gelee", "epinette_non_gelee", "sapin"]
     levels = [('combined_images', ['train', 'valid', 'test']), ('outputs', ['train', 'valid', 'test'])]
 
-    results_dir = os.path.join(root_dir, 'Images', 'results', 'lovasz')
+    results_dir = os.path.join(root_dir, 'Images', 'results', 'raw')
 
     def mkdirs_if_not_there(dir):
         if not os.path.isdir(dir):
@@ -136,12 +136,7 @@ def test_color_jitter(root_dir):
 
 def get_loader_for_crop_batch(crop_size, batch_size, train_split, mean, std, train_weights, root_dir):
     train_dataset = RegressionDatasetFolder(os.path.join(root_dir, "Images/generated_exp"),
-                                            input_only_transform=Compose([
-                                                ToPILImage(),
-                                                ColorJitter(brightness=0.05, saturation=0.1),
-                                                ToTensor(),
-                                                Normalize(mean, std)
-                                            ]),
+                                            input_only_transform=Compose([Normalize(mean, std)]),
                                             transform=Compose([
                                                 Lambda(lambda img: pad_resize(img, 1024, 1024)),
                                                 RandomCrop(crop_size),
@@ -187,16 +182,16 @@ def main(args):
     module = fcn_resnet50()
 
     optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-3)
-    exp = Experiment(directory=os.path.join(args.root_dir, 'lovasz/'),
+    exp = Experiment(directory=os.path.join(args.root_dir, 'raw/'),
                      module=module,
                      device=torch.device(args.device),
                      optimizer=optim,
-                     loss_function=LovaszSoftmax(),
+                     loss_function=rawSoftmax(),
                      metrics=[IOU(None)],
                      monitor_metric='val_IntersectionOverUnion',
                      monitor_mode='max')
 
-    lr_schedulers = [ExponentialLR(gamma=0.96)]
+    lr_schedulers = [ExponentialLR(gamma=0.95)]
     callbacks = []
 
     for i, (crop_size, batch_size) in enumerate(zip([448], [7])):
@@ -205,7 +200,7 @@ def main(args):
 
         exp.train(train_loader=train_loader,
                   valid_loader=valid_loader,
-                  epochs=(1 + i) * 250,
+                  epochs=(1 + i) * 150,
                   lr_schedulers=lr_schedulers,
                   callbacks=callbacks)
 
@@ -241,7 +236,7 @@ def main(args):
 
             del pure_batch
 
-            # if os.path.isfile('/mnt/storage/mgodbout/Ecorcage/Images/results/lovasz/{}'.format(fname)):
+            # if os.path.isfile('/mnt/storage/mgodbout/Ecorcage/Images/results/raw/{}'.format(fname)):
             #     continue
 
             outputs = module(batch[0].to(torch.device(args.device)))
@@ -304,7 +299,7 @@ def main(args):
             plt.tight_layout()
             # plt.show()
             plt.savefig(os.path.join(args.root_dir,
-                                     'Images/results/lovasz/combined_images/{}/{}/{}').format(wood_type, split, fname),
+                                     'Images/results/raw/combined_images/{}/{}/{}').format(wood_type, split, fname),
                         format='png',
                         dpi=900)
             plt.close()
@@ -316,11 +311,11 @@ def main(args):
 
             dual = Image.fromarray(dual_outputs, mode='L')
             dual.save(
-                os.path.join(args.root_dir, 'Images/results/lovasz/outputs/{}/{}/{}').format(wood_type, split, fname))
+                os.path.join(args.root_dir, 'Images/results/raw/outputs/{}/{}/{}').format(wood_type, split, fname))
 
             results_csv.append(running_csv_stats)
 
-    csv_file = os.path.join(args.root_dir, 'Images', 'results', 'lovasz', 'final_stats.csv')
+    csv_file = os.path.join(args.root_dir, 'Images', 'results', 'raw', 'final_stats.csv')
 
     with open(csv_file, 'w') as f:
         csv_writer = csv.writer(f, delimiter='\t')
