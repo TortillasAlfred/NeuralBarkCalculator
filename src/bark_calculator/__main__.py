@@ -30,7 +30,7 @@ def generate_output_folders(root_dir):
     wood_types = ["epinette_gelee", "epinette_non_gelee", "sapin"]
     levels = [('combined_images', ['train', 'valid', 'test']), ('outputs', ['train', 'valid', 'test'])]
 
-    results_dir = os.path.join(root_dir, 'Images', 'results', 'raw')
+    results_dir = os.path.join(root_dir, 'Images', 'results', 'big_aug')
 
     def mkdirs_if_not_there(dir):
         if not os.path.isdir(dir):
@@ -136,7 +136,12 @@ def test_color_jitter(root_dir):
 
 def get_loader_for_crop_batch(crop_size, batch_size, train_split, mean, std, train_weights, root_dir):
     train_dataset = RegressionDatasetFolder(os.path.join(root_dir, "Images/generated_exp"),
-                                            input_only_transform=Compose([Normalize(mean, std)]),
+                                            input_only_transform=Compose([
+                                                ToPILImage(),
+                                                ColorJitter(brightness=0.15, saturation=0.3),
+                                                ToTensor(),
+                                                Normalize(mean, std)
+                                            ]),
                                             transform=Compose([
                                                 Lambda(lambda img: pad_resize(img, 1024, 1024)),
                                                 RandomCrop(crop_size),
@@ -182,7 +187,7 @@ def main(args):
     module = fcn_resnet50()
 
     optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-3)
-    exp = Experiment(directory=os.path.join(args.root_dir, 'raw/'),
+    exp = Experiment(directory=os.path.join(args.root_dir, 'big_aug/'),
                      module=module,
                      device=torch.device(args.device),
                      optimizer=optim,
@@ -194,7 +199,7 @@ def main(args):
     lr_schedulers = [ExponentialLR(gamma=0.95)]
     callbacks = []
 
-    for i, (crop_size, batch_size) in enumerate(zip([448], [7])):
+    for i, (crop_size, batch_size) in enumerate(zip([448], [6])):
         train_loader = get_loader_for_crop_batch(crop_size, batch_size, train_split, mean, std, train_weights,
                                                  args.root_dir)
 
@@ -236,7 +241,7 @@ def main(args):
 
             del pure_batch
 
-            # if os.path.isfile('/mnt/storage/mgodbout/Ecorcage/Images/results/raw/{}'.format(fname)):
+            # if os.path.isfile('/mnt/storage/mgodbout/Ecorcage/Images/results/big_aug/{}'.format(fname)):
             #     continue
 
             outputs = module(batch[0].to(torch.device(args.device)))
@@ -299,7 +304,7 @@ def main(args):
             plt.tight_layout()
             # plt.show()
             plt.savefig(os.path.join(args.root_dir,
-                                     'Images/results/raw/combined_images/{}/{}/{}').format(wood_type, split, fname),
+                                     'Images/results/big_aug/combined_images/{}/{}/{}').format(wood_type, split, fname),
                         format='png',
                         dpi=900)
             plt.close()
@@ -311,11 +316,11 @@ def main(args):
 
             dual = Image.fromarray(dual_outputs, mode='L')
             dual.save(
-                os.path.join(args.root_dir, 'Images/results/raw/outputs/{}/{}/{}').format(wood_type, split, fname))
+                os.path.join(args.root_dir, 'Images/results/big_aug/outputs/{}/{}/{}').format(wood_type, split, fname))
 
             results_csv.append(running_csv_stats)
 
-    csv_file = os.path.join(args.root_dir, 'Images', 'results', 'raw', 'final_stats.csv')
+    csv_file = os.path.join(args.root_dir, 'Images', 'results', 'big_aug', 'final_stats.csv')
 
     with open(csv_file, 'w') as f:
         csv_writer = csv.writer(f, delimiter='\t')
