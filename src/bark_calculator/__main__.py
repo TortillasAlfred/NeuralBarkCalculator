@@ -186,7 +186,7 @@ def main(args):
                      module=module,
                      device=torch.device(args.device),
                      optimizer=optim,
-                     loss_function=lovaszSoftmax(),
+                     loss_function=LovaszSoftmax(),
                      metrics=[IOU(None)],
                      monitor_metric='val_IntersectionOverUnion',
                      monitor_mode='max')
