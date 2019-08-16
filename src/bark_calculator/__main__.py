@@ -138,7 +138,7 @@ def get_loader_for_crop_batch(crop_size, batch_size, train_split, mean, std, tra
     train_dataset = RegressionDatasetFolder(os.path.join(root_dir, "Images/generated_exp"),
                                             input_only_transform=Compose([
                                                 ToPILImage(),
-                                                ColorJitter(brightness=0.15, saturation=0.3),
+                                                ColorJitter(brightness=0.05, saturation=0.1),
                                                 ToTensor(),
                                                 Normalize(mean, std)
                                             ]),
