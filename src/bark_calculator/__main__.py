@@ -197,7 +197,7 @@ def main(args):
                      monitor_mode='max')
 
     lr_schedulers = [ExponentialLR(gamma=0.95)]
-    callbacks = [EarlyStopping(monitor='val_IntersectionOverUnion', min_delta=1e-4, patience=20)]
+    callbacks = [EarlyStopping(monitor='val_IntersectionOverUnion', min_delta=1e-4, patience=20, mode='max')]
 
     for i, (crop_size, batch_size) in enumerate(zip([448], [6])):
         train_loader = get_loader_for_crop_batch(crop_size, batch_size, train_split, mean, std, train_weights,
