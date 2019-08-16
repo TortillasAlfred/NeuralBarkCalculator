@@ -5,7 +5,7 @@ from lovasz_losses import LovaszSoftmax
 
 from torchvision.transforms import *
 
-from poutyne.framework import Experiment, ExponentialLR
+from poutyne.framework import Experiment, ExponentialLR, EarlyStopping
 from torch.utils.data import DataLoader, Subset, WeightedRandomSampler
 import matplotlib.pyplot as plt
 from torch.nn.modules.loss import CrossEntropyLoss
@@ -197,9 +197,9 @@ def main(args):
                      monitor_mode='max')
 
     lr_schedulers = [ExponentialLR(gamma=0.95)]
-    callbacks = []
+    callbacks = [EarlyStopping(monitor='val_IntersectionOverUnion', min_delta=1e-4, patience=20)]
 
-    for i, (crop_size, batch_size) in enumerate(zip([448], [6])):
+    for i, (crop_size, batch_size) in enumerate(zip([448], [7])):
         train_loader = get_loader_for_crop_batch(crop_size, batch_size, train_split, mean, std, train_weights,
                                                  args.root_dir)
 
