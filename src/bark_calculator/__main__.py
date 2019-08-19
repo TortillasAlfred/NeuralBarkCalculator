@@ -31,7 +31,7 @@ def generate_output_folders(root_dir):
     levels = [('combined_images', ['train', 'valid', 'test']),
               ('outputs', ['train', 'valid', 'test'])]
 
-    results_dir = os.path.join(root_dir, 'Images', 'results', 'ce')
+    results_dir = os.path.join(root_dir, 'Images', 'results', 'mix')
 
     def mkdirs_if_not_there(dir):
         if not os.path.isdir(dir):
@@ -211,12 +211,11 @@ def main(args):
     module = fcn_resnet50()
 
     optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-4)
-    exp = Experiment(directory=os.path.join(args.root_dir, 'ce/'),
+    exp = Experiment(directory=os.path.join(args.root_dir, 'mix/'),
                      module=module,
                      device=torch.device(args.device),
                      optimizer=optim,
-                     loss_function=CrossEntropyLoss(pos_weights.to(
-                         args.device)),
+                     loss_function=MixedLoss(pos_weights.to(args.device)),
                      metrics=[IOU(None)],
                      monitor_metric='val_IntersectionOverUnion',
                      monitor_mode='max')
@@ -284,9 +283,6 @@ def main(args):
 
             del pure_batch
 
-            # if os.path.isfile('/mnt/storage/mgodbout/Ecorcage/Images/results/ce/{}'.format(fname)):
-            #     continue
-
             outputs = module(batch[0].to(torch.device(args.device)))
             outputs = torch.argmax(outputs, dim=1)
             outputs = remove_small_zones(outputs)
@@ -351,7 +347,7 @@ def main(args):
             # plt.show()
             plt.savefig(os.path.join(
                 args.root_dir,
-                'Images/results/ce/combined_images/{}/{}/{}').format(
+                'Images/results/mix/combined_images/{}/{}/{}').format(
                     wood_type, split, fname),
                         format='png',
                         dpi=900)
@@ -366,12 +362,12 @@ def main(args):
             dual = Image.fromarray(dual_outputs, mode='L')
             dual.save(
                 os.path.join(args.root_dir,
-                             'Images/results/ce/outputs/{}/{}/{}').format(
+                             'Images/results/mix/outputs/{}/{}/{}').format(
                                  wood_type, split, fname))
 
             results_csv.append(running_csv_stats)
 
-    csv_file = os.path.join(args.root_dir, 'Images', 'results', 'ce',
+    csv_file = os.path.join(args.root_dir, 'Images', 'results', 'mix',
                             'final_stats.csv')
 
     with open(csv_file, 'w') as f:

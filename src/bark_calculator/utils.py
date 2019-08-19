@@ -1,5 +1,6 @@
 from sklearn.metrics import f1_score
 from dataset import RegressionDatasetFolder
+from lovasz_losses import LovaszSoftmax
 
 from torchvision.transforms import Compose, Resize, ToTensor, ToPILImage, Lambda
 from torchvision.transforms.functional import pad, resize
@@ -78,7 +79,11 @@ def get_splits(dataset):
 
     total_items = len(dataset)
 
-    wood_type_to_idx = {'epinette_gelee': 0, 'epinette_non_gelee': 1, 'sapin': 2}
+    wood_type_to_idx = {
+        'epinette_gelee': 0,
+        'epinette_non_gelee': 1,
+        'sapin': 2
+    }
 
     idxs_by_type = [[] for _ in range(3)]
 
@@ -114,7 +119,10 @@ def remove_small_zones(img):
     device = img.device
     np_image = (img.cpu().numpy() == 0)
 
-    remove_small_holes(np_image, area_threshold=100, connectivity=2, in_place=True)
+    remove_small_holes(np_image,
+                       area_threshold=100,
+                       connectivity=2,
+                       in_place=True)
     remove_small_objects(np_image, min_size=100, connectivity=2, in_place=True)
 
     img[torch.from_numpy(np_image == 0).to(device).byte() & (img == 0)] = 1
@@ -134,7 +142,8 @@ class CustomWeightedCrossEntropy(nn.Module):
 
         max_classes = torch.max(torch.argmax(predict, dim=1), true).flatten()
 
-        class_weights = torch.index_select(self.weights, 0, max_classes).view(true.shape)
+        class_weights = torch.index_select(self.weights, 0,
+                                           max_classes).view(true.shape)
 
         return (entropies * class_weights).mean()
 
@@ -159,12 +168,11 @@ class JaccardLoss(nn.Module):
 class MixedLoss(nn.Module):
     def __init__(self, cwe_weights):
         super(MixedLoss, self).__init__()
-        # self.cwe = CustomWeightedCrossEntropy(cwe_weights)
-        self.we = CrossEntropyLoss(weight=cwe_weights)
-        self.jaccard = JaccardLoss()
+        self.cwe = CustomWeightedCrossEntropy(cwe_weights)
+        self.lovasz = LovaszSoftmax()
 
     def forward(self, predict, true):
-        return self.we(predict, true) + self.jaccard(predict, true)
+        return self.cwe(predict, true) + self.lovasz(predict, true)
 
 
 def make_training_deterministic(seed):
@@ -183,7 +191,8 @@ class IOU(nn.Module):
         if self.class_to_watch is None:
             self.__name__ = "IntersectionOverUnion"
         else:
-            self.__name__ = "IntersectionOverUnion_class_{}".format(self.class_to_watch)
+            self.__name__ = "IntersectionOverUnion_class_{}".format(
+                self.class_to_watch)
 
     def forward(self, outputs, labels):
         outputs = torch.argmax(outputs, 1)
@@ -214,7 +223,9 @@ TO_TENSOR = ToTensor()
 
 
 def pad_resize(image, width, height):
-    image = pad(image, (ceil((width - image.width) / 2), ceil((height - image.height) / 2)), padding_mode='reflect')
+    image = pad(image, (ceil(
+        (width - image.width) / 2), ceil((height - image.height) / 2)),
+                padding_mode='reflect')
 
     return resize(image, (height, width))
 
@@ -238,7 +249,7 @@ def pad_to_biggest_image(tensor_data):
 
 class NormColorJitter(object):
     """Copy-pasta from PyTorch except that random values are sampled according to a normal instead of a uniform distribution.
-    
+
         Args:
             brightness (float): How much to jitter brightness.
                 brightness_factor is chosen form a normal distribution centered in 1 with
@@ -250,6 +261,7 @@ class NormColorJitter(object):
                 saturation_factor is chosen from a normal distribution centered in 1 with
                 variance of the input float.
         """
+
     def __init__(self, brightness=0, contrast=0, saturation=0):
         self.brightness = self._check_input(brightness, 'brightness')
         self.contrast = self._check_input(contrast, 'contrast')
@@ -257,7 +269,9 @@ class NormColorJitter(object):
 
     def _check_input(self, value, name, center=1):
         if value < 0:
-            raise ValueError("If {} is a single number, it must be non negative.".format(name))
+            raise ValueError(
+                "If {} is a single number, it must be non negative.".format(
+                    name))
         value = [1, value]
 
         # if value is 0 for brightness/contrast/saturation
@@ -269,9 +283,9 @@ class NormColorJitter(object):
     @staticmethod
     def get_params(brightness, contrast, saturation):
         """Get a randomized transform to be applied on image.
-    
+
             Arguments are same as that of __init__.
-    
+
             Returns:
                 Transform which randomly adjusts brightness, contrast and
                 saturation in a random order.
@@ -280,15 +294,18 @@ class NormColorJitter(object):
 
         if brightness is not None:
             brightness_factor = random.gauss(brightness[0], brightness[1])
-            transforms.append(Lambda(lambda img: adjust_brightness(img, brightness_factor)))
+            transforms.append(
+                Lambda(lambda img: adjust_brightness(img, brightness_factor)))
 
         if contrast is not None:
             contrast_factor = random.gauss(contrast[0], contrast[1])
-            transforms.append(Lambda(lambda img: adjust_contrast(img, contrast_factor)))
+            transforms.append(
+                Lambda(lambda img: adjust_contrast(img, contrast_factor)))
 
         if saturation is not None:
             saturation_factor = random.gauss(saturation[0], saturation[1])
-            transforms.append(Lambda(lambda img: adjust_saturation(img, saturation_factor)))
+            transforms.append(
+                Lambda(lambda img: adjust_saturation(img, saturation_factor)))
 
         random.shuffle(transforms)
         transform = Compose(transforms)
@@ -301,11 +318,12 @@ class NormColorJitter(object):
         """
             Args:
                 img (PIL Image): Input image.
-    
+
             Returns:
                 PIL Image: Color jittered image.
             """
-        transform = self.get_params(self.brightness, self.contrast, self.saturation)
+        transform = self.get_params(self.brightness, self.contrast,
+                                    self.saturation)
         return transform(img)
 
     def __repr__(self):
