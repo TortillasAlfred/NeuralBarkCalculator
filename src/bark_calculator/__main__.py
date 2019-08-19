@@ -28,7 +28,8 @@ import csv
 
 def generate_output_folders(root_dir):
     wood_types = ["epinette_gelee", "epinette_non_gelee", "sapin"]
-    levels = [('combined_images', ['train', 'valid', 'test']), ('outputs', ['train', 'valid', 'test'])]
+    levels = [('combined_images', ['train', 'valid', 'test']),
+              ('outputs', ['train', 'valid', 'test'])]
 
     results_dir = os.path.join(root_dir, 'Images', 'results', 'cwce')
 
@@ -62,10 +63,13 @@ def make_dual_images():
             bark_path = os.path.join(barks_dir, fname)
             node_path = os.path.join(nodes_dir, fname)
 
-            bark_image = np.asarray(pil_loader(bark_path, grayscale=True)) / 255
-            node_image = np.asarray(pil_loader(node_path, grayscale=True)) / 255
+            bark_image = np.asarray(pil_loader(bark_path,
+                                               grayscale=True)) / 255
+            node_image = np.asarray(pil_loader(node_path,
+                                               grayscale=True)) / 255
 
-            dual_png = np.zeros((bark_image.shape[0], bark_image.shape[1]), dtype=np.uint8)
+            dual_png = np.zeros((bark_image.shape[0], bark_image.shape[1]),
+                                dtype=np.uint8)
             dual_png[bark_image == 1.0] = 127
             dual_png[node_image == 1.0] = 255
 
@@ -87,9 +91,11 @@ def fine_tune_images():
 
                 dual_path = os.path.join(type_duals_dir, fname)
 
-                dual_image = np.asarray(imread(dual_path, grayscale=True)) / 127
+                dual_image = np.asarray(imread(dual_path,
+                                               grayscale=True)) / 127
 
-                dual_image = remove_small_zones(torch.from_numpy(dual_image).long())
+                dual_image = remove_small_zones(
+                    torch.from_numpy(dual_image).long())
 
                 dual_image = dual_image.numpy().astype(np.uint8)
                 dual_image[dual_image == 1] = 127
@@ -103,7 +109,8 @@ def fine_tune_images():
 def adjust_images(duals_folder, samples_folder, out_folder):
     for _, _, fnames in sorted(os.walk(duals_folder)):
         for fname in sorted(fnames):
-            sample = imread(os.path.join(samples_folder, fname.replace(".png", ".bmp")))
+            sample = imread(
+                os.path.join(samples_folder, fname.replace(".png", ".bmp")))
             dual = imread(os.path.join(duals_folder, fname), grayscale=True)
 
             dual = img_as_ubyte(resize(dual, sample.shape[:-1], order=0))
@@ -118,14 +125,20 @@ def adjust_images(duals_folder, samples_folder, out_folder):
 def test_color_jitter(root_dir):
     train_dataset = RegressionDatasetFolder(
         os.path.join(root_dir, "Images/generated_exp"),
-        input_only_transform=Compose(
-            [ToPILImage(), ColorJitter(brightness=(0.95, 1.15), saturation=(0.8, 1.25)),
+        input_only_transform=Compose([
+            ToPILImage(),
+            ColorJitter(brightness=(0.95, 1.15), saturation=(0.8, 1.25)),
+            ToTensor()
+        ]),
+        transform=Compose(
+            [Lambda(lambda img: pad_resize(img, 1024, 1024)),
              ToTensor()]),
-        transform=Compose([Lambda(lambda img: pad_resize(img, 1024, 1024)),
-                           ToTensor()]),
         in_memory=True)
 
-    loader = DataLoader(train_dataset, batch_size=1, num_workers=1, pin_memory=False)
+    loader = DataLoader(train_dataset,
+                        batch_size=1,
+                        num_workers=1,
+                        pin_memory=False)
 
     for imgs in loader:
         input = imgs[0][0]
@@ -134,24 +147,28 @@ def test_color_jitter(root_dir):
         plt.show()
 
 
-def get_loader_for_crop_batch(crop_size, batch_size, train_split, mean, std, train_weights, root_dir):
-    train_dataset = RegressionDatasetFolder(os.path.join(root_dir, "Images/generated_exp"),
-                                            input_only_transform=Compose([
-                                                ToPILImage(),
-                                                ColorJitter(brightness=0.05, saturation=0.1),
-                                                ToTensor(),
-                                                Normalize(mean, std)
-                                            ]),
-                                            transform=Compose([
-                                                Lambda(lambda img: pad_resize(img, 1024, 1024)),
-                                                RandomCrop(crop_size),
-                                                RandomHorizontalFlip(),
-                                                RandomVerticalFlip(),
-                                                ToTensor()
-                                            ]),
-                                            in_memory=True)
+def get_loader_for_crop_batch(crop_size, batch_size, train_split, mean, std,
+                              train_weights, root_dir):
+    train_dataset = RegressionDatasetFolder(
+        os.path.join(root_dir, "Images/generated_exp"),
+        input_only_transform=Compose([
+            ToPILImage(),
+            ColorJitter(brightness=0.05, saturation=0.1),
+            ToTensor(),
+            Normalize(mean, std)
+        ]),
+        transform=Compose([
+            Lambda(lambda img: pad_resize(img, 1024, 1024)),
+            RandomCrop(crop_size),
+            RandomHorizontalFlip(),
+            RandomVerticalFlip(),
+            ToTensor()
+        ]),
+        in_memory=True)
 
-    sampler = WeightedRandomSampler(train_weights, num_samples=10 * len(train_weights), replacement=True)
+    sampler = WeightedRandomSampler(train_weights,
+                                    num_samples=10 * len(train_weights),
+                                    replacement=True)
 
     return DataLoader(Subset(train_dataset, train_split),
                       batch_size=batch_size,
@@ -161,7 +178,8 @@ def get_loader_for_crop_batch(crop_size, batch_size, train_split, mean, std, tra
 
 
 def main(args):
-    raw_dataset = RegressionDatasetFolder(os.path.join(args.root_dir, 'Images/generated_exp'),
+    raw_dataset = RegressionDatasetFolder(os.path.join(args.root_dir,
+                                                       'Images/generated_exp'),
                                           input_only_transform=None,
                                           transform=Compose([ToTensor()]))
     mean, std = compute_mean_std(raw_dataset)
@@ -169,20 +187,26 @@ def main(args):
     print(std)
     pos_weights = compute_pos_weight(raw_dataset)
     print(pos_weights)
-    test_dataset = RegressionDatasetFolder(os.path.join(args.root_dir, 'Images/generated_exp'),
-                                           input_only_transform=Compose([Normalize(mean, std)]),
-                                           transform=Compose(
-                                               [Lambda(lambda img: pad_resize(img, 1024, 1024)),
-                                                ToTensor()]),
-                                           in_memory=True)
+    test_dataset = RegressionDatasetFolder(
+        os.path.join(args.root_dir, 'Images/generated_exp'),
+        input_only_transform=Compose([Normalize(mean, std)]),
+        transform=Compose(
+            [Lambda(lambda img: pad_resize(img, 1024, 1024)),
+             ToTensor()]),
+        in_memory=True)
 
-    valid_dataset = RegressionDatasetFolder(os.path.join(args.root_dir, 'Images/generated_exp'),
-                                            input_only_transform=Compose([Normalize(mean, std)]),
-                                            transform=Compose([ToTensor()]),
-                                            include_fname=True)
+    valid_dataset = RegressionDatasetFolder(
+        os.path.join(args.root_dir, 'Images/generated_exp'),
+        input_only_transform=Compose([Normalize(mean, std)]),
+        transform=Compose([ToTensor()]),
+        include_fname=True)
 
-    train_split, valid_split, test_split, train_weights = get_splits(valid_dataset)
-    valid_loader = DataLoader(Subset(test_dataset, valid_split), batch_size=8, num_workers=8, pin_memory=False)
+    train_split, valid_split, test_split, train_weights = get_splits(
+        valid_dataset)
+    valid_loader = DataLoader(Subset(test_dataset, valid_split),
+                              batch_size=8,
+                              num_workers=8,
+                              pin_memory=False)
 
     module = fcn_resnet50()
 
@@ -191,17 +215,24 @@ def main(args):
                      module=module,
                      device=torch.device(args.device),
                      optimizer=optim,
-                     loss_function=CustomWeightedCrossEntropy(pos_weights.to(args.device)),
+                     loss_function=CrossEntropyLoss(pos_weights.to(
+                         args.device)),
                      metrics=[IOU(None)],
                      monitor_metric='val_IntersectionOverUnion',
                      monitor_mode='max')
 
     lr_schedulers = [ExponentialLR(gamma=0.95)]
-    callbacks = [EarlyStopping(monitor='val_IntersectionOverUnion', min_delta=1e-4, patience=20, mode='max')]
+    callbacks = [
+        EarlyStopping(monitor='val_IntersectionOverUnion',
+                      min_delta=1e-4,
+                      patience=20,
+                      mode='max')
+    ]
 
-    for i, (crop_size, batch_size) in enumerate(zip([448], [7])):
-        train_loader = get_loader_for_crop_batch(crop_size, batch_size, train_split, mean, std, train_weights,
-                                                 args.root_dir)
+    for i, (crop_size, batch_size) in enumerate(zip([448], [6])):
+        train_loader = get_loader_for_crop_batch(crop_size, batch_size,
+                                                 train_split, mean, std,
+                                                 train_weights, args.root_dir)
 
         exp.train(train_loader=train_loader,
                   valid_loader=valid_loader,
@@ -209,13 +240,23 @@ def main(args):
                   lr_schedulers=lr_schedulers,
                   callbacks=callbacks)
 
-    pure_dataset = RegressionDatasetFolder(os.path.join(args.root_dir, 'Images/generated_exp'),
+    pure_dataset = RegressionDatasetFolder(os.path.join(
+        args.root_dir, 'Images/generated_exp'),
                                            transform=Compose([ToTensor()]),
                                            include_fname=True)
 
-    test_loader = DataLoader(Subset(test_dataset, test_split), batch_size=8, num_workers=8, pin_memory=False)
-    valid_loader = DataLoader(valid_dataset, batch_size=1, num_workers=8, pin_memory=False)
-    pure_loader = DataLoader(pure_dataset, batch_size=1, num_workers=8, pin_memory=False)
+    test_loader = DataLoader(Subset(test_dataset, test_split),
+                             batch_size=8,
+                             num_workers=8,
+                             pin_memory=False)
+    valid_loader = DataLoader(valid_dataset,
+                              batch_size=1,
+                              num_workers=8,
+                              pin_memory=False)
+    pure_loader = DataLoader(pure_dataset,
+                             batch_size=1,
+                             num_workers=8,
+                             pin_memory=False)
 
     exp.test(test_loader)
 
@@ -225,15 +266,17 @@ def main(args):
 
     generate_output_folders(args.root_dir)
 
-    splits = [(train_split, 'train'), (valid_split, 'valid'), (test_split, 'test')]
+    splits = [(train_split, 'train'), (valid_split, 'valid'),
+              (test_split, 'test')]
 
     results_csv = [[
-        'Name', 'Type', 'Split', 'F1_nothing', 'F1_bark', 'F1_node', 'F1_mean', 'Output Bark %', 'Output Node %',
-        'Target Bark %', 'Target Node %'
+        'Name', 'Type', 'Split', 'F1_nothing', 'F1_bark', 'F1_node', 'F1_mean',
+        'Output Bark %', 'Output Node %', 'Target Bark %', 'Target Node %'
     ]]
 
     with torch.no_grad():
-        for image_number, (batch, pure_batch) in enumerate(zip(valid_loader, pure_loader)):
+        for image_number, (batch, pure_batch) in enumerate(
+                zip(valid_loader, pure_loader)):
             input = pure_batch[0]
             target = pure_batch[1]
             fname = pure_batch[2][0]
@@ -256,7 +299,10 @@ def main(args):
             imgs = [img.detach().cpu().squeeze().numpy() for img in imgs]
 
             try:
-                class_accs = f1_score(imgs[1].flatten(), imgs[2].flatten(), labels=[0, 1, 2], average=None)
+                class_accs = f1_score(imgs[1].flatten(),
+                                      imgs[2].flatten(),
+                                      labels=[0, 1, 2],
+                                      average=None)
                 acc = class_accs.mean()
             except ValueError:
                 print('Error on file {}'.format(fname))
@@ -303,24 +349,30 @@ def main(args):
             plt.suptitle(suptitle)
             plt.tight_layout()
             # plt.show()
-            plt.savefig(os.path.join(args.root_dir,
-                                     'Images/results/cwce/combined_images/{}/{}/{}').format(wood_type, split, fname),
+            plt.savefig(os.path.join(
+                args.root_dir,
+                'Images/results/cwce/combined_images/{}/{}/{}').format(
+                    wood_type, split, fname),
                         format='png',
                         dpi=900)
             plt.close()
 
             outputs = outputs.squeeze().cpu().numpy()
-            dual_outputs = np.zeros((outputs.shape[0], outputs.shape[1]), dtype=np.uint8)
+            dual_outputs = np.zeros((outputs.shape[0], outputs.shape[1]),
+                                    dtype=np.uint8)
             dual_outputs[outputs == 1] = 127
             dual_outputs[outputs == 2] = 255
 
             dual = Image.fromarray(dual_outputs, mode='L')
             dual.save(
-                os.path.join(args.root_dir, 'Images/results/cwce/outputs/{}/{}/{}').format(wood_type, split, fname))
+                os.path.join(args.root_dir,
+                             'Images/results/cwce/outputs/{}/{}/{}').format(
+                                 wood_type, split, fname))
 
             results_csv.append(running_csv_stats)
 
-    csv_file = os.path.join(args.root_dir, 'Images', 'results', 'cwce', 'final_stats.csv')
+    csv_file = os.path.join(args.root_dir, 'Images', 'results', 'cwce',
+                            'final_stats.csv')
 
     with open(csv_file, 'w') as f:
         csv_writer = csv.writer(f, delimiter='\t')
@@ -328,9 +380,12 @@ def main(args):
 
 
 def fix_image(img_number, n_pixels_to_fix, which_to_reduce):
-    dual = imread("/home/magod/Documents/Encorcage/Images/generated_exp/duals/epinette_gelee/{}.png".format(img_number))
+    dual = imread(
+        "/home/magod/Documents/Encorcage/Images/generated_exp/duals/epinette_gelee/{}.png"
+        .format(img_number))
     sample = imread(
-        "/home/magod/Documents/Encorcage/Images/generated_exp/samples/epinette_gelee/{}.bmp".format(img_number))
+        "/home/magod/Documents/Encorcage/Images/generated_exp/samples/epinette_gelee/{}.bmp"
+        .format(img_number))
 
     if which_to_reduce == 'sample':
         img = sample
@@ -368,7 +423,10 @@ if __name__ == "__main__":
                         help='Which torch device to train with.',
                         choices=['cpu', 'cuda:0', 'cuda:1'])
 
-    parser.add_argument('--seed', type=int, default=42, help='Which random seed to use.')
+    parser.add_argument('--seed',
+                        type=int,
+                        default=42,
+                        help='Which random seed to use.')
 
     args = parser.parse_args()
 
