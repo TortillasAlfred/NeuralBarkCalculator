@@ -1,4 +1,4 @@
-from models import NeuralBarkCalculator
+from models import NeuralBarkCalculator, Preprocessor
 
 import os
 import argparse
@@ -7,7 +7,7 @@ import multiprocessing
 import torch
 
 
-def generate_folders(root_path):
+def generate_folders(root_path, only_preprocess):
     def mkdirs_if_not_there(dir):
         if not os.path.isdir(dir):
             os.makedirs(dir)
@@ -31,27 +31,31 @@ def generate_folders(root_path):
 
             mkdirs_if_not_there(wood_dir)
 
-    # Results folders
-    levels = ['combined_images', 'outputs']
+    if not only_preprocess:
+        # Results folders
+        levels = ['combined_images', 'outputs']
 
-    results_dir = os.path.join(root_path, 'results')
+        results_dir = os.path.join(root_path, 'results')
 
-    for folder in levels:
-        current_dir = os.path.join(results_dir, folder)
+        for folder in levels:
+            current_dir = os.path.join(results_dir, folder)
 
-        mkdirs_if_not_there(current_dir)
+            mkdirs_if_not_there(current_dir)
 
-        for wood_type in wood_types:
-            wood_dir = os.path.join(current_dir, wood_type)
+            for wood_type in wood_types:
+                wood_dir = os.path.join(current_dir, wood_type)
 
-            mkdirs_if_not_there(wood_dir)
+                mkdirs_if_not_there(wood_dir)
 
 
 def main(args):
-    generate_folders(args.root_path)
+    generate_folders(args.root_path, args.only_preprocess)
 
-    model = NeuralBarkCalculator('./best_model.pt', args.device)
-    model.predict(args.root_path, args.exclude_nodes)
+    Preprocessor().preprocess_images(args.root_path)
+
+    if not args.only_preprocess:
+        model = NeuralBarkCalculator('./best_model.pt', args.device)
+        model.predict(args.root_path, args.exclude_nodes)
 
 
 if __name__ == '__main__':
@@ -66,6 +70,8 @@ if __name__ == '__main__':
                         choices=['cpu', 'cuda:0', 'cuda:1'])
 
     parser.add_argument('--exclude_nodes', action='store_true', default=False)
+
+    parser.add_argument('--only_preprocess', action='store_true', default=False)
 
     args = parser.parse_args()
 

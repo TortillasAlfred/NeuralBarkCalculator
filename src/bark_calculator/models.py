@@ -78,6 +78,38 @@ def trim_black(image):
     return image[first_idx:last_idx]
 
 
+class Preprocessor():
+
+    def __init__(self, target_size=1024):
+        self.target_size = target_size
+
+    def preprocess_images(self, root_path):
+        output_path = join(root_path, 'processed')
+        raw_dataset = RegressionDatasetFolder(root_path, input_only_transform=ToTensor(), include_fname=True)
+
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore')
+            for img, _, fname, wood_type in tqdm(iter(raw_dataset),
+                                                 total=len(raw_dataset),
+                                                 ascii=True,
+                                                 desc='Preprocessing images'):
+                fname = str.replace(fname, '.bmp', '.png')
+                img_output_path = join(output_path, 'samples', wood_type, fname)
+
+                self._preprocess_image(img, img_output_path)
+
+    def _preprocess_image(self, image, output_path):
+        image = image.detach().cpu().numpy().transpose(1, 2, 0)
+
+        if max(image.shape) > self.target_size:
+            image = resize(image, (self.target_size, self.target_size), order=3, mode='reflect', anti_aliasing=False)
+
+        if image.shape[0] == image.shape[1]:  #Untrimmed
+            image = trim_black(image)
+
+        imsave(output_path, image)
+
+
 class NeuralBarkCalculator():
 
     DEFAULT_MEAN = [0.7399, 0.6139, 0.4401]
@@ -98,14 +130,11 @@ class NeuralBarkCalculator():
         self.model.to(device)
         self.mean = mean
         self.std = std
-        self.target_size = 1024
+        self.target_size = target_size
         self.device = device
         self.mm_per_pix = mm_per_pix
 
     def predict(self, root_path, excludes_nodes):
-        processed_path = join(root_path, 'processed')
-        dataset = self._preprocess_images(root_path, processed_path)
-
         output_path = join(root_path, 'results')
         valid_dataset = RegressionDatasetFolder(processed_path,
                                                 input_only_transform=Normalize(self.mean, self.std),
@@ -118,31 +147,6 @@ class NeuralBarkCalculator():
                                                include_fname=True)
 
         self._predict_images(valid_dataset, pure_dataset, output_path, excludes_nodes)
-
-    def _preprocess_images(self, root_path, output_path):
-        raw_dataset = RegressionDatasetFolder(root_path, input_only_transform=ToTensor(), include_fname=True)
-
-        with warnings.catch_warnings():
-            warnings.simplefilter('ignore')
-            for img, _, fname, wood_type in tqdm(iter(raw_dataset),
-                                                 total=len(raw_dataset),
-                                                 ascii=True,
-                                                 desc='Preprocessing images'):
-                fname = str.replace(fname, '.bmp', '.png')
-                img_output_path = join(output_path, 'samples', wood_type, fname)
-
-                self._preprocess_image(img, img_output_path)
-
-    def _preprocess_image(self, image, output_path):
-        image = image.detach().cpu().numpy().transpose(1, 2, 0)
-
-        if max(image.shape) > 1024:
-            image = resize(image, (1024, 1024), order=3, mode='reflect', anti_aliasing=False)
-
-        if image.shape[0] == image.shape[1]:  #Untrimmed
-            image = trim_black(image)
-
-        imsave(output_path, image)
 
     def _predict_images(self, valid_dataset, pure_dataset, output_path, excludes_nodes):
         pure_loader = DataLoader(pure_dataset, batch_size=1)
