@@ -31,7 +31,7 @@ def generate_output_folders(root_dir):
     levels = [('combined_images', ['train', 'valid', 'test']),
               ('outputs', ['train', 'valid', 'test'])]
 
-    results_dir = os.path.join(root_dir, 'Images', 'results', 'mix')
+    results_dir = os.path.join(root_dir, 'Images', 'results', 'bs_double')
 
     def mkdirs_if_not_there(dir):
         if not os.path.isdir(dir):
@@ -211,7 +211,7 @@ def main(args):
     module = fcn_resnet50()
 
     optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-4)
-    exp = Experiment(directory=os.path.join(args.root_dir, 'mix/'),
+    exp = Experiment(directory=os.path.join(args.root_dir, 'bs_double'),
                      module=module,
                      device=torch.device(args.device),
                      optimizer=optim,
@@ -228,7 +228,7 @@ def main(args):
                       mode='max')
     ]
 
-    for i, (crop_size, batch_size) in enumerate(zip([448], [6])):
+    for i, (crop_size, batch_size) in enumerate(zip([448], [7])):
         train_loader = get_loader_for_crop_batch(crop_size, batch_size,
                                                  train_split, mean, std,
                                                  train_weights, args.root_dir)
@@ -237,7 +237,8 @@ def main(args):
                   valid_loader=valid_loader,
                   epochs=(1 + i) * 150,
                   lr_schedulers=lr_schedulers,
-                  callbacks=callbacks)
+                  callbacks=callbacks,
+                  batches_per_step=2)
 
     pure_dataset = RegressionDatasetFolder(os.path.join(
         args.root_dir, 'Images/generated_exp'),
@@ -347,7 +348,7 @@ def main(args):
             # plt.show()
             plt.savefig(os.path.join(
                 args.root_dir,
-                'Images/results/mix/combined_images/{}/{}/{}').format(
+                'Images/results/bs_doublecombined_images/{}/{}/{}').format(
                     wood_type, split, fname),
                         format='png',
                         dpi=900)
@@ -361,13 +362,14 @@ def main(args):
 
             dual = Image.fromarray(dual_outputs, mode='L')
             dual.save(
-                os.path.join(args.root_dir,
-                             'Images/results/mix/outputs/{}/{}/{}').format(
-                                 wood_type, split, fname))
+                os.path.join(
+                    args.root_dir,
+                    'Images/results/bs_doubleoutputs/{}/{}/{}').format(
+                        wood_type, split, fname))
 
             results_csv.append(running_csv_stats)
 
-    csv_file = os.path.join(args.root_dir, 'Images', 'results', 'mix',
+    csv_file = os.path.join(args.root_dir, 'Images', 'results', 'bs_double',
                             'final_stats.csv')
 
     with open(csv_file, 'w') as f:
