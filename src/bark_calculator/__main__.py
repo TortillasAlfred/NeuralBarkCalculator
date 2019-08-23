@@ -348,7 +348,7 @@ def main(args):
             # plt.show()
             plt.savefig(os.path.join(
                 args.root_dir,
-                'Images/results/bs_quadruplecombined_images/{}/{}/{}').format(
+                'Images/results/bs_quadruple/combined_images/{}/{}/{}').format(
                     wood_type, split, fname),
                         format='png',
                         dpi=900)
@@ -364,7 +364,7 @@ def main(args):
             dual.save(
                 os.path.join(
                     args.root_dir,
-                    'Images/results/bs_quadrupleoutputs/{}/{}/{}').format(
+                    'Images/results/bs_quadruple/outputs/{}/{}/{}').format(
                         wood_type, split, fname))
 
             results_csv.append(running_csv_stats)
