@@ -210,7 +210,7 @@ def main(args):
 
     module = fcn_resnet50()
 
-    optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-2)
+    optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=5e-2)
     exp = Experiment(directory=os.path.join(args.root_dir, 'bs_96_wd_2'),
                      module=module,
                      device=torch.device(args.device),
