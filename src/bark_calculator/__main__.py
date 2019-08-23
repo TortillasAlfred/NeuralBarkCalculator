@@ -31,7 +31,7 @@ def generate_output_folders(root_dir):
     levels = [('combined_images', ['train', 'valid', 'test']),
               ('outputs', ['train', 'valid', 'test'])]
 
-    results_dir = os.path.join(root_dir, 'Images', 'results', 'bs_quadruple')
+    results_dir = os.path.join(root_dir, 'Images', 'results', 'bs_48_wd_3')
 
     def mkdirs_if_not_there(dir):
         if not os.path.isdir(dir):
@@ -210,8 +210,8 @@ def main(args):
 
     module = fcn_resnet50()
 
-    optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-4)
-    exp = Experiment(directory=os.path.join(args.root_dir, 'bs_quadruple'),
+    optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-3)
+    exp = Experiment(directory=os.path.join(args.root_dir, 'bs_48_wd_3'),
                      module=module,
                      device=torch.device(args.device),
                      optimizer=optim,
@@ -238,7 +238,7 @@ def main(args):
                   epochs=(1 + i) * 150,
                   lr_schedulers=lr_schedulers,
                   callbacks=callbacks,
-                  batches_per_step=4)
+                  batches_per_step=8)
 
     pure_dataset = RegressionDatasetFolder(os.path.join(
         args.root_dir, 'Images/generated_exp'),
@@ -348,7 +348,7 @@ def main(args):
             # plt.show()
             plt.savefig(os.path.join(
                 args.root_dir,
-                'Images/results/bs_quadruple/combined_images/{}/{}/{}').format(
+                'Images/results/bs_48_wd_3/combined_images/{}/{}/{}').format(
                     wood_type, split, fname),
                         format='png',
                         dpi=900)
@@ -364,12 +364,12 @@ def main(args):
             dual.save(
                 os.path.join(
                     args.root_dir,
-                    'Images/results/bs_quadruple/outputs/{}/{}/{}').format(
+                    'Images/results/bs_48_wd_3/outputs/{}/{}/{}').format(
                         wood_type, split, fname))
 
             results_csv.append(running_csv_stats)
 
-    csv_file = os.path.join(args.root_dir, 'Images', 'results', 'bs_quadruple',
+    csv_file = os.path.join(args.root_dir, 'Images', 'results', 'bs_48_wd_3',
                             'final_stats.csv')
 
     with open(csv_file, 'w') as f:
