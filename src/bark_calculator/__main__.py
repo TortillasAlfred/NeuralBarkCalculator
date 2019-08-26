@@ -167,7 +167,7 @@ def get_loader_for_crop_batch(crop_size, batch_size, train_split, mean, std,
         in_memory=True)
 
     sampler = WeightedRandomSampler(train_weights,
-                                    num_samples=25 * len(train_weights),
+                                    num_samples=24 * len(train_weights),
                                     replacement=True)
 
     return DataLoader(Subset(train_dataset, train_split),
