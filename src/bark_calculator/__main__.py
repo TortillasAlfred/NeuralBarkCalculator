@@ -31,7 +31,7 @@ def generate_output_folders(root_dir):
     levels = [('combined_images', ['train', 'valid', 'test']),
               ('outputs', ['train', 'valid', 'test'])]
 
-    results_dir = os.path.join(root_dir, 'Images', 'results', 'deeplab_101_4')
+    results_dir = os.path.join(root_dir, 'Images', 'results', 'fcn_101_4')
 
     def mkdirs_if_not_there(dir):
         if not os.path.isdir(dir):
@@ -208,10 +208,10 @@ def main(args):
                               num_workers=8,
                               pin_memory=False)
 
-    module = deeplabv3_resnet101()
+    module = fcn_resnet101()
 
     optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-4)
-    exp = Experiment(directory=os.path.join(args.root_dir, 'deeplab_101_4'),
+    exp = Experiment(directory=os.path.join(args.root_dir, 'fcn_101_4'),
                      module=module,
                      device=torch.device(args.device),
                      optimizer=optim,
@@ -228,7 +228,7 @@ def main(args):
                       mode='max')
     ]
 
-    for i, (crop_size, batch_size) in enumerate(zip([448], [2])):
+    for i, (crop_size, batch_size) in enumerate(zip([448], [4])):
         train_loader = get_loader_for_crop_batch(crop_size, batch_size,
                                                  train_split, mean, std,
                                                  train_weights, args.root_dir)
@@ -238,7 +238,7 @@ def main(args):
                   epochs=(1 + i) * 150,
                   lr_schedulers=lr_schedulers,
                   callbacks=callbacks,
-                  batches_per_step=32)
+                  batches_per_step=16)
 
     pure_dataset = RegressionDatasetFolder(os.path.join(
         args.root_dir, 'Images/generated_exp'),
@@ -348,8 +348,8 @@ def main(args):
             # plt.show()
             plt.savefig(os.path.join(
                 args.root_dir,
-                'Images/results/deeplab_101_4/combined_images/{}/{}/{}').
-                        format(wood_type, split, fname),
+                'Images/results/fcn_101_4/combined_images/{}/{}/{}').format(
+                    wood_type, split, fname),
                         format='png',
                         dpi=900)
             plt.close()
@@ -364,13 +364,13 @@ def main(args):
             dual.save(
                 os.path.join(
                     args.root_dir,
-                    'Images/results/deeplab_101_4/outputs/{}/{}/{}').format(
+                    'Images/results/fcn_101_4/outputs/{}/{}/{}').format(
                         wood_type, split, fname))
 
             results_csv.append(running_csv_stats)
 
-    csv_file = os.path.join(args.root_dir, 'Images', 'results',
-                            'deeplab_101_4', 'final_stats.csv')
+    csv_file = os.path.join(args.root_dir, 'Images', 'results', 'fcn_101_4',
+                            'final_stats.csv')
 
     with open(csv_file, 'w') as f:
         csv_writer = csv.writer(f, delimiter='\t')
