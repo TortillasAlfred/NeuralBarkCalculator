@@ -238,7 +238,7 @@ def main(args):
                   epochs=(1 + i) * 150,
                   lr_schedulers=lr_schedulers,
                   callbacks=callbacks,
-                  batches_per_step=64)
+                  batches_per_step=32)
 
     pure_dataset = RegressionDatasetFolder(os.path.join(
         args.root_dir, 'Images/generated_exp'),
