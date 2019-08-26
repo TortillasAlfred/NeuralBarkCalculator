@@ -57,8 +57,37 @@ def deeplabv3_resnet50():
     return SimpleSegmentationModel(backbone, classifier)
 
 
+def deeplabv3_resnet101():
+    backbone = resnet.__dict__['resnet101'](
+        pretrained=True, replace_stride_with_dilation=[False, True, True])
+
+    return_layers = {'layer4': 'out'}
+
+    backbone = IntermediateLayerGetter(backbone, return_layers=return_layers)
+
+    inplanes = 2048
+    classifier = DeepLabHead(inplanes, 3)
+
+    return SimpleSegmentationModel(backbone, classifier)
+
+
 def fcn_resnet50(pretrained=True):
     backbone = resnet.__dict__['resnet50'](
+        pretrained=pretrained,
+        replace_stride_with_dilation=[False, True, True])
+
+    return_layers = {'layer4': 'out'}
+
+    backbone = IntermediateLayerGetter(backbone, return_layers=return_layers)
+
+    inplanes = 2048
+    classifier = FCNHead(inplanes, 3)
+
+    return SimpleSegmentationModel(backbone, classifier)
+
+
+def fcn_resnet101(pretrained=True):
+    backbone = resnet.__dict__['resnet101'](
         pretrained=pretrained,
         replace_stride_with_dilation=[False, True, True])
 
