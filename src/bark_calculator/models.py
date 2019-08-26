@@ -35,13 +35,17 @@ class SimpleSegmentationModel(nn.Module):
 
         x = self.backbone(x)["out"]
         x = self.classifier(x)
-        x = torch.nn.functional.interpolate(x, size=input_shape, mode='bicubic', align_corners=False)
+        x = torch.nn.functional.interpolate(x,
+                                            size=input_shape,
+                                            mode='bicubic',
+                                            align_corners=False)
 
         return x
 
 
-def deeplabv3_resnet101():
-    backbone = resnet.__dict__['resnet50'](pretrained=True, replace_stride_with_dilation=[False, True, True])
+def deeplabv3_resnet50():
+    backbone = resnet.__dict__['resnet50'](
+        pretrained=True, replace_stride_with_dilation=[False, True, True])
 
     return_layers = {'layer4': 'out'}
 
@@ -54,7 +58,9 @@ def deeplabv3_resnet101():
 
 
 def fcn_resnet50(pretrained=True):
-    backbone = resnet.__dict__['resnet50'](pretrained=pretrained, replace_stride_with_dilation=[False, True, True])
+    backbone = resnet.__dict__['resnet50'](
+        pretrained=pretrained,
+        replace_stride_with_dilation=[False, True, True])
 
     return_layers = {'layer4': 'out'}
 
@@ -79,13 +85,14 @@ def trim_black(image):
 
 
 class Preprocessor():
-
     def __init__(self, target_size=1024):
         self.target_size = target_size
 
     def preprocess_images(self, root_path):
         output_path = join(root_path, 'processed')
-        raw_dataset = RegressionDatasetFolder(root_path, input_only_transform=ToTensor(), include_fname=True)
+        raw_dataset = RegressionDatasetFolder(root_path,
+                                              input_only_transform=ToTensor(),
+                                              include_fname=True)
 
         with warnings.catch_warnings():
             warnings.simplefilter('ignore')
@@ -94,7 +101,8 @@ class Preprocessor():
                                                  ascii=True,
                                                  desc='Preprocessing images'):
                 fname = str.replace(fname, '.bmp', '.png')
-                img_output_path = join(output_path, 'samples', wood_type, fname)
+                img_output_path = join(output_path, 'samples', wood_type,
+                                       fname)
 
                 self._preprocess_image(img, img_output_path)
 
@@ -102,7 +110,10 @@ class Preprocessor():
         image = image.detach().cpu().numpy().transpose(1, 2, 0)
 
         if max(image.shape) > self.target_size:
-            image = resize(image, (self.target_size, self.target_size), order=3, mode='reflect', anti_aliasing=False)
+            image = resize(image, (self.target_size, self.target_size),
+                           order=3,
+                           mode='reflect',
+                           anti_aliasing=False)
 
         if image.shape[0] == image.shape[1]:  #Untrimmed
             image = trim_black(image)
@@ -137,7 +148,8 @@ class NeuralBarkCalculator():
     def predict(self, root_path, excludes_nodes):
         output_path = join(root_path, 'results')
         valid_dataset = RegressionDatasetFolder(processed_path,
-                                                input_only_transform=Normalize(self.mean, self.std),
+                                                input_only_transform=Normalize(
+                                                    self.mean, self.std),
                                                 transform=ToTensor(),
                                                 include_fname=True)
 
@@ -146,21 +158,25 @@ class NeuralBarkCalculator():
                                                transform=ToTensor(),
                                                include_fname=True)
 
-        self._predict_images(valid_dataset, pure_dataset, output_path, excludes_nodes)
+        self._predict_images(valid_dataset, pure_dataset, output_path,
+                             excludes_nodes)
 
-    def _predict_images(self, valid_dataset, pure_dataset, output_path, excludes_nodes):
+    def _predict_images(self, valid_dataset, pure_dataset, output_path,
+                        excludes_nodes):
         pure_loader = DataLoader(pure_dataset, batch_size=1)
         valid_loader = DataLoader(valid_dataset, batch_size=1)
 
         results_csv = [[
-            'Name', 'Type', 'Image Size', 'Output Bark %', 'Bark area (mm^2)', 'Output Node %', 'Node area (mm^2)'
+            'Name', 'Type', 'Image Size', 'Output Bark %', 'Bark area (mm^2)',
+            'Output Node %', 'Node area (mm^2)'
         ]]
 
         with torch.no_grad():
-            for image_number, (batch, pure_batch) in tqdm(enumerate(zip(valid_loader, pure_loader)),
-                                                          total=len(pure_loader),
-                                                          ascii=True,
-                                                          desc='Predicted images'):
+            for image_number, (batch, pure_batch) in tqdm(
+                    enumerate(zip(valid_loader, pure_loader)),
+                    total=len(pure_loader),
+                    ascii=True,
+                    desc='Predicted images'):
                 input = pure_batch[0]
                 fname = pure_batch[2][0]
                 wood_type = pure_batch[3][0]
@@ -204,15 +220,20 @@ class NeuralBarkCalculator():
 
                     if not raw:  # Predicted image
                         patches = [
-                            mpatches.Patch(color=plotted_img.cmap(plotted_img.norm(value)),
-                                           label='{} zone'.format(class_names[value])) for value in values
+                            mpatches.Patch(color=plotted_img.cmap(
+                                plotted_img.norm(value)),
+                                           label='{} zone'.format(
+                                               class_names[value]))
+                            for value in values
                         ]
 
                 img_size = '{} x {}'.format(img.shape[0], img.shape[1])
 
                 running_csv_stats = [fname, wood_type, img_size]
 
-                fig.legend(handles=patches, title='Classes', bbox_to_anchor=(0.4, -0.2, 0.5, 0.5))
+                fig.legend(handles=patches,
+                           title='Classes',
+                           bbox_to_anchor=(0.4, -0.2, 0.5, 0.5))
 
                 running_csv_stats = [fname, wood_type]
 
@@ -221,23 +242,30 @@ class NeuralBarkCalculator():
 
                     class_percent = n_pixels.mean()
                     class_percents.append(class_percent * 100)
-                    running_csv_stats.append('{:.5f}'.format(class_percent * 100))
+                    running_csv_stats.append('{:.5f}'.format(class_percent *
+                                                             100))
 
                     class_area = (n_pixels.sum() * self.mm_per_pix).item()
                     running_csv_stats.append('{:.5f}'.format(class_area))
 
                 suptitle = 'Estimated composition percentages\n'
 
-                for class_name, class_percent in zip(class_names[1:], class_percents):
-                    suptitle += '{} : {:.3f}\n'.format(class_name, class_percent)
+                for class_name, class_percent in zip(class_names[1:],
+                                                     class_percents):
+                    suptitle += '{} : {:.3f}\n'.format(class_name,
+                                                       class_percent)
 
                 plt.suptitle(suptitle)
                 plt.tight_layout()
-                plt.savefig(join(output_path, 'combined_images', wood_type, fname), format='png', dpi=900)
+                plt.savefig(join(output_path, 'combined_images', wood_type,
+                                 fname),
+                            format='png',
+                            dpi=900)
                 plt.close()
 
                 outputs = outputs.squeeze().cpu().numpy()
-                dual_outputs = np.zeros((outputs.shape[0], outputs.shape[1]), dtype=np.uint8)
+                dual_outputs = np.zeros((outputs.shape[0], outputs.shape[1]),
+                                        dtype=np.uint8)
                 dual_outputs[outputs == 1] = 127
                 dual_outputs[outputs == 2] = 255
 

@@ -1,6 +1,6 @@
 from dataset import RegressionDatasetFolder, pil_loader
 from utils import *
-from models import fcn_resnet50
+from models import fcn_resnet50, deeplabv3_resnet50
 from lovasz_losses import LovaszSoftmax
 
 from torchvision.transforms import *
@@ -31,7 +31,7 @@ def generate_output_folders(root_dir):
     levels = [('combined_images', ['train', 'valid', 'test']),
               ('outputs', ['train', 'valid', 'test'])]
 
-    results_dir = os.path.join(root_dir, 'Images', 'results', 'bs_96_wd_1')
+    results_dir = os.path.join(root_dir, 'Images', 'results', 'deeplab')
 
     def mkdirs_if_not_there(dir):
         if not os.path.isdir(dir):
@@ -208,10 +208,10 @@ def main(args):
                               num_workers=8,
                               pin_memory=False)
 
-    module = fcn_resnet50()
+    module = deeplabv3_resnet50()
 
-    optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-1)
-    exp = Experiment(directory=os.path.join(args.root_dir, 'bs_96_wd_1'),
+    optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=3e-1)
+    exp = Experiment(directory=os.path.join(args.root_dir, 'deeplab'),
                      module=module,
                      device=torch.device(args.device),
                      optimizer=optim,
@@ -228,7 +228,7 @@ def main(args):
                       mode='max')
     ]
 
-    for i, (crop_size, batch_size) in enumerate(zip([448], [6])):
+    for i, (crop_size, batch_size) in enumerate(zip([448], [4])):
         train_loader = get_loader_for_crop_batch(crop_size, batch_size,
                                                  train_split, mean, std,
                                                  train_weights, args.root_dir)
@@ -348,7 +348,7 @@ def main(args):
             # plt.show()
             plt.savefig(os.path.join(
                 args.root_dir,
-                'Images/results/bs_96_wd_1/combined_images/{}/{}/{}').format(
+                'Images/results/deeplab/combined_images/{}/{}/{}').format(
                     wood_type, split, fname),
                         format='png',
                         dpi=900)
@@ -362,14 +362,13 @@ def main(args):
 
             dual = Image.fromarray(dual_outputs, mode='L')
             dual.save(
-                os.path.join(
-                    args.root_dir,
-                    'Images/results/bs_96_wd_1/outputs/{}/{}/{}').format(
-                        wood_type, split, fname))
+                os.path.join(args.root_dir,
+                             'Images/results/deeplab/outputs/{}/{}/{}').format(
+                                 wood_type, split, fname))
 
             results_csv.append(running_csv_stats)
 
-    csv_file = os.path.join(args.root_dir, 'Images', 'results', 'bs_96_wd_1',
+    csv_file = os.path.join(args.root_dir, 'Images', 'results', 'deeplab',
                             'final_stats.csv')
 
     with open(csv_file, 'w') as f:
