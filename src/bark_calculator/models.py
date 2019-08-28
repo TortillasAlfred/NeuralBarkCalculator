@@ -176,6 +176,7 @@ class NeuralBarkCalculator():
 
     def predict(self, root_path, excludes_nodes):
         output_path = join(root_path, 'results')
+        processed_path = join(root_path, 'processed')
         valid_dataset = RegressionDatasetFolder(processed_path,
                                                 input_only_transform=Normalize(
                                                     self.mean, self.std),
