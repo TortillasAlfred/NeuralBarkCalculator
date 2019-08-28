@@ -53,6 +53,8 @@ Furthermore, it is possible to simply add ``--exclude_nodes`` to the prediction 
 
 ``python3 src\bark_calculator\predict.py *ROOT_DIR* --device=cpu --exclude_nodes``
 
+Another possible option is the ``--only_preprocess``, for which the script will only do the preprocessing part of the prediction routine, not doing the prediction of the processed samples.
+
 Please also note that currently only 3 wood types are supported, namely ``epinette_gelee``, ``epinette_non_gelee`` and ``sapin``.
 
 The first step of the prediction process is the image preprocessing, where each image is first resized from the expected 4096x4096 format towards a more manageable 1024x1024, before being cut horizontally to trim the usual dark regions above and below the regions of interest. This process is automatically handled by the calculator, which creates a ``processed`` subfolder to the root folder as output for the processed images.
