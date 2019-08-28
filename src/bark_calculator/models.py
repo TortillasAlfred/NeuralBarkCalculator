@@ -219,7 +219,7 @@ class NeuralBarkCalculator():
 
                 if excludes_nodes:
                     node_class = 2
-                    nothing_class = 0
+                    nothing_class = 1
                     outputs[outputs == node_class] = nothing_class
 
                 del batch
