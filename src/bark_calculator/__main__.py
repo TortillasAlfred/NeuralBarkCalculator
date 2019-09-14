@@ -31,7 +31,8 @@ def generate_output_folders(root_dir):
     levels = [('combined_images', ['train', 'valid', 'test']),
               ('outputs', ['train', 'valid', 'test'])]
 
-    results_dir = os.path.join(root_dir, 'Images', 'results', 'deeplab_101_4')
+    results_dir = os.path.join(root_dir, 'Images', 'results',
+                               'jedi_wd_4_bs_24')
 
     def mkdirs_if_not_there(dir):
         if not os.path.isdir(dir):
@@ -78,8 +79,8 @@ def make_dual_images():
 
 
 def fine_tune_images():
-    duals_dir = "./Images/generated_exp/duals/"
-    output_dir = "./Images/generated_exp/duals/"
+    duals_dir = "./Images/1024_jedi/duals/"
+    output_dir = "./Images/1024_jedi/duals/"
 
     for wood_type in ["epinette_gelee", "epinette_non_gelee", "sapin"]:
         type_duals_dir = os.path.join(duals_dir, wood_type)
@@ -124,7 +125,7 @@ def adjust_images(duals_folder, samples_folder, out_folder):
 
 def test_color_jitter(root_dir):
     train_dataset = RegressionDatasetFolder(
-        os.path.join(root_dir, "Images/generated_exp"),
+        os.path.join(root_dir, "Images/1024_jedi"),
         input_only_transform=Compose([
             ToPILImage(),
             ColorJitter(brightness=(0.95, 1.15), saturation=(0.8, 1.25)),
@@ -150,7 +151,7 @@ def test_color_jitter(root_dir):
 def get_loader_for_crop_batch(crop_size, batch_size, train_split, mean, std,
                               train_weights, root_dir):
     train_dataset = RegressionDatasetFolder(
-        os.path.join(root_dir, "Images/generated_exp"),
+        os.path.join(root_dir, "Images/1024_jedi"),
         input_only_transform=Compose([Normalize(mean, std)]),
         transform=Compose([
             Lambda(lambda img: pad_resize(img, 1024, 1024)),
@@ -174,7 +175,7 @@ def get_loader_for_crop_batch(crop_size, batch_size, train_split, mean, std,
 
 def main(args):
     raw_dataset = RegressionDatasetFolder(os.path.join(args.root_dir,
-                                                       'Images/generated_exp'),
+                                                       'Images/1024_jedi'),
                                           input_only_transform=None,
                                           transform=Compose([ToTensor()]))
     mean, std = compute_mean_std(raw_dataset)
@@ -183,7 +184,7 @@ def main(args):
     pos_weights = compute_pos_weight(raw_dataset)
     print(pos_weights)
     test_dataset = RegressionDatasetFolder(
-        os.path.join(args.root_dir, 'Images/generated_exp'),
+        os.path.join(args.root_dir, 'Images/1024_jedi'),
         input_only_transform=Compose([Normalize(mean, std)]),
         transform=Compose(
             [Lambda(lambda img: pad_resize(img, 1024, 1024)),
@@ -191,7 +192,7 @@ def main(args):
         in_memory=True)
 
     valid_dataset = RegressionDatasetFolder(
-        os.path.join(args.root_dir, 'Images/generated_exp'),
+        os.path.join(args.root_dir, 'Images/1024_jedi'),
         input_only_transform=Compose([Normalize(mean, std)]),
         transform=Compose([ToTensor()]),
         include_fname=True)
@@ -203,10 +204,10 @@ def main(args):
                               num_workers=8,
                               pin_memory=False)
 
-    module = deeplabv3_resnet101()
+    module = fcn_resnet50()
 
     optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-4)
-    exp = Experiment(directory=os.path.join(args.root_dir, 'deeplab_101_4'),
+    exp = Experiment(directory=os.path.join(args.root_dir, 'jedi_wd_4_bs_24'),
                      module=module,
                      device=torch.device(args.device),
                      optimizer=optim,
@@ -223,7 +224,7 @@ def main(args):
                       mode='max')
     ]
 
-    for i, (crop_size, batch_size) in enumerate(zip([448], [2])):
+    for i, (crop_size, batch_size) in enumerate(zip([448], [6])):
         train_loader = get_loader_for_crop_batch(crop_size, batch_size,
                                                  train_split, mean, std,
                                                  train_weights, args.root_dir)
@@ -233,10 +234,10 @@ def main(args):
                   epochs=(1 + i) * 150,
                   lr_schedulers=lr_schedulers,
                   callbacks=callbacks,
-                  batches_per_step=32)
+                  batches_per_step=4)
 
     pure_dataset = RegressionDatasetFolder(os.path.join(
-        args.root_dir, 'Images/generated_exp'),
+        args.root_dir, 'Images/1024_jedi'),
                                            transform=Compose([ToTensor()]),
                                            include_fname=True)
 
@@ -343,7 +344,7 @@ def main(args):
             # plt.show()
             plt.savefig(os.path.join(
                 args.root_dir,
-                'Images/results/deeplab_101_4/combined_images/{}/{}/{}').
+                'Images/results/jedi_wd_4_bs_24/combined_images/{}/{}/{}').
                         format(wood_type, split, fname),
                         format='png',
                         dpi=900)
@@ -359,13 +360,13 @@ def main(args):
             dual.save(
                 os.path.join(
                     args.root_dir,
-                    'Images/results/deeplab_101_4/outputs/{}/{}/{}').format(
+                    'Images/results/jedi_wd_4_bs_24/outputs/{}/{}/{}').format(
                         wood_type, split, fname))
 
             results_csv.append(running_csv_stats)
 
     csv_file = os.path.join(args.root_dir, 'Images', 'results',
-                            'deeplab_101_4', 'final_stats.csv')
+                            'jedi_wd_4_bs_24', 'final_stats.csv')
 
     with open(csv_file, 'w') as f:
         csv_writer = csv.writer(f, delimiter='\t')
@@ -374,19 +375,19 @@ def main(args):
 
 def fix_image(img_number, n_pixels_to_fix, which_to_reduce):
     dual = imread(
-        "/home/magod/Documents/Encorcage/Images/generated_exp/duals/epinette_gelee/{}.png"
+        "/home/magod/Documents/Encorcage/Images/1024_jedi/duals/epinette_gelee/{}.png"
         .format(img_number))
     sample = imread(
-        "/home/magod/Documents/Encorcage/Images/generated_exp/samples/epinette_gelee/{}.bmp"
+        "/home/magod/Documents/Encorcage/Images/1024_jedi/samples/epinette_gelee/{}.bmp"
         .format(img_number))
 
     if which_to_reduce == 'sample':
         img = sample
-        output_path = "/home/magod/Documents/Encorcage/Images/generated_exp/samples/epinette_gelee/{}.bmp".format(
+        output_path = "/home/magod/Documents/Encorcage/Images/1024_jedi/samples/epinette_gelee/{}.bmp".format(
             img_number)
     else:
         img = dual
-        output_path = "/home/magod/Documents/Encorcage/Images/generated_exp/duals/epinette_gelee/{}.png".format(
+        output_path = "/home/magod/Documents/Encorcage/Images/1024_jedi/duals/epinette_gelee/{}.png".format(
             img_number)
 
     if n_pixels_to_fix == 1:
