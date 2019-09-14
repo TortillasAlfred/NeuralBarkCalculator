@@ -79,8 +79,8 @@ def make_dual_images():
 
 
 def fine_tune_images():
-    duals_dir = "./Images/1024_jedi/duals/"
-    output_dir = "./Images/1024_jedi/duals/"
+    duals_dir = "./Images/1024_with_jedi/duals/"
+    output_dir = "./Images/1024_with_jedi/duals/"
 
     for wood_type in ["epinette_gelee", "epinette_non_gelee", "sapin"]:
         type_duals_dir = os.path.join(duals_dir, wood_type)
@@ -125,7 +125,7 @@ def adjust_images(duals_folder, samples_folder, out_folder):
 
 def test_color_jitter(root_dir):
     train_dataset = RegressionDatasetFolder(
-        os.path.join(root_dir, "Images/1024_jedi"),
+        os.path.join(root_dir, "Images/1024_with_jedi"),
         input_only_transform=Compose([
             ToPILImage(),
             ColorJitter(brightness=(0.95, 1.15), saturation=(0.8, 1.25)),
@@ -151,7 +151,7 @@ def test_color_jitter(root_dir):
 def get_loader_for_crop_batch(crop_size, batch_size, train_split, mean, std,
                               train_weights, root_dir):
     train_dataset = RegressionDatasetFolder(
-        os.path.join(root_dir, "Images/1024_jedi"),
+        os.path.join(root_dir, "Images/1024_with_jedi"),
         input_only_transform=Compose([Normalize(mean, std)]),
         transform=Compose([
             Lambda(lambda img: pad_resize(img, 1024, 1024)),
@@ -174,8 +174,8 @@ def get_loader_for_crop_batch(crop_size, batch_size, train_split, mean, std,
 
 
 def main(args):
-    raw_dataset = RegressionDatasetFolder(os.path.join(args.root_dir,
-                                                       'Images/1024_jedi'),
+    raw_dataset = RegressionDatasetFolder(os.path.join(
+        args.root_dir, 'Images/1024_with_jedi'),
                                           input_only_transform=None,
                                           transform=Compose([ToTensor()]))
     mean, std = compute_mean_std(raw_dataset)
@@ -184,7 +184,7 @@ def main(args):
     pos_weights = compute_pos_weight(raw_dataset)
     print(pos_weights)
     test_dataset = RegressionDatasetFolder(
-        os.path.join(args.root_dir, 'Images/1024_jedi'),
+        os.path.join(args.root_dir, 'Images/1024_with_jedi'),
         input_only_transform=Compose([Normalize(mean, std)]),
         transform=Compose(
             [Lambda(lambda img: pad_resize(img, 1024, 1024)),
@@ -192,7 +192,7 @@ def main(args):
         in_memory=True)
 
     valid_dataset = RegressionDatasetFolder(
-        os.path.join(args.root_dir, 'Images/1024_jedi'),
+        os.path.join(args.root_dir, 'Images/1024_with_jedi'),
         input_only_transform=Compose([Normalize(mean, std)]),
         transform=Compose([ToTensor()]),
         include_fname=True)
@@ -237,7 +237,7 @@ def main(args):
                   batches_per_step=4)
 
     pure_dataset = RegressionDatasetFolder(os.path.join(
-        args.root_dir, 'Images/1024_jedi'),
+        args.root_dir, 'Images/1024_with_jedi'),
                                            transform=Compose([ToTensor()]),
                                            include_fname=True)
 
@@ -375,19 +375,19 @@ def main(args):
 
 def fix_image(img_number, n_pixels_to_fix, which_to_reduce):
     dual = imread(
-        "/home/magod/Documents/Encorcage/Images/1024_jedi/duals/epinette_gelee/{}.png"
+        "/home/magod/Documents/Encorcage/Images/1024_with_jedi/duals/epinette_gelee/{}.png"
         .format(img_number))
     sample = imread(
-        "/home/magod/Documents/Encorcage/Images/1024_jedi/samples/epinette_gelee/{}.bmp"
+        "/home/magod/Documents/Encorcage/Images/1024_with_jedi/samples/epinette_gelee/{}.bmp"
         .format(img_number))
 
     if which_to_reduce == 'sample':
         img = sample
-        output_path = "/home/magod/Documents/Encorcage/Images/1024_jedi/samples/epinette_gelee/{}.bmp".format(
+        output_path = "/home/magod/Documents/Encorcage/Images/1024_with_jedi/samples/epinette_gelee/{}.bmp".format(
             img_number)
     else:
         img = dual
-        output_path = "/home/magod/Documents/Encorcage/Images/1024_jedi/duals/epinette_gelee/{}.png".format(
+        output_path = "/home/magod/Documents/Encorcage/Images/1024_with_jedi/duals/epinette_gelee/{}.png".format(
             img_number)
 
     if n_pixels_to_fix == 1:
