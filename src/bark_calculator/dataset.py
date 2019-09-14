@@ -74,7 +74,9 @@ def make_dataset(dir, extensions):
     return make_dataset_for_dir(dir, extensions)
 
 
-IMG_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm', '.tif', '.tiff', 'webp']
+IMG_EXTENSIONS = [
+    '.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm', '.tif', '.tiff', 'webp'
+]
 
 
 def pil_loader(path, grayscale=False):
@@ -115,6 +117,7 @@ class RegressionDatasetFolder(data.Dataset):
      Attributes:
         samples (list): List of (sample path, target path) tuples
     """
+
     def __init__(self,
                  root,
                  extensions=IMG_EXTENSIONS,
@@ -125,8 +128,10 @@ class RegressionDatasetFolder(data.Dataset):
                  in_memory=False):
         samples = make_dataset(root, extensions)
         if len(samples) == 0:
-            raise (RuntimeError("Found 0 files in subfolders of: " + root + "\n"
-                                "Supported extensions are: " + ",".join(extensions)))
+            raise (RuntimeError("Found 0 files in subfolders of: " + root +
+                                "\n"
+                                "Supported extensions are: " +
+                                ",".join(extensions)))
 
         self.root = root
         self.loader = loader
@@ -205,7 +210,12 @@ class RegressionDatasetFolder(data.Dataset):
         fmt_str += '    Number of datapoints: {}\n'.format(self.__len__())
         fmt_str += '    Root Location: {}\n'.format(self.root)
         tmp = '    Transforms (if any): '
-        fmt_str += '{0}{1}\n'.format(tmp, self.transform.__repr__().replace('\n', '\n' + ' ' * len(tmp)))
+        fmt_str += '{0}{1}\n'.format(
+            tmp,
+            self.transform.__repr__().replace('\n', '\n' + ' ' * len(tmp)))
         tmp = '    Target Transforms (if any): '
-        fmt_str += '{0}{1}'.format(tmp, self.target_transform.__repr__().replace('\n', '\n' + ' ' * len(tmp)))
+        fmt_str += '{0}{1}'.format(
+            tmp,
+            self.target_transform.__repr__().replace('\n',
+                                                     '\n' + ' ' * len(tmp)))
         return fmt_str
