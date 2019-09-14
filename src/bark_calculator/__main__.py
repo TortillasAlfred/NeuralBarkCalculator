@@ -32,7 +32,7 @@ def generate_output_folders(root_dir):
               ('outputs', ['train', 'valid', 'test'])]
 
     results_dir = os.path.join(root_dir, 'Images', 'results',
-                               'jedi_wd_4_bs_24')
+                               'jedi_wd_5_bs_24')
 
     def mkdirs_if_not_there(dir):
         if not os.path.isdir(dir):
@@ -207,7 +207,7 @@ def main(args):
     module = fcn_resnet50()
 
     optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-5)
-    exp = Experiment(directory=os.path.join(args.root_dir, 'jedi_wd_4_bs_24'),
+    exp = Experiment(directory=os.path.join(args.root_dir, 'jedi_wd_5_bs_24'),
                      module=module,
                      device=torch.device(args.device),
                      optimizer=optim,
@@ -344,7 +344,7 @@ def main(args):
             # plt.show()
             plt.savefig(os.path.join(
                 args.root_dir,
-                'Images/results/jedi_wd_4_bs_24/combined_images/{}/{}/{}').
+                'Images/results/jedi_wd_5_bs_24/combined_images/{}/{}/{}').
                         format(wood_type, split, fname),
                         format='png',
                         dpi=900)
@@ -360,13 +360,13 @@ def main(args):
             dual.save(
                 os.path.join(
                     args.root_dir,
-                    'Images/results/jedi_wd_4_bs_24/outputs/{}/{}/{}').format(
+                    'Images/results/jedi_wd_5_bs_24/outputs/{}/{}/{}').format(
                         wood_type, split, fname))
 
             results_csv.append(running_csv_stats)
 
     csv_file = os.path.join(args.root_dir, 'Images', 'results',
-                            'jedi_wd_4_bs_24', 'final_stats.csv')
+                            'jedi_wd_5_bs_24', 'final_stats.csv')
 
     with open(csv_file, 'w') as f:
         csv_writer = csv.writer(f, delimiter='\t')
