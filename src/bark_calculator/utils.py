@@ -41,8 +41,8 @@ def compute_mean_std(working_dataset):
 def get_mean_std():
     # Util function to not have to recalculate them
     # every single time
-    mean = [0.7399, 0.6139, 0.4401]
-    std = [0.1068, 0.1272, 0.1271]
+    mean = [0.7358871102333069, 0.6107082366943359, 0.4379482865333557]
+    std = [0.11245555430650711, 0.12965525686740875, 0.12750858068466187]
 
     return mean, std
 
