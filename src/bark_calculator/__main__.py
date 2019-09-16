@@ -1,6 +1,6 @@
 from dataset import RegressionDatasetFolder, pil_loader
 from utils import *
-from models import fcn_resnet50, deeplabv3_resnet50, fcn_resnet101, deeplabv3_resnet101
+from models import fcn_resnet50, deeplabv3_resnet50, fcn_resnet101, deeplabv3_resnet101, fcn_efficientnet
 from lovasz_losses import LovaszSoftmax
 
 from torchvision.transforms import *
@@ -31,8 +31,7 @@ def generate_output_folders(root_dir):
     levels = [('combined_images', ['train', 'valid', 'test']),
               ('outputs', ['train', 'valid', 'test'])]
 
-    results_dir = os.path.join(root_dir, 'Images', 'results',
-                               'nw_do_7_wd_4_lovasz')
+    results_dir = os.path.join(root_dir, 'Images', 'results', 'b0')
 
     def mkdirs_if_not_there(dir):
         if not os.path.isdir(dir):
@@ -204,11 +203,10 @@ def main(args):
                               num_workers=8,
                               pin_memory=True)
 
-    module = fcn_resnet50(dropout=0.7)
+    module = fcn_efficientnet(n=0, dropout=0.7)
 
     optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-4)
-    exp = Experiment(directory=os.path.join(args.root_dir,
-                                            'nw_do_7_wd_4_lovasz'),
+    exp = Experiment(directory=os.path.join(args.root_dir, 'b0'),
                      module=module,
                      device=torch.device(args.device),
                      optimizer=optim,
@@ -345,8 +343,8 @@ def main(args):
             # plt.show()
             plt.savefig(os.path.join(
                 args.root_dir,
-                'Images/results/nw_do_7_wd_4_lovasz/combined_images/{}/{}/{}').
-                        format(wood_type, split, fname),
+                'Images/results/b0/combined_images/{}/{}/{}').format(
+                    wood_type, split, fname),
                         format='png',
                         dpi=900)
             plt.close()
@@ -359,15 +357,14 @@ def main(args):
 
             dual = Image.fromarray(dual_outputs, mode='L')
             dual.save(
-                os.path.join(
-                    args.root_dir,
-                    'Images/results/nw_do_7_wd_4_lovasz/outputs/{}/{}/{}').
-                format(wood_type, split, fname))
+                os.path.join(args.root_dir,
+                             'Images/results/b0/outputs/{}/{}/{}').format(
+                                 wood_type, split, fname))
 
             results_csv.append(running_csv_stats)
 
-    csv_file = os.path.join(args.root_dir, 'Images', 'results',
-                            'nw_do_7_wd_4_lovasz', 'final_stats.csv')
+    csv_file = os.path.join(args.root_dir, 'Images', 'results', 'b0',
+                            'final_stats.csv')
 
     with open(csv_file, 'w') as f:
         csv_writer = csv.writer(f, delimiter='\t')

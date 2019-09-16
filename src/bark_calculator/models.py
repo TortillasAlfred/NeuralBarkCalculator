@@ -13,6 +13,7 @@ import numpy as np
 from skimage.transform import resize
 from skimage.io import imsave
 from tqdm import tqdm
+from efficientnet_pytorch import EfficientNet
 import warnings
 
 import matplotlib.pyplot as plt
@@ -66,6 +67,35 @@ def deeplabv3_resnet101():
 
     inplanes = 2048
     classifier = DeepLabHead(inplanes, 3)
+
+    return SimpleSegmentationModel(backbone, classifier)
+
+
+efficientnet_inplanes = {
+    0: 1280,
+    1: 1280,
+    2: 1408,
+    3: 1536,
+    4: 1792,
+    5: 2018,
+    6: 2304,
+    7: 2560
+}
+
+
+class EfficientNetFeatureExtractor(nn.Module):
+    def __init__(self, n):
+        self.model = EfficientNet.from_pretrained('efficientnet-b{}'.format(n))
+
+    def forward(self, input):
+        return self.model.extract_features(input)
+
+
+def fcn_efficientnet(n, dropout):
+    backbone = EfficientNetFeatureExtractor(n)
+
+    inplanes = efficientnet_inplanes[n]
+    classifier = FCNHead(inplanes, 3, dropout)
 
     return SimpleSegmentationModel(backbone, classifier)
 
