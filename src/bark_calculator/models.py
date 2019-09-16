@@ -85,6 +85,7 @@ efficientnet_inplanes = {
 
 class EfficientNetFeatureExtractor(nn.Module):
     def __init__(self, n):
+        super().__init__()
         self.model = EfficientNet.from_pretrained('efficientnet-b{}'.format(n))
 
     def forward(self, input):
