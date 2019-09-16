@@ -169,7 +169,7 @@ def get_loader_for_crop_batch(crop_size, batch_size, train_split, mean, std,
                       shuffle=True,
                       batch_size=batch_size,
                       num_workers=32,
-                      pin_memory=True)
+                      pin_memory=False)
 
 
 def main(args):
@@ -201,7 +201,7 @@ def main(args):
     valid_loader = DataLoader(Subset(test_dataset, valid_split),
                               batch_size=8,
                               num_workers=8,
-                              pin_memory=True)
+                              pin_memory=False)
 
     # module = fcn_efficientnet(n=4, dropout=0.1)
     module = fcn_resnet50()
