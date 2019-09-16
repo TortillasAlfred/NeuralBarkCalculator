@@ -204,7 +204,7 @@ def main(args):
                               num_workers=8,
                               pin_memory=False)
 
-    module = deeplabv3_efficientnet(n=2, dropout=0.1)
+    module = deeplabv3_efficientnet(n=2)
     # module = fcn_resnet50()
 
     optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-4)
