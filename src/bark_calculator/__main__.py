@@ -203,7 +203,7 @@ def main(args):
                               num_workers=8,
                               pin_memory=True)
 
-    module = fcn_efficientnet(n=0, dropout=0.7)
+    module = fcn_efficientnet(n=5, dropout=0.7)
 
     optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-4)
     exp = Experiment(directory=os.path.join(args.root_dir, 'b0'),
