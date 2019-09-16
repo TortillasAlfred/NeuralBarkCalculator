@@ -200,14 +200,14 @@ def main(args):
     train_split, valid_split, test_split, train_weights = get_splits(
         valid_dataset)
     valid_loader = DataLoader(Subset(test_dataset, valid_split),
-                              batch_size=8,
+                              batch_size=4,
                               num_workers=8,
                               pin_memory=False)
 
-    module = deeplabv3_efficientnet(n=3)
+    module = deeplabv3_efficientnet(n=5)
     # module = fcn_resnet50()
 
-    optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-4)
+    optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-7)
     exp = Experiment(directory=os.path.join(args.root_dir, 'b0'),
                      module=module,
                      device=torch.device(args.device),
