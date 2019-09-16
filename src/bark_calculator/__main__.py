@@ -31,8 +31,7 @@ def generate_output_folders(root_dir):
     levels = [('combined_images', ['train', 'valid', 'test']),
               ('outputs', ['train', 'valid', 'test'])]
 
-    results_dir = os.path.join(root_dir, 'Images', 'results',
-                               'jedi_wd_4_bs_24')
+    results_dir = os.path.join(root_dir, 'Images', 'results', 'nw_do_5_wd_5')
 
     def mkdirs_if_not_there(dir):
         if not os.path.isdir(dir):
@@ -162,14 +161,14 @@ def get_loader_for_crop_batch(crop_size, batch_size, train_split, mean, std,
         ]),
         in_memory=True)
 
-    sampler = WeightedRandomSampler(train_weights,
-                                    num_samples=24 * len(train_weights),
-                                    replacement=True)
+    # sampler = WeightedRandomSampler(train_weights,
+    #                                 num_samples=24 * len(train_weights),
+    #                                 replacement=True)
 
-    return DataLoader(Subset(train_dataset, train_split),
+    return DataLoader(Subset(train_dataset, train_split * 24),
+                      shuffle=True,
                       batch_size=batch_size,
-                      sampler=sampler,
-                      num_workers=8,
+                      num_workers=32,
                       pin_memory=False)
 
 
@@ -204,10 +203,10 @@ def main(args):
                               num_workers=8,
                               pin_memory=False)
 
-    module = fcn_resnet50()
+    module = fcn_resnet50(dropout=0.5)
 
-    optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-4)
-    exp = Experiment(directory=os.path.join(args.root_dir, 'jedi_wd_4_bs_24'),
+    optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-5)
+    exp = Experiment(directory=os.path.join(args.root_dir, 'nw_do_5_wd_5'),
                      module=module,
                      device=torch.device(args.device),
                      optimizer=optim,
@@ -344,8 +343,8 @@ def main(args):
             # plt.show()
             plt.savefig(os.path.join(
                 args.root_dir,
-                'Images/results/jedi_wd_4_bs_24/combined_images/{}/{}/{}').
-                        format(wood_type, split, fname),
+                'Images/results/nw_do_5_wd_5/combined_images/{}/{}/{}').format(
+                    wood_type, split, fname),
                         format='png',
                         dpi=900)
             plt.close()
@@ -360,13 +359,13 @@ def main(args):
             dual.save(
                 os.path.join(
                     args.root_dir,
-                    'Images/results/jedi_wd_4_bs_24/outputs/{}/{}/{}').format(
+                    'Images/results/nw_do_5_wd_5/outputs/{}/{}/{}').format(
                         wood_type, split, fname))
 
             results_csv.append(running_csv_stats)
 
-    csv_file = os.path.join(args.root_dir, 'Images', 'results',
-                            'jedi_wd_4_bs_24', 'final_stats.csv')
+    csv_file = os.path.join(args.root_dir, 'Images', 'results', 'nw_do_5_wd_5',
+                            'final_stats.csv')
 
     with open(csv_file, 'w') as f:
         csv_writer = csv.writer(f, delimiter='\t')

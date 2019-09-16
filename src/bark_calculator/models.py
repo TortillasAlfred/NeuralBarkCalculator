@@ -4,7 +4,6 @@ from dataset import RegressionDatasetFolder
 import torch
 import torch.nn as nn
 from torchvision.models.segmentation.deeplabv3 import DeepLabHead
-from torchvision.models.segmentation.fcn import FCNHead
 from torchvision.models.detection.backbone_utils import IntermediateLayerGetter
 from torchvision.models import resnet
 from torchvision.transforms import ToTensor, Normalize
@@ -71,7 +70,21 @@ def deeplabv3_resnet101():
     return SimpleSegmentationModel(backbone, classifier)
 
 
-def fcn_resnet50(pretrained=True):
+class FCNHead(nn.Sequential):
+    def __init__(self, in_channels, channels, dropout=0.1):
+        inter_channels = in_channels // 4
+        layers = [
+            nn.Conv2d(in_channels, inter_channels, 3, padding=1, bias=False),
+            nn.BatchNorm2d(inter_channels),
+            nn.ReLU(),
+            nn.Dropout(dropout),
+            nn.Conv2d(inter_channels, channels, 1)
+        ]
+
+        super(FCNHead, self).__init__(*layers)
+
+
+def fcn_resnet50(pretrained=True, dropout=0.1):
     backbone = resnet.__dict__['resnet50'](
         pretrained=pretrained,
         replace_stride_with_dilation=[False, True, True])
@@ -81,7 +94,7 @@ def fcn_resnet50(pretrained=True):
     backbone = IntermediateLayerGetter(backbone, return_layers=return_layers)
 
     inplanes = 2048
-    classifier = FCNHead(inplanes, 3)
+    classifier = FCNHead(inplanes, 3, dropout)
 
     return SimpleSegmentationModel(backbone, classifier)
 
