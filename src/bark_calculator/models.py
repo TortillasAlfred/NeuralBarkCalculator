@@ -89,7 +89,7 @@ class EfficientNetFeatureExtractor(nn.Module):
         self.model = EfficientNet.from_pretrained('efficientnet-b{}'.format(n))
 
     def forward(self, input):
-        return self.model.extract_features(input)
+        return {'out': self.model.extract_features(input), 'aux': None}
 
 
 def fcn_efficientnet(n, dropout):
