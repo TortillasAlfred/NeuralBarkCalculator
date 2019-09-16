@@ -165,7 +165,7 @@ def get_loader_for_crop_batch(crop_size, batch_size, train_split, mean, std,
     #                                 num_samples=24 * len(train_weights),
     #                                 replacement=True)
 
-    return DataLoader(Subset(train_dataset, [train_split] * 24),
+    return DataLoader(Subset(train_dataset, train_split.repeat(24)),
                       shuffle=True,
                       batch_size=batch_size,
                       num_workers=32,
