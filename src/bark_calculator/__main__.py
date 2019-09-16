@@ -31,7 +31,7 @@ def generate_output_folders(root_dir):
     levels = [('combined_images', ['train', 'valid', 'test']),
               ('outputs', ['train', 'valid', 'test'])]
 
-    results_dir = os.path.join(root_dir, 'Images', 'results', 'nw_do_5_wd_5')
+    results_dir = os.path.join(root_dir, 'Images', 'results', 'nw_do_5_wd_6')
 
     def mkdirs_if_not_there(dir):
         if not os.path.isdir(dir):
@@ -209,8 +209,8 @@ def main(args):
 
     module = fcn_resnet50(dropout=0.5)
 
-    optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-5)
-    exp = Experiment(directory=os.path.join(args.root_dir, 'nw_do_5_wd_5'),
+    optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-6)
+    exp = Experiment(directory=os.path.join(args.root_dir, 'nw_do_5_wd_6'),
                      module=module,
                      device=torch.device(args.device),
                      optimizer=optim,
@@ -347,7 +347,7 @@ def main(args):
             # plt.show()
             plt.savefig(os.path.join(
                 args.root_dir,
-                'Images/results/nw_do_5_wd_5/combined_images/{}/{}/{}').format(
+                'Images/results/nw_do_5_wd_6/combined_images/{}/{}/{}').format(
                     wood_type, split, fname),
                         format='png',
                         dpi=900)
@@ -363,12 +363,12 @@ def main(args):
             dual.save(
                 os.path.join(
                     args.root_dir,
-                    'Images/results/nw_do_5_wd_5/outputs/{}/{}/{}').format(
+                    'Images/results/nw_do_5_wd_6/outputs/{}/{}/{}').format(
                         wood_type, split, fname))
 
             results_csv.append(running_csv_stats)
 
-    csv_file = os.path.join(args.root_dir, 'Images', 'results', 'nw_do_5_wd_5',
+    csv_file = os.path.join(args.root_dir, 'Images', 'results', 'nw_do_5_wd_6',
                             'final_stats.csv')
 
     with open(csv_file, 'w') as f:
