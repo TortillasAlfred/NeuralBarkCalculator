@@ -205,8 +205,8 @@ def main(args):
                               num_workers=8,
                               pin_memory=False)
 
-    module = deeplabv3_efficientnet(n=5)
-    # module = fcn_resnet50()
+    # module = deeplabv3_efficientnet(n=5)
+    module = fcn_resnet50()
 
     optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-6)
     exp = Experiment(directory=os.path.join(args.root_dir,
@@ -227,7 +227,7 @@ def main(args):
                       mode='max')
     ]
 
-    for i, (crop_size, batch_size) in enumerate(zip([448], [12])):
+    for i, (crop_size, batch_size) in enumerate(zip([448], [32])):
         train_loader = get_loader_for_crop_batch(crop_size, batch_size,
                                                  train_split, mean, std,
                                                  train_weights, args.root_dir)
