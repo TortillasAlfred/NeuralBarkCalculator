@@ -157,7 +157,7 @@ def get_loader_for_crop_batch(crop_size, batch_size, train_split, mean, std,
             RandomCrop(crop_size),
             RandomHorizontalFlip(),
             RandomVerticalFlip(),
-            Resize(crop_size / 2),
+            Resize(crop_size // 2),
             ToTensor()
         ]),
         in_memory=True)
