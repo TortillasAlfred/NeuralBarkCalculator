@@ -225,7 +225,7 @@ def main(args):
                       mode='max')
     ]
 
-    for i, (crop_size, batch_size) in enumerate(zip([448], [6])):
+    for i, (crop_size, batch_size) in enumerate(zip([448], [18])):
         train_loader = get_loader_for_crop_batch(crop_size, batch_size,
                                                  train_split, mean, std,
                                                  train_weights, args.root_dir)
@@ -234,8 +234,7 @@ def main(args):
                   valid_loader=valid_loader,
                   epochs=(1 + i) * 150,
                   lr_schedulers=lr_schedulers,
-                  callbacks=callbacks,
-                  batches_per_step=4)
+                  callbacks=callbacks)
 
     pure_dataset = RegressionDatasetFolder(os.path.join(
         args.root_dir, 'Images/1024_with_jedi'),
