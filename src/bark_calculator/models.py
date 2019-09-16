@@ -83,6 +83,15 @@ efficientnet_inplanes = {
 }
 
 
+def deeplabv3_efficientnet(n):
+    backbone = EfficientNetFeatureExtractor(n)
+
+    inplanes = efficientnet_inplanes[n]
+    classifier = DeepLabHead(inplanes, 3)
+
+    return SimpleSegmentationModel(backbone, classifier)
+
+
 class EfficientNetFeatureExtractor(nn.Module):
     def __init__(self, n):
         super().__init__()

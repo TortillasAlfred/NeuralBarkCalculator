@@ -1,6 +1,6 @@
 from dataset import RegressionDatasetFolder, pil_loader
 from utils import *
-from models import fcn_resnet50, deeplabv3_resnet50, fcn_resnet101, deeplabv3_resnet101, fcn_efficientnet
+from models import fcn_resnet50, deeplabv3_resnet50, fcn_resnet101, deeplabv3_resnet101, fcn_efficientnet, deeplabv3_efficientnet
 from lovasz_losses import LovaszSoftmax
 
 from torchvision.transforms import *
@@ -157,6 +157,7 @@ def get_loader_for_crop_batch(crop_size, batch_size, train_split, mean, std,
             RandomCrop(crop_size),
             RandomHorizontalFlip(),
             RandomVerticalFlip(),
+            Resize(crop_size / 2),
             ToTensor()
         ]),
         in_memory=True)
@@ -203,8 +204,8 @@ def main(args):
                               num_workers=8,
                               pin_memory=False)
 
-    # module = fcn_efficientnet(n=4, dropout=0.1)
-    module = fcn_resnet50()
+    module = deeplabv3_efficientnet(n=2, dropout=0.1)
+    # module = fcn_resnet50()
 
     optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-4)
     exp = Experiment(directory=os.path.join(args.root_dir, 'b0'),
