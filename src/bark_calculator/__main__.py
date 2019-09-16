@@ -139,7 +139,7 @@ def test_color_jitter(root_dir):
     loader = DataLoader(train_dataset,
                         batch_size=1,
                         num_workers=1,
-                        pin_memory=True)
+                        pin_memory=False)
 
     for imgs in loader:
         input = imgs[0][0]
@@ -170,7 +170,7 @@ def get_loader_for_crop_batch(crop_size, batch_size, train_split, mean, std,
                       shuffle=True,
                       batch_size=batch_size,
                       num_workers=32,
-                      pin_memory=True)
+                      pin_memory=False)
 
 
 def main(args):
@@ -202,7 +202,7 @@ def main(args):
     valid_loader = DataLoader(Subset(test_dataset, valid_split),
                               batch_size=8,
                               num_workers=8,
-                              pin_memory=True)
+                              pin_memory=False)
 
     module = fcn_resnet50(dropout=0.7)
 
@@ -245,15 +245,15 @@ def main(args):
     test_loader = DataLoader(Subset(test_dataset, test_split),
                              batch_size=8,
                              num_workers=8,
-                             pin_memory=True)
+                             pin_memory=False)
     valid_loader = DataLoader(valid_dataset,
                               batch_size=1,
                               num_workers=8,
-                              pin_memory=True)
+                              pin_memory=False)
     pure_loader = DataLoader(pure_dataset,
                              batch_size=1,
                              num_workers=8,
-                             pin_memory=True)
+                             pin_memory=False)
 
     exp.test(test_loader)
 
