@@ -5,7 +5,7 @@ from lovasz_losses import LovaszSoftmax
 
 from torchvision.transforms import *
 
-from poutyne.framework import Experiment, ExponentialLR, EarlyStopping
+from poutyne.framework import Experiment, ExponentialLR, EarlyStopping, ReduceLROnPlateau
 from torch.utils.data import DataLoader, Subset, WeightedRandomSampler
 import matplotlib.pyplot as plt
 from torch.nn.modules.loss import CrossEntropyLoss
@@ -31,7 +31,8 @@ def generate_output_folders(root_dir):
     levels = [('combined_images', ['train', 'valid', 'test']),
               ('outputs', ['train', 'valid', 'test'])]
 
-    results_dir = os.path.join(root_dir, 'Images', 'results', 'nw_do_5_wd_6')
+    results_dir = os.path.join(root_dir, 'Images', 'results',
+                               'nw_do_7_wd_6_lovasz')
 
     def mkdirs_if_not_there(dir):
         if not os.path.isdir(dir):
@@ -165,7 +166,7 @@ def get_loader_for_crop_batch(crop_size, batch_size, train_split, mean, std,
     #                                 num_samples=24 * len(train_weights),
     #                                 replacement=True)
 
-    return DataLoader(Subset(train_dataset, train_split.repeat(24)),
+    return DataLoader(Subset(train_dataset, train_split.repeat(6)),
                       shuffle=True,
                       batch_size=batch_size,
                       num_workers=32,
@@ -203,23 +204,24 @@ def main(args):
                               num_workers=8,
                               pin_memory=False)
 
-    module = fcn_resnet50(dropout=0.5)
+    module = fcn_resnet50(dropout=0.7)
 
     optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-6)
-    exp = Experiment(directory=os.path.join(args.root_dir, 'nw_do_5_wd_6'),
+    exp = Experiment(directory=os.path.join(args.root_dir,
+                                            'nw_do_7_wd_6_lovasz'),
                      module=module,
                      device=torch.device(args.device),
                      optimizer=optim,
-                     loss_function=MixedLoss(pos_weights.to(args.device)),
+                     loss_function=LovaszSoftmax(),
                      metrics=[IOU(None)],
                      monitor_metric='val_IntersectionOverUnion',
                      monitor_mode='max')
 
-    lr_schedulers = [ExponentialLR(gamma=0.95)]
+    lr_schedulers = [ReduceLROnPlateau(patience=10)]
     callbacks = [
         EarlyStopping(monitor='val_IntersectionOverUnion',
                       min_delta=1e-4,
-                      patience=20,
+                      patience=15,
                       mode='max')
     ]
 
@@ -343,8 +345,8 @@ def main(args):
             # plt.show()
             plt.savefig(os.path.join(
                 args.root_dir,
-                'Images/results/nw_do_5_wd_6/combined_images/{}/{}/{}').format(
-                    wood_type, split, fname),
+                'Images/results/nw_do_7_wd_6_lovasz/combined_images/{}/{}/{}').
+                        format(wood_type, split, fname),
                         format='png',
                         dpi=900)
             plt.close()
@@ -359,13 +361,13 @@ def main(args):
             dual.save(
                 os.path.join(
                     args.root_dir,
-                    'Images/results/nw_do_5_wd_6/outputs/{}/{}/{}').format(
-                        wood_type, split, fname))
+                    'Images/results/nw_do_7_wd_6_lovasz/outputs/{}/{}/{}').
+                format(wood_type, split, fname))
 
             results_csv.append(running_csv_stats)
 
-    csv_file = os.path.join(args.root_dir, 'Images', 'results', 'nw_do_5_wd_6',
-                            'final_stats.csv')
+    csv_file = os.path.join(args.root_dir, 'Images', 'results',
+                            'nw_do_7_wd_6_lovasz', 'final_stats.csv')
 
     with open(csv_file, 'w') as f:
         csv_writer = csv.writer(f, delimiter='\t')
