@@ -31,8 +31,7 @@ def generate_output_folders(root_dir):
     levels = [('combined_images', ['train', 'valid', 'test']),
               ('outputs', ['train', 'valid', 'test'])]
 
-    results_dir = os.path.join(root_dir, 'Images', 'results',
-                               'nw_do_7_wd_4_mix_256')
+    results_dir = os.path.join(root_dir, 'Images', 'results', 'resized_exp')
 
     def mkdirs_if_not_there(dir):
         if not os.path.isdir(dir):
@@ -155,7 +154,8 @@ def get_loader_for_crop_batch(crop_size, batch_size, train_split, mean, std,
         input_only_transform=Compose([Normalize(mean, std)]),
         transform=Compose([
             Lambda(lambda img: pad_resize(img, 1024, 1024)),
-            RandomCrop(crop_size),
+            # RandomCrop(crop_size),
+            Resize(crop_size),
             RandomHorizontalFlip(),
             RandomVerticalFlip(),
             ToTensor()
@@ -186,21 +186,23 @@ def main(args):
     test_dataset = RegressionDatasetFolder(
         os.path.join(args.root_dir, 'Images/1024_with_jedi'),
         input_only_transform=Compose([Normalize(mean, std)]),
-        transform=Compose(
-            [Lambda(lambda img: pad_resize(img, 1024, 1024)),
-             ToTensor()]),
+        transform=Compose([
+            Lambda(lambda img: pad_resize(img, 1024, 1024)),
+            Resize(256),
+            ToTensor()
+        ]),
         in_memory=True)
 
     valid_dataset = RegressionDatasetFolder(
         os.path.join(args.root_dir, 'Images/1024_with_jedi'),
         input_only_transform=Compose([Normalize(mean, std)]),
-        transform=Compose([ToTensor()]),
+        transform=Compose([Resize(256), ToTensor()]),
         include_fname=True)
 
     train_split, valid_split, test_split, train_weights = get_splits(
         valid_dataset)
     valid_loader = DataLoader(Subset(test_dataset, valid_split),
-                              batch_size=8,
+                              batch_size=64,
                               num_workers=8,
                               pin_memory=False)
 
@@ -208,8 +210,7 @@ def main(args):
     module = fcn_resnet50(dropout=0.7)
 
     optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-4)
-    exp = Experiment(directory=os.path.join(args.root_dir,
-                                            'nw_do_7_wd_4_mix_256'),
+    exp = Experiment(directory=os.path.join(args.root_dir, 'resized_exp'),
                      module=module,
                      device=torch.device(args.device),
                      optimizer=optim,
@@ -238,13 +239,13 @@ def main(args):
                   callbacks=callbacks,
                   batches_per_step=1)
 
-    pure_dataset = RegressionDatasetFolder(os.path.join(
-        args.root_dir, 'Images/1024_with_jedi'),
-                                           transform=Compose([ToTensor()]),
-                                           include_fname=True)
+    pure_dataset = RegressionDatasetFolder(
+        os.path.join(args.root_dir, 'Images/1024_with_jedi'),
+        transform=Compose([Resize(256), ToTensor()]),
+        include_fname=True)
 
     test_loader = DataLoader(Subset(test_dataset, test_split),
-                             batch_size=8,
+                             batch_size=64,
                              num_workers=8,
                              pin_memory=False)
     valid_loader = DataLoader(valid_dataset,
@@ -346,8 +347,8 @@ def main(args):
             # plt.show()
             plt.savefig(os.path.join(
                 args.root_dir,
-                'Images/results/nw_do_7_wd_4_mix_256/combined_images/{}/{}/{}'
-            ).format(wood_type, split, fname),
+                'Images/results/resized_exp/combined_images/{}/{}/{}').format(
+                    wood_type, split, fname),
                         format='png',
                         dpi=900)
             plt.close()
@@ -362,13 +363,13 @@ def main(args):
             dual.save(
                 os.path.join(
                     args.root_dir,
-                    'Images/results/nw_do_7_wd_4_mix_256/outputs/{}/{}/{}').
-                format(wood_type, split, fname))
+                    'Images/results/resized_exp/outputs/{}/{}/{}').format(
+                        wood_type, split, fname))
 
             results_csv.append(running_csv_stats)
 
-    csv_file = os.path.join(args.root_dir, 'Images', 'results',
-                            'nw_do_7_wd_4_mix_256', 'final_stats.csv')
+    csv_file = os.path.join(args.root_dir, 'Images', 'results', 'resized_exp',
+                            'final_stats.csv')
 
     with open(csv_file, 'w') as f:
         csv_writer = csv.writer(f, delimiter='\t')
