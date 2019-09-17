@@ -206,7 +206,7 @@ def main(args):
 
     # module = deeplabv3_efficientnet(n=5)
     # module = fcn_resnet50(dropout=0.7)
-    module = fcn_efficientnet(n=3, dropout=0.1)
+    module = fcn_efficientnet(n=2, dropout=0.1)
 
     optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-6)
     exp = Experiment(directory=os.path.join(args.root_dir,
