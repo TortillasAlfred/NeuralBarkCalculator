@@ -32,7 +32,7 @@ def generate_output_folders(root_dir):
               ('outputs', ['train', 'valid', 'test'])]
 
     results_dir = os.path.join(root_dir, 'Images', 'results',
-                               'w_do_4_wd_4_lovasz')
+                               'nw_do_7_wd_4_mix_256')
 
     def mkdirs_if_not_there(dir):
         if not os.path.isdir(dir):
@@ -162,12 +162,12 @@ def get_loader_for_crop_batch(crop_size, batch_size, train_split, mean, std,
         ]),
         in_memory=True)
 
-    sampler = WeightedRandomSampler(train_weights,
-                                    num_samples=6 * len(train_weights),
-                                    replacement=True)
+    # sampler = WeightedRandomSampler(train_weights,
+    #                                 num_samples=6 * len(train_weights),
+    #                                 replacement=True)
 
-    return DataLoader(Subset(train_dataset, train_split),
-                      sampler=sampler,
+    return DataLoader(Subset(train_dataset, train_split.repeat(6)),
+                      shuffle=True,
                       batch_size=batch_size,
                       num_workers=32,
                       pin_memory=False)
@@ -205,15 +205,15 @@ def main(args):
                               pin_memory=False)
 
     # module = deeplabv3_efficientnet(n=5)
-    module = fcn_resnet50(dropout=0.4)
+    module = fcn_resnet50(dropout=0.7)
 
     optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-4)
     exp = Experiment(directory=os.path.join(args.root_dir,
-                                            'w_do_4_wd_4_lovasz'),
+                                            'nw_do_7_wd_4_mix_256'),
                      module=module,
                      device=torch.device(args.device),
                      optimizer=optim,
-                     loss_function=LovaszSoftmax(),
+                     loss_function=MixedLoss(pos_weights.to(args.device)),
                      metrics=[IOU(None)],
                      monitor_metric='val_IntersectionOverUnion',
                      monitor_mode='max')
@@ -221,12 +221,12 @@ def main(args):
     lr_schedulers = [ReduceLROnPlateau(patience=10)]
     callbacks = [
         EarlyStopping(monitor='val_IntersectionOverUnion',
-                      min_delta=1e-4,
+                      min_delta=1e-3,
                       patience=15,
                       mode='max')
     ]
 
-    for i, (crop_size, batch_size) in enumerate(zip([512], [5])):
+    for i, (crop_size, batch_size) in enumerate(zip([256], [32])):
         train_loader = get_loader_for_crop_batch(crop_size, batch_size,
                                                  train_split, mean, std,
                                                  train_weights, args.root_dir)
@@ -236,7 +236,7 @@ def main(args):
                   epochs=(1 + i) * 150,
                   lr_schedulers=lr_schedulers,
                   callbacks=callbacks,
-                  batches_per_step=5)
+                  batches_per_step=1)
 
     pure_dataset = RegressionDatasetFolder(os.path.join(
         args.root_dir, 'Images/1024_with_jedi'),
@@ -346,8 +346,8 @@ def main(args):
             # plt.show()
             plt.savefig(os.path.join(
                 args.root_dir,
-                'Images/results/w_do_4_wd_4_lovasz/combined_images/{}/{}/{}').
-                        format(wood_type, split, fname),
+                'Images/results/nw_do_7_wd_4_mix_256/combined_images/{}/{}/{}'
+            ).format(wood_type, split, fname),
                         format='png',
                         dpi=900)
             plt.close()
@@ -362,13 +362,13 @@ def main(args):
             dual.save(
                 os.path.join(
                     args.root_dir,
-                    'Images/results/w_do_4_wd_4_lovasz/outputs/{}/{}/{}').
+                    'Images/results/nw_do_7_wd_4_mix_256/outputs/{}/{}/{}').
                 format(wood_type, split, fname))
 
             results_csv.append(running_csv_stats)
 
     csv_file = os.path.join(args.root_dir, 'Images', 'results',
-                            'w_do_4_wd_4_lovasz', 'final_stats.csv')
+                            'nw_do_7_wd_4_mix_256', 'final_stats.csv')
 
     with open(csv_file, 'w') as f:
         csv_writer = csv.writer(f, delimiter='\t')
