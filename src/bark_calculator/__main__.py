@@ -206,7 +206,7 @@ def main(args):
 
     # module = deeplabv3_efficientnet(n=5)
     # module = fcn_resnet50(dropout=0.7)
-    module = fcn_efficientnet(n=0, dropout=0.7)
+    module = fcn_efficientnet(n=3, dropout=0.1)
 
     optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-6)
     exp = Experiment(directory=os.path.join(args.root_dir,
@@ -227,7 +227,7 @@ def main(args):
                       mode='max')
     ]
 
-    for i, (crop_size, batch_size) in enumerate(zip([512], [10])):
+    for i, (crop_size, batch_size) in enumerate(zip([512], [6])):
         train_loader = get_loader_for_crop_batch(crop_size, batch_size,
                                                  train_split, mean, std,
                                                  train_weights, args.root_dir)
@@ -237,7 +237,7 @@ def main(args):
                   epochs=(1 + i) * 150,
                   lr_schedulers=lr_schedulers,
                   callbacks=callbacks,
-                  batches_per_step=3)
+                  batches_per_step=5)
 
     pure_dataset = RegressionDatasetFolder(os.path.join(
         args.root_dir, 'Images/1024_with_jedi'),
