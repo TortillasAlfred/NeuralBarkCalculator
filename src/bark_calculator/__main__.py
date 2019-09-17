@@ -32,7 +32,7 @@ def generate_output_folders(root_dir):
               ('outputs', ['train', 'valid', 'test'])]
 
     results_dir = os.path.join(root_dir, 'Images', 'results',
-                               'w_do_7_wd_6_lovasz_b5')
+                               'w_do_4_wd_4_lovasz')
 
     def mkdirs_if_not_there(dir):
         if not os.path.isdir(dir):
@@ -158,7 +158,6 @@ def get_loader_for_crop_batch(crop_size, batch_size, train_split, mean, std,
             RandomCrop(crop_size),
             RandomHorizontalFlip(),
             RandomVerticalFlip(),
-            Resize(crop_size // 2),
             ToTensor()
         ]),
         in_memory=True)
@@ -206,12 +205,11 @@ def main(args):
                               pin_memory=False)
 
     # module = deeplabv3_efficientnet(n=5)
-    # module = fcn_resnet50(dropout=0.7)
-    module = fcn_efficientnet(n=5, dropout=0.1)
+    module = fcn_resnet50(dropout=0.4)
 
-    optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-6)
+    optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-4)
     exp = Experiment(directory=os.path.join(args.root_dir,
-                                            'w_do_7_wd_6_lovasz_b5'),
+                                            'w_do_4_wd_4_lovasz'),
                      module=module,
                      device=torch.device(args.device),
                      optimizer=optim,
@@ -228,7 +226,7 @@ def main(args):
                       mode='max')
     ]
 
-    for i, (crop_size, batch_size) in enumerate(zip([512], [10])):
+    for i, (crop_size, batch_size) in enumerate(zip([512], [5])):
         train_loader = get_loader_for_crop_batch(crop_size, batch_size,
                                                  train_split, mean, std,
                                                  train_weights, args.root_dir)
@@ -238,7 +236,7 @@ def main(args):
                   epochs=(1 + i) * 150,
                   lr_schedulers=lr_schedulers,
                   callbacks=callbacks,
-                  batches_per_step=3)
+                  batches_per_step=5)
 
     pure_dataset = RegressionDatasetFolder(os.path.join(
         args.root_dir, 'Images/1024_with_jedi'),
@@ -348,8 +346,8 @@ def main(args):
             # plt.show()
             plt.savefig(os.path.join(
                 args.root_dir,
-                'Images/results/w_do_7_wd_6_lovasz_b5/combined_images/{}/{}/{}'
-            ).format(wood_type, split, fname),
+                'Images/results/w_do_4_wd_4_lovasz/combined_images/{}/{}/{}').
+                        format(wood_type, split, fname),
                         format='png',
                         dpi=900)
             plt.close()
@@ -364,13 +362,13 @@ def main(args):
             dual.save(
                 os.path.join(
                     args.root_dir,
-                    'Images/results/w_do_7_wd_6_lovasz_b5/outputs/{}/{}/{}').
+                    'Images/results/w_do_4_wd_4_lovasz/outputs/{}/{}/{}').
                 format(wood_type, split, fname))
 
             results_csv.append(running_csv_stats)
 
     csv_file = os.path.join(args.root_dir, 'Images', 'results',
-                            'w_do_7_wd_6_lovasz_b5', 'final_stats.csv')
+                            'w_do_4_wd_4_lovasz', 'final_stats.csv')
 
     with open(csv_file, 'w') as f:
         csv_writer = csv.writer(f, delimiter='\t')
