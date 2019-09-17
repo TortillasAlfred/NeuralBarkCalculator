@@ -174,10 +174,10 @@ def get_loader_for_crop_batch(crop_size, batch_size, train_split, mean, std,
 
 
 def main(args):
-    raw_dataset = RegressionDatasetFolder(os.path.join(
-        args.root_dir, 'Images/1024_with_jedi'),
-                                          input_only_transform=None,
-                                          transform=Compose([ToTensor()]))
+    raw_dataset = RegressionDatasetFolder(
+        os.path.join(args.root_dir, 'Images/1024_with_jedi'),
+        input_only_transform=None,
+        transform=Compose([Resize(256), ToTensor()]))
     mean, std = compute_mean_std(raw_dataset)
     print(mean)
     print(std)
@@ -214,7 +214,7 @@ def main(args):
                      module=module,
                      device=torch.device(args.device),
                      optimizer=optim,
-                     loss_function=MixedLoss(pos_weights.to(args.device)),
+                     loss_function=LovaszSoftmax(),
                      metrics=[IOU(None)],
                      monitor_metric='val_IntersectionOverUnion',
                      monitor_mode='max')
