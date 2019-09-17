@@ -31,7 +31,8 @@ def generate_output_folders(root_dir):
     levels = [('combined_images', ['train', 'valid', 'test']),
               ('outputs', ['train', 'valid', 'test'])]
 
-    results_dir = os.path.join(root_dir, 'Images', 'results', 'full_size')
+    results_dir = os.path.join(root_dir, 'Images', 'results',
+                               'w_do_7_wd_6_lovasz')
 
     def mkdirs_if_not_there(dir):
         if not os.path.isdir(dir):
@@ -161,12 +162,12 @@ def get_loader_for_crop_batch(crop_size, batch_size, train_split, mean, std,
         ]),
         in_memory=True)
 
-    # sampler = WeightedRandomSampler(train_weights,
-    #                                 num_samples=6 * len(train_weights),
-    #                                 replacement=True)
+    sampler = WeightedRandomSampler(train_weights,
+                                    num_samples=6 * len(train_weights),
+                                    replacement=True)
 
-    return DataLoader(Subset(train_dataset, train_split.repeat(6)),
-                      shuffle=True,
+    return DataLoader(Subset(train_dataset, train_split),
+                      sampler=sampler,
                       batch_size=batch_size,
                       num_workers=32,
                       pin_memory=False)
@@ -204,10 +205,11 @@ def main(args):
                               pin_memory=False)
 
     # module = deeplabv3_efficientnet(n=5)
-    module = fcn_resnet50(dropout=0.7)
+    module = fcn_resnet50()
 
-    optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-4)
-    exp = Experiment(directory=os.path.join(args.root_dir, 'full_size'),
+    optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-6)
+    exp = Experiment(directory=os.path.join(args.root_dir,
+                                            'w_do_7_wd_6_lovasz'),
                      module=module,
                      device=torch.device(args.device),
                      optimizer=optim,
@@ -224,7 +226,7 @@ def main(args):
                       mode='max')
     ]
 
-    for i, (crop_size, batch_size) in enumerate(zip([1024], [1])):
+    for i, (crop_size, batch_size) in enumerate(zip([512], [5])):
         train_loader = get_loader_for_crop_batch(crop_size, batch_size,
                                                  train_split, mean, std,
                                                  train_weights, args.root_dir)
@@ -233,8 +235,7 @@ def main(args):
                   valid_loader=valid_loader,
                   epochs=(1 + i) * 150,
                   lr_schedulers=lr_schedulers,
-                  callbacks=callbacks,
-                  batches_per_step=12)
+                  callbacks=callbacks)
 
     pure_dataset = RegressionDatasetFolder(os.path.join(
         args.root_dir, 'Images/1024_with_jedi'),
@@ -344,8 +345,8 @@ def main(args):
             # plt.show()
             plt.savefig(os.path.join(
                 args.root_dir,
-                'Images/results/full_size/combined_images/{}/{}/{}').format(
-                    wood_type, split, fname),
+                'Images/results/w_do_7_wd_6_lovasz/combined_images/{}/{}/{}').
+                        format(wood_type, split, fname),
                         format='png',
                         dpi=900)
             plt.close()
@@ -360,13 +361,13 @@ def main(args):
             dual.save(
                 os.path.join(
                     args.root_dir,
-                    'Images/results/full_size/outputs/{}/{}/{}').format(
-                        wood_type, split, fname))
+                    'Images/results/w_do_7_wd_6_lovasz/outputs/{}/{}/{}').
+                format(wood_type, split, fname))
 
             results_csv.append(running_csv_stats)
 
-    csv_file = os.path.join(args.root_dir, 'Images', 'results', 'full_size',
-                            'final_stats.csv')
+    csv_file = os.path.join(args.root_dir, 'Images', 'results',
+                            'w_do_7_wd_6_lovasz', 'final_stats.csv')
 
     with open(csv_file, 'w') as f:
         csv_writer = csv.writer(f, delimiter='\t')
