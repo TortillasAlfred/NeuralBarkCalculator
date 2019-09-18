@@ -210,9 +210,9 @@ def main(args):
                               pin_memory=False)
 
     # module = deeplabv3_efficientnet(n=5)
-    module = fcn_resnet50()
+    module = fcn_resnet50(dropout=0.5)
 
-    optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-6)
+    optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-4)
     exp = Experiment(directory=os.path.join(args.root_dir, 'prioritized'),
                      module=module,
                      device=torch.device(args.device),
@@ -240,7 +240,7 @@ def main(args):
 
         exp.train(train_loader=train_loader,
                   valid_loader=valid_loader,
-                  epochs=(1 + i) * 150,
+                  epochs=(1 + i) * 50,
                   lr_schedulers=lr_schedulers,
                   callbacks=callbacks + [update_callback])
 
