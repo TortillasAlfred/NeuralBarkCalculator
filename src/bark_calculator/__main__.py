@@ -165,7 +165,7 @@ def get_loader_for_crop_batch(crop_size, batch_size, train_split, mean, std,
     #                                 num_samples=6 * len(train_weights),
     #                                 replacement=True)
 
-    sampler = PrioritizedBatchSampler(num_samples=len(train_weights),
+    sampler = PrioritizedBatchSampler(num_samples=5 * len(train_weights),
                                       batch_size=batch_size,
                                       drop_last=True,
                                       update_callback=callback,

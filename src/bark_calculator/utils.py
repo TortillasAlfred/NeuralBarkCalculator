@@ -393,3 +393,7 @@ class PrioritizedBatchSamplerUpdate(Callback):
         metric_value = torch.ones_like(n_visits) * metric_value
         self.weights[self.running_batch_idxs] = weights * (
             n_visits - 1) / n_visits + metric_value / n_visits
+
+    def on_epoch_end(self, epoch, logs):
+        print(self.num_visited)
+        print(self.weights)
