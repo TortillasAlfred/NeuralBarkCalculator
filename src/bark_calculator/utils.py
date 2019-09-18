@@ -168,11 +168,11 @@ class JaccardLoss(nn.Module):
 class MixedLoss(nn.Module):
     def __init__(self, cwe_weights):
         super(MixedLoss, self).__init__()
-        self.cwe = CustomWeightedCrossEntropy(cwe_weights)
+        self.ce = CrossEntropyLoss()
         self.lovasz = LovaszSoftmax()
 
     def forward(self, predict, true):
-        return self.cwe(predict, true) + self.lovasz(predict, true)
+        return self.ce(predict, true) + self.lovasz(predict, true)
 
 
 def make_training_deterministic(seed):
