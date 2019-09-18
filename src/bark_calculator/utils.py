@@ -5,6 +5,7 @@ from lovasz_losses import LovaszSoftmax
 from torchvision.transforms import Compose, Resize, ToTensor, ToPILImage, Lambda
 from torchvision.transforms.functional import pad, resize
 from torch.utils.data import DataLoader, SubsetRandomSampler
+from torch.utils.data.sampler import Sampler, BatchSampler, WeightedRandomSampler
 from torch.nn import CrossEntropyLoss
 from skimage.morphology import remove_small_objects, remove_small_holes
 from poutyne.framework.callbacks import Callback
@@ -332,3 +333,63 @@ class NormColorJitter(object):
         format_string += ', contrast={0}'.format(self.contrast)
         format_string += ', saturation={0}'.format(self.saturation)
         return format_string
+
+
+class PrioritizedBatchSampler(BatchSampler):
+    def __init__(self,
+                 num_samples,
+                 batch_size,
+                 drop_last,
+                 update_callback,
+                 replacement=True):
+        self.num_samples = num_samples
+        weighted_sampler = WeightedRandomSampler(torch.ones(num_samples),
+                                                 num_samples, replacement)
+        self.sampler = BatchSampler(weighted_sampler, batch_size, drop_last)
+        self.update_callback = update_callback
+        self.update_callback.connect_sampler(self)
+
+    def __iter__(self):
+        for batch_idxs in self.sampler:
+            self.update_callback.collect_batch(batch_idxs)
+
+            yield batch_idxs
+
+    def __len__(self):
+        return len(self.sampler)
+
+
+class PrioritizedBatchSamplerUpdate(Callback):
+    def __init__(self, metric, metric_mode):
+        super().__init__()
+        if metric_mode not in ['min', 'max']:
+            raise AttributeError("metric_mode has to be either 'min' or 'max'")
+        self.metric = metric
+        self.metric_mode = metric_mode
+        self.sampler = None
+        self.num_samples = None
+        self.running_batch_idxs = None
+        self.num_visited = None
+        self.weights = None
+
+    def on_train_begin(self, logs):
+        self.num_visited = torch.zeros(self.num_samples, dtype=torch.float64)
+
+    def connect_sampler(self, sampler):
+        self.sampler = sampler
+        self.num_samples = sampler.num_samples
+        self.weights = sampler.sampler.sampler.weights
+
+    def collect_batch(self, batch_idxs):
+        self.running_batch_idxs = batch_idxs
+
+    def on_batch_end(self, batch, logs):
+        self.num_visited[self.running_batch_idxs] += 1
+        n_visits = self.num_visited[self.running_batch_idxs]
+        weights = self.weights[self.running_batch_idxs]
+        metric_value = logs[self.metric]
+        if self.metric_mode == 'min':
+            metric_value = 1 - metric_value
+        metric_value = torch.ones_like(n_visits) * metric_value
+        self.weights[self.running_batch_idxs] = weights * (
+            n_visits - 1) / n_visits + metric_value / n_visits

@@ -148,7 +148,7 @@ def test_color_jitter(root_dir):
 
 
 def get_loader_for_crop_batch(crop_size, batch_size, train_split, mean, std,
-                              train_weights, root_dir):
+                              train_weights, root_dir, callback):
     train_dataset = RegressionDatasetFolder(
         os.path.join(root_dir, "Images/1024_with_jedi"),
         input_only_transform=Compose([Normalize(mean, std)]),
@@ -161,13 +161,19 @@ def get_loader_for_crop_batch(crop_size, batch_size, train_split, mean, std,
         ]),
         in_memory=True)
 
-    sampler = WeightedRandomSampler(train_weights,
-                                    num_samples=6 * len(train_weights),
-                                    replacement=True)
+    # sampler = WeightedRandomSampler(train_weights,
+    #                                 num_samples=6 * len(train_weights),
+    #                                 replacement=True)
+
+    sampler = PrioritizedBatchSampler(num_samples=len(train_weights),
+                                      batch_size=batch_size,
+                                      drop_last=True,
+                                      update_callback=callback,
+                                      replacement=True)
 
     return DataLoader(Subset(train_dataset, train_split),
-                      sampler=sampler,
-                      batch_size=batch_size,
+                      batch_sampler=sampler,
+                      num_workers=8,
                       pin_memory=False)
 
 
@@ -224,15 +230,18 @@ def main(args):
     ]
 
     for i, (crop_size, batch_size) in enumerate(zip([512], [5])):
+        update_callback = PrioritizedBatchSamplerUpdate(
+            metric='IntersectionOverUnion', metric_mode='min')
         train_loader = get_loader_for_crop_batch(crop_size, batch_size,
                                                  train_split, mean, std,
-                                                 train_weights, args.root_dir)
+                                                 train_weights, args.root_dir,
+                                                 update_callback)
 
         exp.train(train_loader=train_loader,
                   valid_loader=valid_loader,
                   epochs=(1 + i) * 150,
                   lr_schedulers=lr_schedulers,
-                  callbacks=callbacks)
+                  callbacks=callbacks + [update_callback])
 
     pure_dataset = RegressionDatasetFolder(os.path.join(
         args.root_dir, 'Images/1024_with_jedi'),
