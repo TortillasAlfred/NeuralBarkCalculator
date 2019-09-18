@@ -344,7 +344,7 @@ class PrioritizedBatchSampler(BatchSampler):
                  update_callback,
                  replacement=True):
         self.num_items = num_items
-        weighted_sampler = WeightedRandomSampler(torch.ones(num_samples),
+        weighted_sampler = WeightedRandomSampler(torch.ones(num_items),
                                                  num_samples, replacement)
         self.sampler = BatchSampler(weighted_sampler, batch_size, drop_last)
         self.update_callback = update_callback
