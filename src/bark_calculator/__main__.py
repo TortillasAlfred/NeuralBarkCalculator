@@ -168,7 +168,6 @@ def get_loader_for_crop_batch(crop_size, batch_size, train_split, mean, std,
     return DataLoader(Subset(train_dataset, train_split),
                       sampler=sampler,
                       batch_size=batch_size,
-                      num_workers=32,
                       pin_memory=False)
 
 
