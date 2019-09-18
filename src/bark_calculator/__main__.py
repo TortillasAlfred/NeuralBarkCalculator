@@ -243,6 +243,8 @@ def main(args):
                   lr_schedulers=lr_schedulers,
                   callbacks=callbacks + [update_callback])
 
+    print(update_callback.num_visited)
+
     pure_dataset = RegressionDatasetFolder(os.path.join(
         args.root_dir, 'Images/1024_with_jedi'),
                                            transform=Compose([ToTensor()]),
