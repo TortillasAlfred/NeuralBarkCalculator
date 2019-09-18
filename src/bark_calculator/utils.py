@@ -338,11 +338,12 @@ class NormColorJitter(object):
 class PrioritizedBatchSampler(BatchSampler):
     def __init__(self,
                  num_samples,
+                 num_items,
                  batch_size,
                  drop_last,
                  update_callback,
                  replacement=True):
-        self.num_samples = num_samples
+        self.num_items = num_items
         weighted_sampler = WeightedRandomSampler(torch.ones(num_samples),
                                                  num_samples, replacement)
         self.sampler = BatchSampler(weighted_sampler, batch_size, drop_last)
@@ -367,17 +368,17 @@ class PrioritizedBatchSamplerUpdate(Callback):
         self.metric = metric
         self.metric_mode = metric_mode
         self.sampler = None
-        self.num_samples = None
+        self.num_items = None
         self.running_batch_idxs = None
         self.num_visited = None
         self.weights = None
 
     def on_train_begin(self, logs):
-        self.num_visited = torch.zeros(self.num_samples, dtype=torch.float64)
+        self.num_visited = torch.zeros(self.num_items, dtype=torch.float64)
 
     def connect_sampler(self, sampler):
         self.sampler = sampler
-        self.num_samples = sampler.num_samples
+        self.num_items = sampler.num_items
         self.weights = sampler.sampler.sampler.weights
 
     def collect_batch(self, batch_idxs):
