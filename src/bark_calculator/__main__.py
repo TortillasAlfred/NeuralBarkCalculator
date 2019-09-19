@@ -31,7 +31,7 @@ def generate_output_folders(root_dir):
     levels = [('combined_images', ['train', 'valid', 'test']),
               ('outputs', ['train', 'valid', 'test'])]
 
-    results_dir = os.path.join(root_dir, 'Images', 'results', 'prioritized')
+    results_dir = os.path.join(root_dir, 'Images', 'results', '448_exp')
 
     def mkdirs_if_not_there(dir):
         if not os.path.isdir(dir):
@@ -213,7 +213,7 @@ def main(args):
     module = fcn_resnet50(dropout=0.2)
 
     optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-4)
-    exp = Experiment(directory=os.path.join(args.root_dir, 'prioritized'),
+    exp = Experiment(directory=os.path.join(args.root_dir, '448_exp'),
                      module=module,
                      device=torch.device(args.device),
                      optimizer=optim,
@@ -230,7 +230,7 @@ def main(args):
                       mode='max')
     ]
 
-    for i, (crop_size, batch_size) in enumerate(zip([512], [5])):
+    for i, (crop_size, batch_size) in enumerate(zip([448], [5])):
         update_callback = PrioritizedBatchSamplerUpdate(
             metric='IntersectionOverUnion', metric_mode='min')
         train_loader = get_loader_for_crop_batch(crop_size, batch_size,
@@ -355,7 +355,7 @@ def main(args):
             # plt.show()
             plt.savefig(os.path.join(
                 args.root_dir,
-                'Images/results/prioritized/combined_images/{}/{}/{}').format(
+                'Images/results/448_exp/combined_images/{}/{}/{}').format(
                     wood_type, split, fname),
                         format='png',
                         dpi=900)
@@ -369,14 +369,13 @@ def main(args):
 
             dual = Image.fromarray(dual_outputs, mode='L')
             dual.save(
-                os.path.join(
-                    args.root_dir,
-                    'Images/results/prioritized/outputs/{}/{}/{}').format(
-                        wood_type, split, fname))
+                os.path.join(args.root_dir,
+                             'Images/results/448_exp/outputs/{}/{}/{}').format(
+                                 wood_type, split, fname))
 
             results_csv.append(running_csv_stats)
 
-    csv_file = os.path.join(args.root_dir, 'Images', 'results', 'prioritized',
+    csv_file = os.path.join(args.root_dir, 'Images', 'results', '448_exp',
                             'final_stats.csv')
 
     with open(csv_file, 'w') as f:
