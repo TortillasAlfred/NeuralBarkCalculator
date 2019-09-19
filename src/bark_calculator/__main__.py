@@ -31,8 +31,7 @@ def generate_output_folders(root_dir):
     levels = [('combined_images', ['train', 'valid', 'test']),
               ('outputs', ['train', 'valid', 'test'])]
 
-    results_dir = os.path.join(root_dir, 'Images', 'results',
-                               'w_do_7_wd_6_lovasz')
+    results_dir = os.path.join(root_dir, 'Images', 'results', 'prioritized')
 
     def mkdirs_if_not_there(dir):
         if not os.path.isdir(dir):
@@ -213,9 +212,8 @@ def main(args):
     # module = deeplabv3_efficientnet(n=5)
     module = fcn_resnet50(dropout=0.2)
 
-    optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-6)
-    exp = Experiment(directory=os.path.join(args.root_dir,
-                                            'w_do_7_wd_6_lovasz'),
+    optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-4)
+    exp = Experiment(directory=os.path.join(args.root_dir, 'prioritized'),
                      module=module,
                      device=torch.device(args.device),
                      optimizer=optim,
@@ -356,8 +354,8 @@ def main(args):
             # plt.show()
             plt.savefig(os.path.join(
                 args.root_dir,
-                'Images/results/w_do_7_wd_6_lovasz/combined_images/{}/{}/{}').
-                        format(wood_type, split, fname),
+                'Images/results/prioritized/combined_images/{}/{}/{}').format(
+                    wood_type, split, fname),
                         format='png',
                         dpi=900)
             plt.close()
@@ -372,13 +370,13 @@ def main(args):
             dual.save(
                 os.path.join(
                     args.root_dir,
-                    'Images/results/w_do_7_wd_6_lovasz/outputs/{}/{}/{}').
-                format(wood_type, split, fname))
+                    'Images/results/prioritized/outputs/{}/{}/{}').format(
+                        wood_type, split, fname))
 
             results_csv.append(running_csv_stats)
 
-    csv_file = os.path.join(args.root_dir, 'Images', 'results',
-                            'w_do_7_wd_6_lovasz', 'final_stats.csv')
+    csv_file = os.path.join(args.root_dir, 'Images', 'results', 'prioritized',
+                            'final_stats.csv')
 
     with open(csv_file, 'w') as f:
         csv_writer = csv.writer(f, delimiter='\t')
