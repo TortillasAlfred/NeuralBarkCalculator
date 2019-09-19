@@ -141,6 +141,8 @@ class RegressionDatasetFolder(data.Dataset):
         self.include_fname = include_fname
         self.in_memory = in_memory
 
+        self.filenames = samples
+
         if self.in_memory:
             self.samples = self.put_samples_in_memory(samples)
         else:
@@ -205,17 +207,6 @@ class RegressionDatasetFolder(data.Dataset):
     def __len__(self):
         return len(self.samples)
 
-    def __repr__(self):
-        fmt_str = 'Dataset ' + self.__class__.__name__ + '\n'
-        fmt_str += '    Number of datapoints: {}\n'.format(self.__len__())
-        fmt_str += '    Root Location: {}\n'.format(self.root)
-        tmp = '    Transforms (if any): '
-        fmt_str += '{0}{1}\n'.format(
-            tmp,
-            self.transform.__repr__().replace('\n', '\n' + ' ' * len(tmp)))
-        tmp = '    Target Transforms (if any): '
-        fmt_str += '{0}{1}'.format(
-            tmp,
-            self.target_transform.__repr__().replace('\n',
-                                                     '\n' + ' ' * len(tmp)))
-        return fmt_str
+    def print_filenames(self):
+        for idx, filename in enumerate(self.filenames):
+            print("{}: {}".format(idx, filename[2]))
