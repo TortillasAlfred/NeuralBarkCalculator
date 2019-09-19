@@ -165,7 +165,7 @@ def get_loader_for_crop_batch(crop_size, batch_size, train_split, mean, std,
     #                                 num_samples=6 * len(train_weights),
     #                                 replacement=True)
 
-    sampler = PrioritizedBatchSampler(num_samples=5 * len(train_weights),
+    sampler = PrioritizedBatchSampler(num_samples=24 * len(train_weights),
                                       num_items=len(train_weights),
                                       batch_size=batch_size,
                                       drop_last=True,
@@ -210,7 +210,7 @@ def main(args):
                               pin_memory=False)
 
     # module = deeplabv3_efficientnet(n=5)
-    module = fcn_resnet50(dropout=0.2)
+    module = fcn_resnet50(dropout=0.7)
 
     optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-4)
     exp = Experiment(directory=os.path.join(args.root_dir, '448_exp'),
@@ -230,7 +230,7 @@ def main(args):
                       mode='max')
     ]
 
-    for i, (crop_size, batch_size) in enumerate(zip([448], [5])):
+    for i, (crop_size, batch_size) in enumerate(zip([512], [5])):
         update_callback = PrioritizedBatchSamplerUpdate(
             metric='IntersectionOverUnion', metric_mode='min')
         train_loader = get_loader_for_crop_batch(crop_size, batch_size,
@@ -242,8 +242,7 @@ def main(args):
                   valid_loader=valid_loader,
                   epochs=(1 + i) * 100,
                   lr_schedulers=lr_schedulers,
-                  callbacks=callbacks + [update_callback],
-                  batches_per_step=6)
+                  callbacks=callbacks + [update_callback])
 
     raw_dataset.print_filenames()
 
