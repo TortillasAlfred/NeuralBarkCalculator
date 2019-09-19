@@ -395,6 +395,46 @@ class PrioritizedBatchSamplerUpdate(Callback):
         self.weights[self.running_batch_idxs] = weights * (
             n_visits - 1) / n_visits + metric_value / n_visits
 
-    def on_epoch_end(self, epoch, logs):
-        print(self.num_visited)
-        print(self.weights)
+    def on_train_end(self, logs):
+        print("\n*** Prioritized sampler stats ***")
+        most_visits, most_visited_idx = [
+            i.item() for i in self.num_visited.max(0)
+        ]
+        most_visited_final_weight = self.weights[most_visited_idx]
+        print(
+            "Most visited image was visited {} times. It was example number {} and its final weight was {}."
+            .format(most_visits, most_visited_idx, most_visited_final_weight))
+
+        least_visits, least_visited_idx = [
+            i.item() for i in self.num_visited.min(0)
+        ]
+        least_visited_final_weight = self.weights[least_visited_idx]
+        print(
+            "Least visited image was visited {} times. It was example number {} and its final weight was {}."
+            .format(least_visits, least_visited_idx,
+                    least_visited_final_weight))
+
+        avg_visits = self.num_visited.mean().item()
+        print(
+            "The average number of visits was of {} times.".format(avg_visits))
+
+        biggest_weight, biggest_weight_idx = [
+            i.item() for i in self.weights.max(0)
+        ]
+        biggest_weight_n_vists = self.num_visited[biggest_weight_idx]
+        print(
+            "The biggest final weight was {}. It was example number {} and it was visited {} times."
+            .format(biggest_weight, biggest_weight_idx,
+                    biggest_weight_n_vists))
+
+        smallest_weight, smallest_weight_idx = [
+            i.item() for i in self.weights.min(0)
+        ]
+        smallest_weight_n_visits = self.num_visited[smallest_weight_idx]
+        print(
+            "The smallest final weight was {}. It was example number {} and it was visited {} times."
+            .format(smallest_weight, smallest_weight_idx,
+                    smallest_weight_n_visits))
+
+        avg_weight = self.weights.mean().item()
+        print("The average weight was {}.".format(avg_weight))

@@ -206,7 +206,7 @@ def main(args):
     train_split, valid_split, test_split, train_weights = get_splits(
         valid_dataset)
     valid_loader = DataLoader(Subset(test_dataset, valid_split),
-                              batch_size=8,
+                              batch_size=16,
                               num_workers=8,
                               pin_memory=False)
 
@@ -242,11 +242,11 @@ def main(args):
 
         exp.train(train_loader=train_loader,
                   valid_loader=valid_loader,
-                  epochs=(1 + i) * 50,
+                  epochs=(1 + i) * 100,
                   lr_schedulers=lr_schedulers,
                   callbacks=callbacks + [update_callback])
 
-    print(update_callback.num_visited)
+    raw_dataset.print_filenames()
 
     pure_dataset = RegressionDatasetFolder(os.path.join(
         args.root_dir, 'Images/1024_with_jedi'),
@@ -431,7 +431,7 @@ if __name__ == "__main__":
 
     parser.add_argument('--seed',
                         type=int,
-                        default=42,
+                        default=420,
                         help='Which random seed to use.')
 
     args = parser.parse_args()
