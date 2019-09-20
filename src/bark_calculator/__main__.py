@@ -78,8 +78,8 @@ def make_dual_images():
 
 
 def fine_tune_images():
-    duals_dir = "./Images/1024_with_jedi/duals/"
-    output_dir = "./Images/1024_with_jedi/duals/"
+    duals_dir = "/home/magod/Documents/Encorcage/Images/1024_with_jedi/duals/"
+    output_dir = "/home/magod/Documents/Encorcage/Images/1024_with_jedi_tuned/duals/"
 
     for wood_type in ["epinette_gelee", "epinette_non_gelee", "sapin"]:
         type_duals_dir = os.path.join(duals_dir, wood_type)
@@ -91,8 +91,8 @@ def fine_tune_images():
 
                 dual_path = os.path.join(type_duals_dir, fname)
 
-                dual_image = np.asarray(imread(dual_path,
-                                               grayscale=True)) / 127
+                dual_image = np.array(
+                    Image.open(open(dual_path, 'rb')).convert('L')) / 127
 
                 dual_image = remove_small_zones(
                     torch.from_numpy(dual_image).long())
