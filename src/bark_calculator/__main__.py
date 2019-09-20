@@ -32,7 +32,7 @@ def generate_output_folders(root_dir):
     levels = [('combined_images', ['train', 'valid', 'test']),
               ('outputs', ['train', 'valid', 'test'])]
 
-    results_dir = os.path.join(root_dir, 'Images', 'results', 'wd_6_do_9')
+    results_dir = os.path.join(root_dir, 'Images', 'results', 'wd_3_do_9')
 
     def mkdirs_if_not_there(dir):
         if not os.path.isdir(dir):
@@ -213,8 +213,8 @@ def main(args):
     # module = deeplabv3_efficientnet(n=5)
     module = fcn_resnet50(dropout=0.9)
 
-    optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-6)
-    exp = Experiment(directory=os.path.join(args.root_dir, 'wd_6_do_9'),
+    optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-3)
+    exp = Experiment(directory=os.path.join(args.root_dir, 'wd_3_do_9'),
                      module=module,
                      device=torch.device(args.device),
                      optimizer=optim,
@@ -227,7 +227,7 @@ def main(args):
     callbacks = [
         EarlyStopping(monitor='val_IntersectionOverUnion',
                       min_delta=1e-3,
-                      patience=15,
+                      patience=25,
                       mode='max')
     ]
 
@@ -241,7 +241,7 @@ def main(args):
 
         exp.train(train_loader=train_loader,
                   valid_loader=valid_loader,
-                  epochs=(1 + i) * 1,
+                  epochs=(1 + i) * 100,
                   lr_schedulers=lr_schedulers,
                   callbacks=callbacks + [update_callback])
 
@@ -372,7 +372,7 @@ def main(args):
             # plt.show()
             plt.savefig(os.path.join(
                 args.root_dir,
-                'Images/results/wd_6_do_9/combined_images/{}/{}/{}').format(
+                'Images/results/wd_3_do_9/combined_images/{}/{}/{}').format(
                     wood_type, split, fname),
                         format='png',
                         dpi=900)
@@ -388,12 +388,12 @@ def main(args):
             dual.save(
                 os.path.join(
                     args.root_dir,
-                    'Images/results/wd_6_do_9/outputs/{}/{}/{}').format(
+                    'Images/results/wd_3_do_9/outputs/{}/{}/{}').format(
                         wood_type, split, fname))
 
             results_csv.append(running_csv_stats)
 
-    csv_file = os.path.join(args.root_dir, 'Images', 'results', 'wd_6_do_9',
+    csv_file = os.path.join(args.root_dir, 'Images', 'results', 'wd_3_do_9',
                             'final_stats.csv')
 
     with open(csv_file, 'w') as f:
