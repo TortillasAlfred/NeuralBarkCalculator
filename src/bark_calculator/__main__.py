@@ -316,7 +316,7 @@ def main(args):
 
             _, axs = plt.subplots(1, 3)
 
-            claiss_names = ['Nothing', 'Bark', 'Node']
+            class_names = ['Nothing', 'Bark', 'Node']
 
             for i, ax in enumerate(axs.flatten()):
                 img = imgs[i]
