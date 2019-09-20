@@ -211,9 +211,9 @@ def main(args):
                               pin_memory=False)
 
     # module = deeplabv3_efficientnet(n=5)
-    module = fcn_resnet50(dropout=0.5)
+    module = fcn_resnet50(dropout=0.8)
 
-    optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-5)
+    optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-4)
     exp = Experiment(directory=os.path.join(args.root_dir, 'other_attempt'),
                      module=module,
                      device=torch.device(args.device),
@@ -227,7 +227,7 @@ def main(args):
     callbacks = [
         EarlyStopping(monitor='val_IntersectionOverUnion',
                       min_delta=1e-3,
-                      patience=25,
+                      patience=15,
                       mode='max')
     ]
 
@@ -447,7 +447,7 @@ if __name__ == "__main__":
 
     parser.add_argument('--seed',
                         type=int,
-                        default=420,
+                        default=42,
                         help='Which random seed to use.')
 
     args = parser.parse_args()
