@@ -453,4 +453,4 @@ if __name__ == "__main__":
     make_training_deterministic(args.seed)
 
     # test_color_jitter(args.root_dir)
-    # main(args)
+    main(args)
