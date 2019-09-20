@@ -70,7 +70,7 @@ def compute_pos_weight(working_dataset):
 
 
 def get_pos_weight():
-    return torch.FloatTensor([0.4040, 1.9471, 87.6780])
+    return torch.FloatTensor([0.4004, 2.0334, 93.1921])
 
 
 def get_splits(dataset):
