@@ -8,6 +8,7 @@ from torchvision.transforms import *
 from poutyne.framework import Experiment, ExponentialLR, EarlyStopping, ReduceLROnPlateau
 from torch.utils.data import DataLoader, Subset, WeightedRandomSampler
 import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
 from torch.nn.modules.loss import CrossEntropyLoss
 from skimage.io import imread, imsave
 
@@ -318,12 +319,24 @@ def main(args):
             for i, ax in enumerate(axs.flatten()):
                 img = imgs[i]
 
-                if len(img.shape) == 3:
+                raw = (len(img.shape) == 3)
+
+                if raw:  # Raw input
                     img = img.transpose(1, 2, 0)
 
-                ax.imshow(img)
+                values = np.unique(img.ravel())
+
+                plotted_img = ax.imshow(img, vmax=2)
                 ax.set_title(names[i])
                 ax.axis('off')
+
+                if not raw:  # Predicted image
+                    patches = [
+                        mpatches.Patch(
+                            color=plotted_img.cmap(plotted_img.norm(value)),
+                            label='{} zone'.format(class_names[value]))
+                        for value in values
+                    ]
 
             suptitle = 'Mean f1 : {:.3f}'.format(acc)
 
@@ -349,6 +362,9 @@ def main(args):
                 class_percent = (target == class_idx).float().mean().cpu()
                 running_csv_stats.append('{:.5f}'.format(class_percent * 100))
 
+            fig.legend(handles=patches,
+                       title='Classes',
+                       bbox_to_anchor=(0.4, -0.2, 0.5, 0.5))
             plt.suptitle(suptitle)
             plt.tight_layout()
             # plt.show()
@@ -437,4 +453,4 @@ if __name__ == "__main__":
     make_training_deterministic(args.seed)
 
     # test_color_jitter(args.root_dir)
-    main(args)
+    # main(args)
