@@ -314,7 +314,7 @@ def main(args):
                 print(imgs[2].shape)
                 continue
 
-            _, axs = plt.subplots(1, 3)
+            fig, axs = plt.subplots(1, 3)
 
             class_names = ['Nothing', 'Bark', 'Node']
 
