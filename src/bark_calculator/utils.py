@@ -216,8 +216,10 @@ class IOU(nn.Module):
             return scores.mean()
         elif self.class_to_watch == 'loss':
             return 1 - scores.mean()
-        else:
+        elif isinstance(self.class_to_watch, int):
             return scores[self.class_to_watch]
+        else:
+            return scores
 
 
 TO_PIL = ToPILImage()

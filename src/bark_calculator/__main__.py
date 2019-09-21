@@ -32,7 +32,7 @@ def generate_output_folders(root_dir):
     levels = [('combined_images', ['train', 'valid', 'test']),
               ('outputs', ['train', 'valid', 'test'])]
 
-    results_dir = os.path.join(root_dir, 'Images', 'results', 'best_attempt')
+    results_dir = os.path.join(root_dir, 'Images', 'results', 'best_attempt_2')
 
     def mkdirs_if_not_there(dir):
         if not os.path.isdir(dir):
@@ -214,7 +214,7 @@ def main(args):
     module = fcn_resnet50(dropout=0.8)
 
     optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-4)
-    exp = Experiment(directory=os.path.join(args.root_dir, 'best_attempt'),
+    exp = Experiment(directory=os.path.join(args.root_dir, 'best_attempt_2'),
                      module=module,
                      device=torch.device(args.device),
                      optimizer=optim,
@@ -299,20 +299,18 @@ def main(args):
 
             names = ['Input', 'Target', 'Generated image']
 
-            imgs = [input, target, outputs]
-            imgs = [img.detach().cpu().squeeze().numpy() for img in imgs]
-
             try:
-                class_accs = f1_score(imgs[1].flatten(),
-                                      imgs[2].flatten(),
-                                      labels=[0, 1, 2],
-                                      average=None)
+                class_accs = IOU(class_to_watch='all')(outputs, target)
+
                 acc = class_accs.mean()
             except ValueError:
                 print('Error on file {}'.format(fname))
-                print(imgs[1].shape)
-                print(imgs[2].shape)
+                print(outputs.shape)
+                print(target.shape)
                 continue
+
+            imgs = [input, target, outputs]
+            imgs = [img.detach().cpu().squeeze().numpy() for img in imgs]
 
             fig, axs = plt.subplots(1, 3)
 
@@ -372,8 +370,8 @@ def main(args):
             # plt.show()
             plt.savefig(os.path.join(
                 args.root_dir,
-                'Images/results/best_attempt/combined_images/{}/{}/{}').format(
-                    wood_type, split, fname),
+                'Images/results/best_attempt_2/combined_images/{}/{}/{}').
+                        format(wood_type, split, fname),
                         format='png',
                         dpi=900)
             plt.close()
@@ -388,13 +386,13 @@ def main(args):
             dual.save(
                 os.path.join(
                     args.root_dir,
-                    'Images/results/best_attempt/outputs/{}/{}/{}').format(
+                    'Images/results/best_attempt_2/outputs/{}/{}/{}').format(
                         wood_type, split, fname))
 
             results_csv.append(running_csv_stats)
 
-    csv_file = os.path.join(args.root_dir, 'Images', 'results', 'best_attempt',
-                            'final_stats.csv')
+    csv_file = os.path.join(args.root_dir, 'Images', 'results',
+                            'best_attempt_2', 'final_stats.csv')
 
     with open(csv_file, 'w') as f:
         csv_writer = csv.writer(f, delimiter='\t')
