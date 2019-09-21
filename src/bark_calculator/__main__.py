@@ -227,7 +227,7 @@ def main(args):
     callbacks = [
         EarlyStopping(monitor='val_IntersectionOverUnion',
                       min_delta=1e-3,
-                      patience=25,
+                      patience=15,
                       mode='max')
     ]
 
