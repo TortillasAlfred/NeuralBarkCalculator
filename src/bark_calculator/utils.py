@@ -206,9 +206,10 @@ class IOU(nn.Module):
         scores = f1_score(labels, outputs, labels=[0, 1, 2], average=None)
 
         targets_count = np.bincount(labels)
+        outputs_count = np.bincount(outputs)
 
         for i, count_i in enumerate(targets_count):
-            if count_i == 0:
+            if count_i == 0 and outputs_count == 0:
                 scores[i] = np.delete(scores, i).mean()
 
         if self.class_to_watch is None:
