@@ -307,7 +307,7 @@ def main(args):
                 print('Error on file {}'.format(fname))
                 print(outputs.shape)
                 print(target.shape)
-                print(e)
+                raise e
 
             imgs = [input, target, outputs]
             imgs = [img.detach().cpu().squeeze().numpy() for img in imgs]
