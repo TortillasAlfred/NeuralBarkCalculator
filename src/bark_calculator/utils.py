@@ -196,7 +196,7 @@ class IOU(nn.Module):
                 self.class_to_watch)
 
     def forward(self, outputs, labels):
-        if outputs.ndimension == 3:
+        if outputs.ndimension == 4:
             outputs = torch.argmax(outputs, 1)
 
         outputs = remove_small_zones(outputs)
