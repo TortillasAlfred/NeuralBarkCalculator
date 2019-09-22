@@ -200,8 +200,14 @@ class IOU(nn.Module):
 
         outputs = remove_small_zones(outputs)
 
+        print(outputs.shape)
+        print(labels.shape)
+
         outputs = outputs.cpu().reshape(-1)
         labels = labels.cpu().reshape(-1)
+
+        print(outputs.shape)
+        print(labels.shape)
 
         scores = f1_score(labels, outputs, labels=[0, 1, 2], average=None)
 
