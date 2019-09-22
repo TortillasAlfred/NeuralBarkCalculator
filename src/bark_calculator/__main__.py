@@ -292,7 +292,6 @@ def main(args):
             del pure_batch
 
             outputs = module(batch[0].to(torch.device(args.device)))
-            outputs = torch.argmax(outputs, dim=1)
             outputs = remove_small_zones(outputs)
 
             del batch
@@ -308,6 +307,8 @@ def main(args):
                 print(outputs.shape)
                 print(target.shape)
                 continue
+
+            outputs = torch.argmax(outputs, dim=1)
 
             imgs = [input, target, outputs]
             imgs = [img.detach().cpu().squeeze().numpy() for img in imgs]
