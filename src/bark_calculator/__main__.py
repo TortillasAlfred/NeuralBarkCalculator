@@ -291,9 +291,15 @@ def main(args):
 
             del pure_batch
 
+            print(input.shape)
+            print(target.shape)
+
             outputs = module(batch[0].to(torch.device(args.device)))
+            print(outputs.shape)
             outputs = torch.argmax(outputs, dim=1)
+            print(outputs.shape)
             outputs = remove_small_zones(outputs)
+            print(outputs.shape)
 
             del batch
 
