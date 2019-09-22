@@ -291,15 +291,9 @@ def main(args):
 
             del pure_batch
 
-            print(input.shape)
-            print(target.shape)
-
             outputs = module(batch[0].to(torch.device(args.device)))
-            print(outputs.shape)
             outputs = torch.argmax(outputs, dim=1)
-            print(outputs.shape)
             outputs = remove_small_zones(outputs)
-            print(outputs.shape)
 
             del batch
 
@@ -313,7 +307,7 @@ def main(args):
                 print('Error on file {}'.format(fname))
                 print(outputs.shape)
                 print(target.shape)
-                raise e
+                continue
 
             imgs = [input, target, outputs]
             imgs = [img.detach().cpu().squeeze().numpy() for img in imgs]

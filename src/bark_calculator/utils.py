@@ -196,18 +196,13 @@ class IOU(nn.Module):
                 self.class_to_watch)
 
     def forward(self, outputs, labels):
-        outputs = torch.argmax(outputs, 1)
+        if outputs.ndimension == 3:
+            outputs = torch.argmax(outputs, 1)
 
         outputs = remove_small_zones(outputs)
 
-        print(outputs.shape)
-        print(labels.shape)
-
         outputs = outputs.cpu().reshape(-1)
         labels = labels.cpu().reshape(-1)
-
-        print(outputs.shape)
-        print(labels.shape)
 
         scores = f1_score(labels, outputs, labels=[0, 1, 2], average=None)
 
