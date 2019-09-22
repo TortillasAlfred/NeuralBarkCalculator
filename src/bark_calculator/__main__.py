@@ -32,7 +32,7 @@ def generate_output_folders(root_dir):
     levels = [('combined_images', ['train', 'valid', 'test']),
               ('outputs', ['train', 'valid', 'test'])]
 
-    results_dir = os.path.join(root_dir, 'Images', 'results', 'best_attempt_3')
+    results_dir = os.path.join(root_dir, 'Images', 'results', 'best_attempt_4')
 
     def mkdirs_if_not_there(dir):
         if not os.path.isdir(dir):
@@ -213,8 +213,8 @@ def main(args):
     # module = deeplabv3_efficientnet(n=5)
     module = fcn_resnet50(dropout=0.8)
 
-    optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-4)
-    exp = Experiment(directory=os.path.join(args.root_dir, 'best_attempt_3'),
+    optim = torch.optim.Adam(module.parameters(), lr=5e-4, weight_decay=1e-4)
+    exp = Experiment(directory=os.path.join(args.root_dir, 'best_attempt_4'),
                      module=module,
                      device=torch.device(args.device),
                      optimizer=optim,
@@ -227,7 +227,8 @@ def main(args):
         ReduceLROnPlateau(patience=10,
                           threshold_mode='abs',
                           verbose=True,
-                          threshold=1e-3)
+                          threshold=1e-3,
+                          factor=0.2)
     ]
     callbacks = [
         EarlyStopping(monitor='val_IntersectionOverUnion',
@@ -247,7 +248,7 @@ def main(args):
 
         exp.train(train_loader=train_loader,
                   valid_loader=valid_loader,
-                  epochs=(1 + i) * 100,
+                  epochs=(1 + i) * 150,
                   lr_schedulers=lr_schedulers,
                   callbacks=callbacks + [update_callback])
 
@@ -377,7 +378,7 @@ def main(args):
             # plt.show()
             plt.savefig(os.path.join(
                 args.root_dir,
-                'Images/results/best_attempt_3/combined_images/{}/{}/{}').
+                'Images/results/best_attempt_4/combined_images/{}/{}/{}').
                         format(wood_type, split, fname),
                         format='png',
                         dpi=900)
@@ -393,13 +394,13 @@ def main(args):
             dual.save(
                 os.path.join(
                     args.root_dir,
-                    'Images/results/best_attempt_3/outputs/{}/{}/{}').format(
+                    'Images/results/best_attempt_4/outputs/{}/{}/{}').format(
                         wood_type, split, fname))
 
             results_csv.append(running_csv_stats)
 
     csv_file = os.path.join(args.root_dir, 'Images', 'results',
-                            'best_attempt_3', 'final_stats.csv')
+                            'best_attempt_4', 'final_stats.csv')
 
     with open(csv_file, 'w') as f:
         csv_writer = csv.writer(f, delimiter='\t')
