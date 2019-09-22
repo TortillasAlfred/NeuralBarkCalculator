@@ -241,7 +241,7 @@ def main(args):
 
         exp.train(train_loader=train_loader,
                   valid_loader=valid_loader,
-                  epochs=(1 + i) * 100,
+                  epochs=(1 + i) * 35,
                   lr_schedulers=lr_schedulers,
                   callbacks=callbacks + [update_callback])
 
@@ -303,11 +303,11 @@ def main(args):
                 class_accs = IOU(class_to_watch='all')(outputs, target)
 
                 acc = class_accs.mean()
-            except ValueError:
+            except ValueError as e:
                 print('Error on file {}'.format(fname))
                 print(outputs.shape)
                 print(target.shape)
-                continue
+                print(e)
 
             imgs = [input, target, outputs]
             imgs = [img.detach().cpu().squeeze().numpy() for img in imgs]
