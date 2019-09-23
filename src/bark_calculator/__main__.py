@@ -33,7 +33,7 @@ def generate_output_folders(root_dir):
               ('outputs', ['train', 'valid', 'test'])]
 
     results_dir = os.path.join(root_dir, 'Images', 'results',
-                               'best_attempt_10')
+                               'best_attempt_11')
 
     def mkdirs_if_not_there(dir):
         if not os.path.isdir(dir):
@@ -215,7 +215,7 @@ def main(args):
     module = fcn_resnet50(dropout=0.8)
 
     optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-4)
-    exp = Experiment(directory=os.path.join(args.root_dir, 'best_attempt_10'),
+    exp = Experiment(directory=os.path.join(args.root_dir, 'best_attempt_11'),
                      module=module,
                      device=torch.device(args.device),
                      optimizer=optim,
@@ -224,7 +224,7 @@ def main(args):
                      monitor_metric='val_IntersectionOverUnion',
                      monitor_mode='max')
 
-    lr_schedulers = [ExponentialLR(0.99)]
+    lr_schedulers = [ExponentialLR(0.97)]
     callbacks = [
         EarlyStopping(monitor='val_IntersectionOverUnion',
                       min_delta=1e-3,
@@ -373,7 +373,7 @@ def main(args):
             # plt.show()
             plt.savefig(os.path.join(
                 args.root_dir,
-                'Images/results/best_attempt_10/combined_images/{}/{}/{}').
+                'Images/results/best_attempt_11/combined_images/{}/{}/{}').
                         format(wood_type, split, fname),
                         format='png',
                         dpi=900)
@@ -389,13 +389,13 @@ def main(args):
             dual.save(
                 os.path.join(
                     args.root_dir,
-                    'Images/results/best_attempt_10/outputs/{}/{}/{}').format(
+                    'Images/results/best_attempt_11/outputs/{}/{}/{}').format(
                         wood_type, split, fname))
 
             results_csv.append(running_csv_stats)
 
     csv_file = os.path.join(args.root_dir, 'Images', 'results',
-                            'best_attempt_10', 'final_stats.csv')
+                            'best_attempt_11', 'final_stats.csv')
 
     with open(csv_file, 'w') as f:
         csv_writer = csv.writer(f, delimiter='\t')
