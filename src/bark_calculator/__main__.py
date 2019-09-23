@@ -248,7 +248,7 @@ def main(args):
 
         exp.train(train_loader=train_loader,
                   valid_loader=valid_loader,
-                  epochs=(1 + i) * 150,
+                  epochs=(1 + i) * 50,
                   lr_schedulers=lr_schedulers,
                   callbacks=callbacks + [update_callback])
 
@@ -313,7 +313,7 @@ def main(args):
                 print('Error on file {}'.format(fname))
                 print(outputs.shape)
                 print(target.shape)
-                continue
+                raise e
 
             outputs = torch.argmax(outputs, dim=1)
 
