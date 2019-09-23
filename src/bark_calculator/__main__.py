@@ -32,7 +32,7 @@ def generate_output_folders(root_dir):
     levels = [('combined_images', ['train', 'valid', 'test']),
               ('outputs', ['train', 'valid', 'test'])]
 
-    results_dir = os.path.join(root_dir, 'Images', 'results', 'best_attempt_4')
+    results_dir = os.path.join(root_dir, 'Images', 'results', 'best_attempt_5')
 
     def mkdirs_if_not_there(dir):
         if not os.path.isdir(dir):
@@ -166,7 +166,7 @@ def get_loader_for_crop_batch(crop_size, batch_size, train_split, mean, std,
     #                                 num_samples=6 * len(train_weights),
     #                                 replacement=True)
 
-    sampler = PrioritizedBatchSampler(num_samples=5 * len(train_weights),
+    sampler = PrioritizedBatchSampler(num_samples=len(train_weights),
                                       num_items=len(train_weights),
                                       batch_size=batch_size,
                                       drop_last=True,
@@ -213,8 +213,8 @@ def main(args):
     # module = deeplabv3_efficientnet(n=5)
     module = fcn_resnet50(dropout=0.8)
 
-    optim = torch.optim.Adam(module.parameters(), lr=5e-4, weight_decay=1e-4)
-    exp = Experiment(directory=os.path.join(args.root_dir, 'best_attempt_4'),
+    optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-4)
+    exp = Experiment(directory=os.path.join(args.root_dir, 'best_attempt_5'),
                      module=module,
                      device=torch.device(args.device),
                      optimizer=optim,
@@ -224,7 +224,7 @@ def main(args):
                      monitor_mode='max')
 
     lr_schedulers = [
-        ReduceLROnPlateau(patience=10,
+        ReduceLROnPlateau(patience=5,
                           threshold_mode='abs',
                           verbose=True,
                           threshold=1e-3,
@@ -248,7 +248,7 @@ def main(args):
 
         exp.train(train_loader=train_loader,
                   valid_loader=valid_loader,
-                  epochs=(1 + i) * 50,
+                  epochs=(1 + i) * 200,
                   lr_schedulers=lr_schedulers,
                   callbacks=callbacks + [update_callback])
 
@@ -378,7 +378,7 @@ def main(args):
             # plt.show()
             plt.savefig(os.path.join(
                 args.root_dir,
-                'Images/results/best_attempt_4/combined_images/{}/{}/{}').
+                'Images/results/best_attempt_5/combined_images/{}/{}/{}').
                         format(wood_type, split, fname),
                         format='png',
                         dpi=900)
@@ -394,13 +394,13 @@ def main(args):
             dual.save(
                 os.path.join(
                     args.root_dir,
-                    'Images/results/best_attempt_4/outputs/{}/{}/{}').format(
+                    'Images/results/best_attempt_5/outputs/{}/{}/{}').format(
                         wood_type, split, fname))
 
             results_csv.append(running_csv_stats)
 
     csv_file = os.path.join(args.root_dir, 'Images', 'results',
-                            'best_attempt_4', 'final_stats.csv')
+                            'best_attempt_5', 'final_stats.csv')
 
     with open(csv_file, 'w') as f:
         csv_writer = csv.writer(f, delimiter='\t')
