@@ -209,7 +209,7 @@ class IOU(nn.Module):
         outputs_count = np.bincount(outputs)
 
         for i, count_i in enumerate(targets_count):
-            if count_i == 0 and outputs_count == 0:
+            if count_i == 0 and outputs_count[i] == 0:
                 scores[i] = np.delete(scores, i).mean()
 
         if self.class_to_watch is None:
