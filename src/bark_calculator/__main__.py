@@ -32,7 +32,7 @@ def generate_output_folders(root_dir):
     levels = [('combined_images', ['train', 'valid', 'test']),
               ('outputs', ['train', 'valid', 'test'])]
 
-    results_dir = os.path.join(root_dir, 'Images', 'results', 'best_attempt_7')
+    results_dir = os.path.join(root_dir, 'Images', 'results', 'best_attempt_8')
 
     def mkdirs_if_not_there(dir):
         if not os.path.isdir(dir):
@@ -213,8 +213,8 @@ def main(args):
     # module = deeplabv3_efficientnet(n=5)
     module = fcn_resnet50(dropout=0.8)
 
-    optim = torch.optim.Adam(module.parameters(), lr=5e-3, weight_decay=1e-4)
-    exp = Experiment(directory=os.path.join(args.root_dir, 'best_attempt_7'),
+    optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-4)
+    exp = Experiment(directory=os.path.join(args.root_dir, 'best_attempt_8'),
                      module=module,
                      device=torch.device(args.device),
                      optimizer=optim,
@@ -224,11 +224,11 @@ def main(args):
                      monitor_mode='max')
 
     lr_schedulers = [
-        ReduceLROnPlateau(patience=5,
+        ReduceLROnPlateau(patience=10,
                           threshold_mode='abs',
                           verbose=True,
                           threshold=1e-3,
-                          factor=0.2)
+                          factor=0.1)
     ]
     callbacks = [
         EarlyStopping(monitor='val_IntersectionOverUnion',
@@ -378,7 +378,7 @@ def main(args):
             # plt.show()
             plt.savefig(os.path.join(
                 args.root_dir,
-                'Images/results/best_attempt_7/combined_images/{}/{}/{}').
+                'Images/results/best_attempt_8/combined_images/{}/{}/{}').
                         format(wood_type, split, fname),
                         format='png',
                         dpi=900)
@@ -394,13 +394,13 @@ def main(args):
             dual.save(
                 os.path.join(
                     args.root_dir,
-                    'Images/results/best_attempt_7/outputs/{}/{}/{}').format(
+                    'Images/results/best_attempt_8/outputs/{}/{}/{}').format(
                         wood_type, split, fname))
 
             results_csv.append(running_csv_stats)
 
     csv_file = os.path.join(args.root_dir, 'Images', 'results',
-                            'best_attempt_7', 'final_stats.csv')
+                            'best_attempt_8', 'final_stats.csv')
 
     with open(csv_file, 'w') as f:
         csv_writer = csv.writer(f, delimiter='\t')
@@ -453,7 +453,7 @@ if __name__ == "__main__":
 
     parser.add_argument('--seed',
                         type=int,
-                        default=420,
+                        default=42,
                         help='Which random seed to use.')
 
     args = parser.parse_args()
