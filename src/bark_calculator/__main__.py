@@ -226,6 +226,8 @@ def main(args):
     lr_schedulers = [
         ReduceLROnPlateau(patience=10,
                           threshold_mode='abs',
+                          monitor='val_IntersectionOverUnion',
+                          mode='max',
                           verbose=True,
                           threshold=1e-3,
                           factor=0.1)
