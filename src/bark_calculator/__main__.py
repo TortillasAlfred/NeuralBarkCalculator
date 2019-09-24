@@ -291,8 +291,8 @@ def main(args):
 
     # exp.load_best_checkpoint()
 
-    exp.model.load_checkpoint(47)
-    test_model_on_checkpoint(model, test_loader)
+    exp.load_checkpoint(47)
+    test_model_on_checkpoint(exp.model, test_loader)
     module = exp.model.model
     module.eval()
 
