@@ -237,7 +237,7 @@ def main(args):
     # optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-4)
     optim = torch.optim.SGD(module.parameters(),
                             lr=5e-3,
-                            weigth_decay=2e-4,
+                            weight_decay=2e-4,
                             momentum=0.9,
                             nesterov=True)
     exp = Experiment(directory=os.path.join(args.root_dir, 'best_attempt_13'),
