@@ -33,7 +33,7 @@ def generate_output_folders(root_dir):
               ('outputs', ['train', 'valid', 'test'])]
 
     results_dir = os.path.join(root_dir, 'Images', 'results',
-                               'best_attempt_12')
+                               'best_attempt_13')
 
     def mkdirs_if_not_there(dir):
         if not os.path.isdir(dir):
@@ -234,17 +234,22 @@ def main(args):
     # module = deeplabv3_efficientnet(n=5)
     module = fcn_resnet50(dropout=0.8)
 
-    optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-4)
-    exp = Experiment(directory=os.path.join(args.root_dir, 'best_attempt_12'),
+    # optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-4)
+    optim = torch.optim.SGD(module.paramterers(),
+                            lr=5e-3,
+                            weigth_decay=2e-4,
+                            momentum=0.9,
+                            nesterov=True)
+    exp = Experiment(directory=os.path.join(args.root_dir, 'best_attempt_13'),
                      module=module,
                      device=torch.device(args.device),
                      optimizer=optim,
-                     loss_function=LovaszSoftmax(),
+                     loss_function=MixedLoss(pos_weights.to(args.device)),
                      metrics=[IOU(None)],
                      monitor_metric='val_IntersectionOverUnion',
                      monitor_mode='max')
 
-    lr_schedulers = [ExponentialLR(0.94)]
+    lr_schedulers = [ExponentialLR(0.93)]
     callbacks = [
         EarlyStopping(monitor='val_IntersectionOverUnion',
                       min_delta=1e-3,
@@ -263,7 +268,7 @@ def main(args):
 
         exp.train(train_loader=train_loader,
                   valid_loader=valid_loader,
-                  epochs=(1 + i) * 10,
+                  epochs=(1 + i) * 75,
                   lr_schedulers=lr_schedulers,
                   callbacks=callbacks + [update_callback])
 
@@ -287,12 +292,9 @@ def main(args):
                              num_workers=8,
                              pin_memory=False)
 
-    # exp.test(test_loader)
+    exp.test(test_loader)
 
-    # exp.load_best_checkpoint()
-
-    exp.load_checkpoint(47)
-    test_model_on_checkpoint(exp.model, test_loader)
+    exp.load_best_checkpoint()
     module = exp.model.model
     module.eval()
 
@@ -396,7 +398,7 @@ def main(args):
             # plt.show()
             plt.savefig(os.path.join(
                 args.root_dir,
-                'Images/results/best_attempt_12/combined_images/{}/{}/{}').
+                'Images/results/best_attempt_13/combined_images/{}/{}/{}').
                         format(wood_type, split, fname),
                         format='png',
                         dpi=900)
@@ -412,13 +414,13 @@ def main(args):
             dual.save(
                 os.path.join(
                     args.root_dir,
-                    'Images/results/best_attempt_12/outputs/{}/{}/{}').format(
+                    'Images/results/best_attempt_13/outputs/{}/{}/{}').format(
                         wood_type, split, fname))
 
             results_csv.append(running_csv_stats)
 
     csv_file = os.path.join(args.root_dir, 'Images', 'results',
-                            'best_attempt_12', 'final_stats.csv')
+                            'best_attempt_13', 'final_stats.csv')
 
     with open(csv_file, 'w') as f:
         csv_writer = csv.writer(f, delimiter='\t')
