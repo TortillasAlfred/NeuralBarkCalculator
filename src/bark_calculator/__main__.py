@@ -227,7 +227,7 @@ def main(args):
     train_split, valid_split, test_split, train_weights = get_splits(
         valid_dataset)
     valid_loader = DataLoader(Subset(test_dataset, valid_split),
-                              batch_size=8,
+                              batch_size=10,
                               num_workers=8,
                               pin_memory=False)
 
@@ -275,12 +275,12 @@ def main(args):
                                            include_fname=True)
 
     test_loader = DataLoader(Subset(test_dataset, test_split),
-                             batch_size=8,
+                             batch_size=10,
                              num_workers=8,
                              pin_memory=False)
     valid_loader = DataLoader(valid_dataset,
                               batch_size=1,
-                              num_workers=8,
+                              num_workers=10,
                               pin_memory=False)
     pure_loader = DataLoader(pure_dataset,
                              batch_size=1,
