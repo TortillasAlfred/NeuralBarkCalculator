@@ -33,7 +33,7 @@ def generate_output_folders(root_dir):
               ('outputs', ['train', 'valid', 'test'])]
 
     results_dir = os.path.join(root_dir, 'Images', 'results',
-                               'best_attempt_17')
+                               'best_attempt_18')
 
     def mkdirs_if_not_there(dir):
         if not os.path.isdir(dir):
@@ -240,7 +240,7 @@ def main(args):
     #                         weight_decay=1e-4,
     #                         momentum=0.9,
     #                         nesterov=True)
-    exp = Experiment(directory=os.path.join(args.root_dir, 'best_attempt_17'),
+    exp = Experiment(directory=os.path.join(args.root_dir, 'best_attempt_18'),
                      module=module,
                      device=torch.device(args.device),
                      optimizer=optim,
@@ -249,7 +249,7 @@ def main(args):
                      monitor_metric='val_IntersectionOverUnion',
                      monitor_mode='max')
 
-    lr_schedulers = [ExponentialLR(0.9)]
+    lr_schedulers = [ExponentialLR(0.95)]
     callbacks = [
         EarlyStopping(monitor='val_IntersectionOverUnion',
                       min_delta=1e-3,
@@ -268,7 +268,7 @@ def main(args):
 
         exp.train(train_loader=train_loader,
                   valid_loader=valid_loader,
-                  epochs=(1 + i) * 75,
+                  epochs=(1 + i) * 150,
                   lr_schedulers=lr_schedulers,
                   callbacks=callbacks + [update_callback])
 
@@ -398,7 +398,7 @@ def main(args):
             # plt.show()
             plt.savefig(os.path.join(
                 args.root_dir,
-                'Images/results/best_attempt_17/combined_images/{}/{}/{}').
+                'Images/results/best_attempt_18/combined_images/{}/{}/{}').
                         format(wood_type, split, fname),
                         format='png',
                         dpi=900)
@@ -414,13 +414,13 @@ def main(args):
             dual.save(
                 os.path.join(
                     args.root_dir,
-                    'Images/results/best_attempt_17/outputs/{}/{}/{}').format(
+                    'Images/results/best_attempt_18/outputs/{}/{}/{}').format(
                         wood_type, split, fname))
 
             results_csv.append(running_csv_stats)
 
     csv_file = os.path.join(args.root_dir, 'Images', 'results',
-                            'best_attempt_17', 'final_stats.csv')
+                            'best_attempt_18', 'final_stats.csv')
 
     with open(csv_file, 'w') as f:
         csv_writer = csv.writer(f, delimiter='\t')
