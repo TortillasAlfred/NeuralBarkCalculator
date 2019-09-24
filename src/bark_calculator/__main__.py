@@ -258,7 +258,7 @@ def main(args):
                       mode='max')
     ]
 
-    for i, (crop_size, batch_size) in enumerate(zip([512], [5])):
+    for i, (crop_size, batch_size) in enumerate(zip([512], [8])):
         update_callback = PrioritizedBatchSamplerUpdate(
             metric='IntersectionOverUnion', metric_mode='min')
         train_loader = get_loader_for_crop_batch(crop_size, batch_size,
