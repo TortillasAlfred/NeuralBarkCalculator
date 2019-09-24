@@ -180,6 +180,26 @@ def get_loader_for_crop_batch(crop_size, batch_size, train_split, mean, std,
                       pin_memory=False)
 
 
+def test_model_on_checkpoint(model, test_loader):
+    best_epoch_stats = None
+
+    test_loss, test_metrics = model.evaluate_generator(test_loader, steps=None)
+    if not isinstance(test_metrics, np.ndarray):
+        test_metrics = np.array([test_metrics])
+
+    test_metrics_names = ['test_loss'] + \
+                            ['test_' + metric_name for metric_name in model.metrics_names]
+    test_metrics_values = np.concatenate(([test_loss], test_metrics))
+
+    test_metrics_dict = {
+        col: val
+        for col, val in zip(test_metrics_names, test_metrics_values)
+    }
+    test_metrics_str = ', '.join('%s: %g' % (col, val)
+                                 for col, val in test_metrics_dict.items())
+    print("On best model: %s" % test_metrics_str)
+
+
 def main(args):
     raw_dataset = RegressionDatasetFolder(os.path.join(
         args.root_dir, 'Images/1024_with_jedi'),
@@ -243,7 +263,7 @@ def main(args):
 
         exp.train(train_loader=train_loader,
                   valid_loader=valid_loader,
-                  epochs=(1 + i) * 100,
+                  epochs=(1 + i) * 10,
                   lr_schedulers=lr_schedulers,
                   callbacks=callbacks + [update_callback])
 
@@ -267,9 +287,12 @@ def main(args):
                              num_workers=8,
                              pin_memory=False)
 
-    exp.test(test_loader)
+    # exp.test(test_loader)
 
-    exp.load_best_checkpoint()
+    # exp.load_best_checkpoint()
+
+    exp.model.load_checkpoint(47)
+    test_model_on_checkpoint(model, test_loader)
     module = exp.model.model
     module.eval()
 
