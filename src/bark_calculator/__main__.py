@@ -235,7 +235,7 @@ def main(args):
     module = fcn_resnet50(dropout=0.8)
 
     # optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-4)
-    optim = torch.optim.SGD(module.paramterers(),
+    optim = torch.optim.SGD(module.paramerers(),
                             lr=5e-3,
                             weigth_decay=2e-4,
                             momentum=0.9,
