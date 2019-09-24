@@ -173,7 +173,7 @@ class MixedLoss(nn.Module):
         self.lovasz = LovaszSoftmax()
 
     def forward(self, predict, true):
-        return self.ce(predict, true) + self.lovasz(predict, true)
+        return self.ce(predict, true) / 4 + self.lovasz(predict, true)
 
 
 def make_training_deterministic(seed):
