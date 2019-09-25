@@ -203,11 +203,8 @@ class IOU(nn.Module):
 
         scores = f1_score(labels, outputs, labels=[0, 1, 2], average=None)
 
-        targets_count = np.bincount(labels)
-        outputs_count = np.bincount(outputs)
-
-        print(targets_count)
-        print(outputs_count)
+        targets_count = np.bincount(labels, minlength=3)
+        outputs_count = np.bincount(outputs, minlength=3)
 
         for i, count_i in enumerate(targets_count):
             if count_i == 0 and outputs_count[i] == 0:
@@ -220,7 +217,6 @@ class IOU(nn.Module):
         elif isinstance(self.class_to_watch, int):
             return scores[self.class_to_watch]
         else:
-            print(scores)
             return scores
 
 
