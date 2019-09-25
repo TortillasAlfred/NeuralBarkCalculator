@@ -32,7 +32,7 @@ def generate_output_folders(root_dir):
     levels = [('combined_images', ['train', 'valid', 'test']),
               ('outputs', ['train', 'valid', 'test'])]
 
-    results_dir = os.path.join(root_dir, 'Images', 'results', 'fcn')
+    results_dir = os.path.join(root_dir, 'Images', 'results', 'retry')
 
     def mkdirs_if_not_there(dir):
         if not os.path.isdir(dir):
@@ -231,8 +231,8 @@ def main(args):
     module = fcn_resnet50(dropout=0.8)
     # module = deeplabv3_resnet50()
 
-    optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-6)
-    exp = Experiment(directory=os.path.join(args.root_dir, 'fcn'),
+    optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-4)
+    exp = Experiment(directory=os.path.join(args.root_dir, 'retry'),
                      module=module,
                      device=torch.device(args.device),
                      optimizer=optim,
@@ -250,7 +250,7 @@ def main(args):
                       mode='max')
     ]
 
-    for i, (crop_size, batch_size) in enumerate(zip([256], [24])):
+    for i, (crop_size, batch_size) in enumerate(zip([512], [5])):
         train_loader = get_loader_for_crop_batch(crop_size, batch_size,
                                                  train_split, mean, std,
                                                  train_weights, args.root_dir)
@@ -387,7 +387,7 @@ def main(args):
             # plt.show()
             plt.savefig(os.path.join(
                 args.root_dir,
-                'Images/results/fcn/combined_images/{}/{}/{}').format(
+                'Images/results/retry/combined_images/{}/{}/{}').format(
                     wood_type, split, fname),
                         format='png',
                         dpi=900)
@@ -402,12 +402,12 @@ def main(args):
             dual = Image.fromarray(dual_outputs, mode='L')
             dual.save(
                 os.path.join(args.root_dir,
-                             'Images/results/fcn/outputs/{}/{}/{}').format(
+                             'Images/results/retry/outputs/{}/{}/{}').format(
                                  wood_type, split, fname))
 
             results_csv.append(running_csv_stats)
 
-    csv_file = os.path.join(args.root_dir, 'Images', 'results', 'fcn',
+    csv_file = os.path.join(args.root_dir, 'Images', 'results', 'retry',
                             'final_stats.csv')
 
     with open(csv_file, 'w') as f:
