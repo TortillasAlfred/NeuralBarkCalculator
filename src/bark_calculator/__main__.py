@@ -1,6 +1,6 @@
 from dataset import RegressionDatasetFolder, pil_loader
 from utils import *
-from models import fcn_resnet50, fcnv3_resnet50, fcn_resnet101, fcnv3_resnet101, fcn_efficientnet, fcnv3_efficientnet
+from models import fcn_resnet50, deeplabv3_resnet50, fcn_resnet101, deeplabv3_resnet101, fcn_efficientnet, deeplabv3_efficientnet
 from lovasz_losses import LovaszSoftmax
 
 from torchvision.transforms import *
@@ -227,9 +227,9 @@ def main(args):
                               num_workers=8,
                               pin_memory=False)
 
-    # module = fcnv3_efficientnet(n=5)
+    # module = deeplabv3_efficientnet(n=5)
     module = fcn_resnet50(dropout=0.8)
-    # module = fcnv3_resnet50()
+    # module = deeplabv3_resnet50()
 
     optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-6)
     exp = Experiment(directory=os.path.join(args.root_dir, 'fcn'),
