@@ -165,9 +165,9 @@ def get_loader_for_crop_batch(crop_size, batch_size, train_split, mean, std,
         ]),
         in_memory=True)
 
-    sampler = WeightedRandomSampler(train_weights,
-                                    num_samples=len(train_weights),
-                                    replacement=True)
+    sampler = BatchSampler(WeightedRandomSampler(
+        train_weights, num_samples=len(train_weights), replacement=True),
+                           batch_size=batch_size)
 
     return DataLoader(Subset(train_dataset, train_split),
                       batch_sampler=sampler,
@@ -236,7 +236,7 @@ def main(args):
                      device=torch.device(args.device),
                      optimizer=optim,
                      loss_function=LovaszSoftmax(),
-                     metrics=[IOU(None)],
+                     batch_metrics=[IOU(None)],
                      monitor_metric='val_IntersectionOverUnion',
                      monitor_mode='max')
 
