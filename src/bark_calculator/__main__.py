@@ -246,7 +246,7 @@ def main(args):
                           factor=0.2,
                           patience=5,
                           threshold=1e-3,
-                          threshold_mode='ab')
+                          threshold_mode='abs')
     ]
     callbacks = [
         EarlyStopping(monitor='val_IntersectionOverUnion',
