@@ -32,8 +32,7 @@ def generate_output_folders(root_dir):
     levels = [('combined_images', ['train', 'valid', 'test']),
               ('outputs', ['train', 'valid', 'test'])]
 
-    results_dir = os.path.join(root_dir, 'Images', 'results',
-                               'best_attempt_6')
+    results_dir = os.path.join(root_dir, 'Images', 'results', 'best_attempt_6')
 
     def mkdirs_if_not_there(dir):
         if not os.path.isdir(dir):
@@ -263,7 +262,7 @@ def main(args):
 
         exp.train(train_loader=train_loader,
                   valid_loader=valid_loader,
-                  epochs=(1 + i) * 150,
+                  epochs=(1 + i) * 85,
                   lr_schedulers=lr_schedulers,
                   callbacks=callbacks + [update_callback])
 
