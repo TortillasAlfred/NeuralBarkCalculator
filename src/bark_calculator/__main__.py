@@ -32,7 +32,7 @@ def generate_output_folders(root_dir):
     levels = [('combined_images', ['train', 'valid', 'test']),
               ('outputs', ['train', 'valid', 'test'])]
 
-    results_dir = os.path.join(root_dir, 'Images', 'results', 'best_attempt_6')
+    results_dir = os.path.join(root_dir, 'Images', 'results', 'deeplab')
 
     def mkdirs_if_not_there(dir):
         if not os.path.isdir(dir):
@@ -128,17 +128,19 @@ def test_color_jitter(root_dir):
         os.path.join(root_dir, "Images/1024_with_jedi"),
         input_only_transform=Compose([
             ToPILImage(),
-            ColorJitter(brightness=(0.95, 1.15), saturation=(0.8, 1.25)),
+            ColorJitter(brightness=0.15, saturation=0.15, contrast=0.15),
             ToTensor()
         ]),
-        transform=Compose(
-            [Lambda(lambda img: pad_resize(img, 1024, 1024)),
-             ToTensor()]),
+        transform=Compose([
+            Lambda(lambda img: pad_resize(img, 1024, 1024)),
+            RandomCrop(256),
+            ToTensor()
+        ]),
         in_memory=True)
 
     loader = DataLoader(train_dataset,
                         batch_size=1,
-                        num_workers=1,
+                        num_workers=0,
                         pin_memory=False)
 
     for imgs in loader:
@@ -155,6 +157,7 @@ def get_loader_for_crop_batch(crop_size, batch_size, train_split, mean, std,
         input_only_transform=Compose([Normalize(mean, std)]),
         transform=Compose([
             Lambda(lambda img: pad_resize(img, 1024, 1024)),
+            ColorJitter(brightness=0.15, saturation=0.15, contrast=0.15),
             RandomCrop(crop_size),
             RandomHorizontalFlip(),
             RandomVerticalFlip(),
@@ -162,16 +165,9 @@ def get_loader_for_crop_batch(crop_size, batch_size, train_split, mean, std,
         ]),
         in_memory=True)
 
-    # sampler = WeightedRandomSampler(train_weights,
-    #                                 num_samples=6 * len(train_weights),
-    #                                 replacement=True)
-
-    sampler = PrioritizedBatchSampler(num_samples=len(train_weights),
-                                      num_items=len(train_weights),
-                                      batch_size=batch_size,
-                                      drop_last=True,
-                                      update_callback=callback,
-                                      replacement=True)
+    sampler = WeightedRandomSampler(train_weights,
+                                    num_samples=len(train_weights),
+                                    replacement=True)
 
     return DataLoader(Subset(train_dataset, train_split),
                       batch_sampler=sampler,
@@ -226,15 +222,16 @@ def main(args):
     train_split, valid_split, test_split, train_weights = get_splits(
         valid_dataset)
     valid_loader = DataLoader(Subset(test_dataset, valid_split),
-                              batch_size=10,
+                              batch_size=8,
                               num_workers=8,
                               pin_memory=False)
 
     # module = deeplabv3_efficientnet(n=5)
-    module = fcn_resnet50(dropout=0.8)
+    # module = fcn_resnet50(dropout=0.8)
+    module = deeplabv3_resnet50()
 
-    optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=5e-4)
-    exp = Experiment(directory=os.path.join(args.root_dir, 'best_attempt_6'),
+    optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-6)
+    exp = Experiment(directory=os.path.join(args.root_dir, 'deeplab'),
                      module=module,
                      device=torch.device(args.device),
                      optimizer=optim,
@@ -243,26 +240,23 @@ def main(args):
                      monitor_metric='val_IntersectionOverUnion',
                      monitor_mode='max')
 
-    lr_schedulers = [ExponentialLR(0.95)]
+    lr_schedulers = [ExponentialLR(0.97)]
     callbacks = [
         EarlyStopping(monitor='val_IntersectionOverUnion',
                       min_delta=1e-3,
-                      patience=25,
+                      patience=35,
                       verbose=True,
                       mode='max')
     ]
 
-    for i, (crop_size, batch_size) in enumerate(zip([512], [5])):
-        update_callback = PrioritizedBatchSamplerUpdate(
-            metric='IntersectionOverUnion', metric_mode='min')
+    for i, (crop_size, batch_size) in enumerate(zip([256], [16])):
         train_loader = get_loader_for_crop_batch(crop_size, batch_size,
                                                  train_split, mean, std,
-                                                 train_weights, args.root_dir,
-                                                 update_callback)
+                                                 train_weights, args.root_dir)
 
         exp.train(train_loader=train_loader,
                   valid_loader=valid_loader,
-                  epochs=(1 + i) * 30,
+                  epochs=(1 + i) * 300,
                   lr_schedulers=lr_schedulers,
                   callbacks=callbacks + [update_callback])
 
@@ -274,12 +268,12 @@ def main(args):
                                            include_fname=True)
 
     test_loader = DataLoader(Subset(test_dataset, test_split),
-                             batch_size=10,
+                             batch_size=8,
                              num_workers=8,
                              pin_memory=False)
     valid_loader = DataLoader(valid_dataset,
                               batch_size=1,
-                              num_workers=10,
+                              num_workers=8,
                               pin_memory=False)
     pure_loader = DataLoader(pure_dataset,
                              batch_size=1,
@@ -392,8 +386,8 @@ def main(args):
             # plt.show()
             plt.savefig(os.path.join(
                 args.root_dir,
-                'Images/results/best_attempt_6/combined_images/{}/{}/{}').
-                        format(wood_type, split, fname),
+                'Images/results/deeplab/combined_images/{}/{}/{}').format(
+                    wood_type, split, fname),
                         format='png',
                         dpi=900)
             plt.close()
@@ -406,15 +400,14 @@ def main(args):
 
             dual = Image.fromarray(dual_outputs, mode='L')
             dual.save(
-                os.path.join(
-                    args.root_dir,
-                    'Images/results/best_attempt_6/outputs/{}/{}/{}').format(
-                        wood_type, split, fname))
+                os.path.join(args.root_dir,
+                             'Images/results/deeplab/outputs/{}/{}/{}').format(
+                                 wood_type, split, fname))
 
             results_csv.append(running_csv_stats)
 
-    csv_file = os.path.join(args.root_dir, 'Images', 'results',
-                            'best_attempt_6', 'final_stats.csv')
+    csv_file = os.path.join(args.root_dir, 'Images', 'results', 'deeplab',
+                            'final_stats.csv')
 
     with open(csv_file, 'w') as f:
         csv_writer = csv.writer(f, delimiter='\t')
@@ -467,7 +460,7 @@ if __name__ == "__main__":
 
     parser.add_argument('--seed',
                         type=int,
-                        default=1,
+                        default=42,
                         help='Which random seed to use.')
 
     args = parser.parse_args()
