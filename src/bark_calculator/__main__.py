@@ -227,10 +227,10 @@ def main(args):
                               pin_memory=False)
 
     # module = deeplabv3_efficientnet(n=5)
-    module = fcn_resnet50(dropout=0.5)
+    module = fcn_resnet50(dropout=0.9)
     # module = deeplabv3_resnet50()
 
-    optim = torch.optim.Adam(module.parameters(), lr=5e-4, weight_decay=1e-4)
+    optim = torch.optim.Adam(module.parameters(), lr=5e-4, weight_decay=2e-4)
     exp = Experiment(directory=os.path.join(args.root_dir, 'retry5'),
                      module=module,
                      device=torch.device(args.device),
