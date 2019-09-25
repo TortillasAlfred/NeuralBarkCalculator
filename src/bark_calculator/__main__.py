@@ -32,7 +32,7 @@ def generate_output_folders(root_dir):
     levels = [('combined_images', ['train', 'valid', 'test']),
               ('outputs', ['train', 'valid', 'test'])]
 
-    results_dir = os.path.join(root_dir, 'Images', 'results', 'retry2')
+    results_dir = os.path.join(root_dir, 'Images', 'results', 'retry3')
 
     def mkdirs_if_not_there(dir):
         if not os.path.isdir(dir):
@@ -157,7 +157,6 @@ def get_loader_for_crop_batch(crop_size, batch_size, train_split, mean, std,
         input_only_transform=Compose([Normalize(mean, std)]),
         transform=Compose([
             Lambda(lambda img: pad_resize(img, 1024, 1024)),
-            ColorJitter(brightness=0.15, saturation=0.15, contrast=0.15),
             RandomCrop(crop_size),
             RandomHorizontalFlip(),
             RandomVerticalFlip(),
@@ -166,7 +165,7 @@ def get_loader_for_crop_batch(crop_size, batch_size, train_split, mean, std,
         in_memory=True)
 
     sampler = BatchSampler(WeightedRandomSampler(
-        train_weights, num_samples=len(train_weights), replacement=True),
+        train_weights, num_samples=len(train_weights) * 24, replacement=True),
                            batch_size=batch_size,
                            drop_last=True)
 
@@ -228,11 +227,11 @@ def main(args):
                               pin_memory=False)
 
     # module = deeplabv3_efficientnet(n=5)
-    module = fcn_resnet50(dropout=0.8)
+    module = fcn_resnet50(dropout=0.9)
     # module = deeplabv3_resnet50()
 
-    optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=3e-4)
-    exp = Experiment(directory=os.path.join(args.root_dir, 'retry2'),
+    optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-4)
+    exp = Experiment(directory=os.path.join(args.root_dir, 'retry3'),
                      module=module,
                      device=torch.device(args.device),
                      optimizer=optim,
@@ -241,11 +240,18 @@ def main(args):
                      monitor_metric='val_IntersectionOverUnion',
                      monitor_mode='max')
 
-    lr_schedulers = [ExponentialLR(0.97)]
+    lr_schedulers = [
+        ReduceLROnPlateau(monitor='val_IntersectionOverUnion',
+                          mode='min',
+                          factor=0.2,
+                          patience=5,
+                          threshold=1e-3,
+                          threshold_mode='ab')
+    ]
     callbacks = [
         EarlyStopping(monitor='val_IntersectionOverUnion',
                       min_delta=1e-3,
-                      patience=35,
+                      patience=12,
                       verbose=True,
                       mode='max')
     ]
@@ -257,7 +263,7 @@ def main(args):
 
         exp.train(train_loader=train_loader,
                   valid_loader=valid_loader,
-                  epochs=(1 + i) * 300,
+                  epochs=(1 + i) * 40,
                   lr_schedulers=lr_schedulers,
                   callbacks=callbacks)
 
@@ -387,7 +393,7 @@ def main(args):
             # plt.show()
             plt.savefig(os.path.join(
                 args.root_dir,
-                'Images/results/retry2/combined_images/{}/{}/{}').format(
+                'Images/results/retry3/combined_images/{}/{}/{}').format(
                     wood_type, split, fname),
                         format='png',
                         dpi=900)
@@ -402,12 +408,12 @@ def main(args):
             dual = Image.fromarray(dual_outputs, mode='L')
             dual.save(
                 os.path.join(args.root_dir,
-                             'Images/results/retry2/outputs/{}/{}/{}').format(
+                             'Images/results/retry3/outputs/{}/{}/{}').format(
                                  wood_type, split, fname))
 
             results_csv.append(running_csv_stats)
 
-    csv_file = os.path.join(args.root_dir, 'Images', 'results', 'retry2',
+    csv_file = os.path.join(args.root_dir, 'Images', 'results', 'retry3',
                             'final_stats.csv')
 
     with open(csv_file, 'w') as f:
