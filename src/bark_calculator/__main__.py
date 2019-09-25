@@ -1,7 +1,7 @@
 from dataset import RegressionDatasetFolder, pil_loader
 from utils import *
 from models import fcn_resnet50, deeplabv3_resnet50, fcn_resnet101, deeplabv3_resnet101, fcn_efficientnet, deeplabv3_efficientnet
-from lovasz_losses import LovaszSoftmax, iou
+from lovasz_losses import LovaszSoftmax, miou
 
 from torchvision.transforms import *
 
@@ -236,12 +236,12 @@ def main(args):
                      device=torch.device(args.device),
                      optimizer=optim,
                      loss_function=LovaszSoftmax(),
-                     metrics=[iou],
-                     monitor_metric='val_iou',
+                     metrics=[miou],
+                     monitor_metric='val_miou',
                      monitor_mode='max')
 
     lr_schedulers = [
-        ReduceLROnPlateau(monitor='val_iou',
+        ReduceLROnPlateau(monitor='val_miou',
                           mode='min',
                           factor=0.2,
                           patience=5,
@@ -249,7 +249,7 @@ def main(args):
                           threshold_mode='abs')
     ]
     callbacks = [
-        EarlyStopping(monitor='val_iou',
+        EarlyStopping(monitor='val_miou',
                       min_delta=1e-3,
                       patience=12,
                       verbose=True,
@@ -321,7 +321,7 @@ def main(args):
             names = ['Input', 'Target', 'Generated image']
 
             try:
-                class_accs = IOU(class_to_watch='all')(outputs, target)
+                class_accs = miou(class_to_watch='all')(outputs, target)
 
                 acc = class_accs.mean()
             except ValueError as e:
