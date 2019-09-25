@@ -87,18 +87,25 @@ def get_splits(dataset):
     }
 
     idxs_by_type = [[] for _ in range(3)]
+    sample_weight = []
 
-    for i, (_, _, _, wood_type) in enumerate(dataset):
+    for i, (_, target, _, wood_type) in enumerate(dataset):
         idxs_by_type[wood_type_to_idx[wood_type]].append(i)
+        sample_weight.append(
+            (target.numel() - target.view(-1).bincount()[0]).float().item())
+
+    sample_weight = torch.tensor(sample_weight)
+    sample_weight = sample_weight / sample_weight.sum()
 
     train_split, valid_split, test_split, train_weights = [], [], [], []
+    wood_type_weights = []
 
     for idx in range(len(idxs_by_type)):
         idxs_by_type[idx] = np.asarray(idxs_by_type[idx])
         np.random.shuffle(idxs_by_type[idx])
         n_data = len(idxs_by_type[idx])
 
-        idx_weight = total_items / (3 * n_data)
+        wood_type_weights.append(total_items / (3 * n_data))
 
         n_train = int(ceil(train_percent * n_data))
         n_valid = int(floor(valid_percent * n_data))
@@ -106,12 +113,20 @@ def get_splits(dataset):
         train_split.extend(idxs_by_type[idx][:n_train])
         valid_split.extend(idxs_by_type[idx][n_train:n_train + n_valid])
         test_split.extend(idxs_by_type[idx][n_train + n_valid:])
-        train_weights.extend([idx_weight] * n_train)
+
+    wood_type_weights = np.asarray(wood_type_weights)
+    wood_type_weights /= wood_type_weights.sum()
+    train_weights = torch.zeros(len(dataset)).float()
+
+    for i, (_, _, _, wood_type) in enumerate(dataset):
+        train_weights[i] = wood_type_weights[
+            wood_type_to_idx[wood_type]] * sample_weight[i]
 
     train_split = np.asarray(train_split)
     valid_split = np.asarray(valid_split)
     test_split = np.asarray(test_split)
     train_weights = np.asarray(train_weights)
+    train_weights /= train_weights.sum()
 
     return train_split, valid_split, test_split, train_weights
 
@@ -121,10 +136,10 @@ def remove_small_zones(img):
     np_image = (img.cpu().numpy() == 0)
 
     remove_small_holes(np_image,
-                       area_threshold=100,
+                       area_threshold=150,
                        connectivity=2,
                        in_place=True)
-    remove_small_objects(np_image, min_size=100, connectivity=2, in_place=True)
+    remove_small_objects(np_image, min_size=150, connectivity=2, in_place=True)
 
     img[torch.from_numpy(np_image == 0).to(device).byte() & (img == 0)] = 1
     img[torch.from_numpy(np_image != 0).to(device).byte() & (img != 0)] = 0
