@@ -6,7 +6,7 @@ from lovasz_losses import LovaszSoftmax
 from torchvision.transforms import *
 
 from poutyne.framework import Experiment, ExponentialLR, EarlyStopping, ReduceLROnPlateau
-from torch.utils.data import DataLoader, Subset, WeightedRandomSampler
+from torch.utils.data import DataLoader, Subset, WeightedRandomSampler, BatchSampler
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 from torch.nn.modules.loss import CrossEntropyLoss
