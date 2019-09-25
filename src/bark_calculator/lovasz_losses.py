@@ -51,7 +51,7 @@ def iou_binary(preds, labels, EMPTY=1., ignore=None, per_image=True):
     return 100 * iou
 
 
-def iou(preds, labels, C, EMPTY=1., ignore=None, per_image=False):
+def iou(preds, labels, C=3, EMPTY=1., ignore=None, per_image=False):
     """
     Array of IoU for each (non ignored) class
     """
