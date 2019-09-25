@@ -127,6 +127,7 @@ def get_splits(dataset):
     test_split = np.asarray(test_split)
     train_weights = np.asarray(train_weights)
     train_weights /= train_weights.sum()
+    train_weights = train_weights[train_split]
 
     return train_split, valid_split, test_split, train_weights
 
