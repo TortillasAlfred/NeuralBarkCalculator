@@ -55,6 +55,9 @@ def iou(preds, labels, C=3, EMPTY=1., ignore=None, per_image=False):
     """
     Array of IoU for each (non ignored) class
     """
+    preds = torch.argmax(preds, dim=1)
+    print(preds.shape)
+    print(labels.shape)
     if not per_image:
         preds, labels = (preds, ), (labels, )
     ious = []
