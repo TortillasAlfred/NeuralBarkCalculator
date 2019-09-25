@@ -258,7 +258,7 @@ def main(args):
                   valid_loader=valid_loader,
                   epochs=(1 + i) * 300,
                   lr_schedulers=lr_schedulers,
-                  callbacks=callbacks + [update_callback])
+                  callbacks=callbacks)
 
     raw_dataset.print_filenames()
 
