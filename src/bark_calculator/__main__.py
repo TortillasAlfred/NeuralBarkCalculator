@@ -1,6 +1,6 @@
 from dataset import RegressionDatasetFolder, pil_loader
 from utils import *
-from models import fcn_resnet50, deeplabv3_resnet50, fcn_resnet101, deeplabv3_resnet101, fcn_efficientnet, deeplabv3_efficientnet
+from models import fcn_resnet50, fcnv3_resnet50, fcn_resnet101, fcnv3_resnet101, fcn_efficientnet, fcnv3_efficientnet
 from lovasz_losses import LovaszSoftmax
 
 from torchvision.transforms import *
@@ -32,7 +32,7 @@ def generate_output_folders(root_dir):
     levels = [('combined_images', ['train', 'valid', 'test']),
               ('outputs', ['train', 'valid', 'test'])]
 
-    results_dir = os.path.join(root_dir, 'Images', 'results', 'deeplab')
+    results_dir = os.path.join(root_dir, 'Images', 'results', 'fcn')
 
     def mkdirs_if_not_there(dir):
         if not os.path.isdir(dir):
@@ -227,12 +227,12 @@ def main(args):
                               num_workers=8,
                               pin_memory=False)
 
-    # module = deeplabv3_efficientnet(n=5)
-    # module = fcn_resnet50(dropout=0.8)
-    module = deeplabv3_resnet50()
+    # module = fcnv3_efficientnet(n=5)
+    module = fcn_resnet50(dropout=0.8)
+    # module = fcnv3_resnet50()
 
     optim = torch.optim.Adam(module.parameters(), lr=1e-3, weight_decay=1e-6)
-    exp = Experiment(directory=os.path.join(args.root_dir, 'deeplab'),
+    exp = Experiment(directory=os.path.join(args.root_dir, 'fcn'),
                      module=module,
                      device=torch.device(args.device),
                      optimizer=optim,
@@ -387,7 +387,7 @@ def main(args):
             # plt.show()
             plt.savefig(os.path.join(
                 args.root_dir,
-                'Images/results/deeplab/combined_images/{}/{}/{}').format(
+                'Images/results/fcn/combined_images/{}/{}/{}').format(
                     wood_type, split, fname),
                         format='png',
                         dpi=900)
@@ -402,12 +402,12 @@ def main(args):
             dual = Image.fromarray(dual_outputs, mode='L')
             dual.save(
                 os.path.join(args.root_dir,
-                             'Images/results/deeplab/outputs/{}/{}/{}').format(
+                             'Images/results/fcn/outputs/{}/{}/{}').format(
                                  wood_type, split, fname))
 
             results_csv.append(running_csv_stats)
 
-    csv_file = os.path.join(args.root_dir, 'Images', 'results', 'deeplab',
+    csv_file = os.path.join(args.root_dir, 'Images', 'results', 'fcn',
                             'final_stats.csv')
 
     with open(csv_file, 'w') as f:
