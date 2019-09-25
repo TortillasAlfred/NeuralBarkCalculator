@@ -321,7 +321,7 @@ def main(args):
             names = ['Input', 'Target', 'Generated image']
 
             try:
-                class_accs = miou(class_to_watch='all')(outputs, target)
+                class_accs = iou(outputs, target)
 
                 acc = class_accs.mean()
             except ValueError as e:
