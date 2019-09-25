@@ -180,8 +180,6 @@ def make_training_deterministic(seed):
     np.random.seed(seed)
     torch.manual_seed(seed)
     random.seed(seed)
-    torch.backends.cudnn.deterministic = True
-    torch.backends.cudnn.benchmark = False
 
 
 class IOU(nn.Module):
@@ -208,6 +206,9 @@ class IOU(nn.Module):
         targets_count = np.bincount(labels)
         outputs_count = np.bincount(outputs)
 
+        print(targets_count)
+        print(outputs_count)
+
         for i, count_i in enumerate(targets_count):
             if count_i == 0 and outputs_count[i] == 0:
                 scores[i] = np.delete(scores, i).mean()
@@ -219,6 +220,7 @@ class IOU(nn.Module):
         elif isinstance(self.class_to_watch, int):
             return scores[self.class_to_watch]
         else:
+            print(scores)
             return scores
 
 
