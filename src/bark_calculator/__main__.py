@@ -151,7 +151,7 @@ def test_color_jitter(root_dir):
 
 
 def get_loader_for_crop_batch(crop_size, batch_size, train_split, mean, std,
-                              train_weights, root_dir, callback):
+                              train_weights, root_dir):
     train_dataset = RegressionDatasetFolder(
         os.path.join(root_dir, "Images/1024_with_jedi"),
         input_only_transform=Compose([Normalize(mean, std)]),
