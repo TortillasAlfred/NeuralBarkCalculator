@@ -375,13 +375,14 @@ def main(args):
             class_names = ['Nothing', 'Bark', 'Node']
 
             for c, c_acc in zip(class_names, class_accs):
-                suptitle += '\n{} : {:.3f}'.format(c, c_acc)
+                suptitle += '{} : {:.3f}\t'.format(c, c_acc)
                 running_csv_stats.append('{:.3f}'.format(c_acc))
 
             running_csv_stats.append('{:.3f}'.format(acc))
+            suptitle += '\n'
 
             for c, c_f1 in zip(class_names, f1s):
-                suptitle += '\n{} : {:.3f}'.format(c, c_f1)
+                suptitle += '{} : {:.3f}\t'.format(c, c_f1)
                 running_csv_stats.append('{:.3f}'.format(c_f1))
 
             running_csv_stats.append('{:.3f}'.format(f1))
