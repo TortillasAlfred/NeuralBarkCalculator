@@ -322,7 +322,7 @@ def main(args):
             names = ['Input', 'Target', 'Generated image']
 
             try:
-                class_accs = iou(outputs, target)
+                class_accs = iou(outputs, target.to(torch.device(args.device)))
 
                 acc = class_accs.mean()
             except ValueError as e:
