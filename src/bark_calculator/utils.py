@@ -74,8 +74,8 @@ def get_pos_weight():
 
 
 def get_splits(dataset):
-    train_percent = 0.7
-    valid_percent = 0.2
+    train_percent = 0.8
+    valid_percent = 0.1
     test_percent = 0.1
 
     total_items = len(dataset)
