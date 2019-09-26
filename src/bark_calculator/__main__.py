@@ -300,8 +300,8 @@ def main(args):
 
     results_csv = [[
         'Name', 'Type', 'Split', 'iou_nothing', 'iou_bark', 'iou_node',
-        'iou_mean', 'Output Bark %', 'Output Node %', 'Target Bark %',
-        'Target Node %'
+        'iou_mean', 'f1_nothing', 'f1_bark', 'f1_node', 'f1_mean',
+        'Output Bark %', 'Output Node %', 'Target Bark %', 'Target Node %'
     ]]
 
     with torch.no_grad():
@@ -323,8 +323,10 @@ def main(args):
 
             try:
                 class_accs = iou(outputs, target.to(torch.device(args.device)))
+                f1s = PixelWiseF1('all')(outputs, target)
 
                 acc = class_accs.mean()
+                f1 = f1s.mean()
             except ValueError as e:
                 print('Error on file {}'.format(fname))
                 print(outputs.shape)
@@ -377,6 +379,12 @@ def main(args):
                 running_csv_stats.append('{:.3f}'.format(c_acc))
 
             running_csv_stats.append('{:.3f}'.format(acc))
+
+            for c, c_f1 in zip(class_names, f1s):
+                suptitle += '\n{} : {:.3f}'.format(c, c_f1)
+                running_csv_stats.append('{:.3f}'.format(c_f1))
+
+            running_csv_stats.append('{:.3f}'.format(f1))
 
             for class_idx in [1, 2]:
                 class_percent = (outputs == class_idx).float().mean().cpu()
