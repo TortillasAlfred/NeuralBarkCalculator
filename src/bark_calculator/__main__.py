@@ -236,7 +236,7 @@ def main(args):
                      device=torch.device(args.device),
                      optimizer=optim,
                      loss_function=LovaszSoftmax(),
-                     metrics=[miou],
+                     metrics=[miou, PixelWiseF1(None)],
                      monitor_metric='val_miou',
                      monitor_mode='max')
 
