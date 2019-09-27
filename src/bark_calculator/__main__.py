@@ -329,7 +329,7 @@ def main(args):
 
             try:
                 class_accs = iou(outputs, target.to(torch.device(args.device)))
-                f1s = PixelWiseF1('all')(outputs, target)
+                f1s = PixelWiseF1('all')(outputs, target) * 100
 
                 acc = class_accs.mean()
                 f1 = f1s.mean()
