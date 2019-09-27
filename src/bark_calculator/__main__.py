@@ -32,7 +32,7 @@ def generate_output_folders(root_dir):
     levels = [('combined_images', ['train', 'valid', 'test']),
               ('outputs', ['train', 'valid', 'test'])]
 
-    results_dir = os.path.join(root_dir, 'Images', 'results', 'moar2')
+    results_dir = os.path.join(root_dir, 'Images', 'results', 'moar')
 
     def mkdirs_if_not_there(dir):
         if not os.path.isdir(dir):
@@ -232,7 +232,7 @@ def main(args):
     # module = deeplabv3_resnet50()
 
     optim = torch.optim.Adam(module.parameters(), lr=5e-4, weight_decay=2e-3)
-    exp = Experiment(directory=os.path.join(args.root_dir, 'moar2'),
+    exp = Experiment(directory=os.path.join(args.root_dir, 'moar'),
                      module=module,
                      device=torch.device(args.device),
                      optimizer=optim,
@@ -264,7 +264,7 @@ def main(args):
 
         exp.train(train_loader=train_loader,
                   valid_loader=valid_loader,
-                  epochs=(1 + i) * 60,
+                  epochs=(1 + i) * 10,
                   lr_schedulers=lr_schedulers,
                   callbacks=callbacks)
 
@@ -291,6 +291,11 @@ def main(args):
     exp.test(test_loader)
 
     exp.load_best_checkpoint()
+    for checkpoint in [11, 15, 16, 17, 21]:
+        print("Testing checkpoint {}".format(checkpoint))
+        exp.load_checkpoint(checkpoint)
+        test_model_on_checkpoint(exp.model, test_loader)
+
     module = exp.model.model
     module.eval()
 
@@ -404,7 +409,7 @@ def main(args):
             # plt.show()
             plt.savefig(os.path.join(
                 args.root_dir,
-                'Images/results/moar2/combined_images/{}/{}/{}').format(
+                'Images/results/moar/combined_images/{}/{}/{}').format(
                     wood_type, split, fname),
                         format='png',
                         dpi=900)
@@ -419,12 +424,12 @@ def main(args):
             dual = Image.fromarray(dual_outputs, mode='L')
             dual.save(
                 os.path.join(args.root_dir,
-                             'Images/results/moar2/outputs/{}/{}/{}').format(
+                             'Images/results/moar/outputs/{}/{}/{}').format(
                                  wood_type, split, fname))
 
             results_csv.append(running_csv_stats)
 
-    csv_file = os.path.join(args.root_dir, 'Images', 'results', 'moar2',
+    csv_file = os.path.join(args.root_dir, 'Images', 'results', 'moar',
                             'final_stats.csv')
 
     with open(csv_file, 'w') as f:
