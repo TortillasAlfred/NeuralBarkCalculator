@@ -243,7 +243,7 @@ def main(args):
 
     lr_schedulers = [
         ReduceLROnPlateau(monitor='val_miou',
-                          mode='min',
+                          mode='max',
                           factor=0.2,
                           patience=3,
                           threshold=1e-1,
