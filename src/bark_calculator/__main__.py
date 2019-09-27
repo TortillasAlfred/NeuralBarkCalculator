@@ -264,7 +264,7 @@ def main(args):
 
         exp.train(train_loader=train_loader,
                   valid_loader=valid_loader,
-                  epochs=(1 + i) * 10,
+                  epochs=(1 + i) * 30,
                   lr_schedulers=lr_schedulers,
                   callbacks=callbacks)
 
@@ -290,12 +290,12 @@ def main(args):
 
     exp.test(test_loader)
 
-    exp.load_best_checkpoint()
-    for checkpoint in [11, 15, 16, 17, 21]:
-        print("Testing checkpoint {}".format(checkpoint))
-        exp.load_checkpoint(checkpoint)
-        test_model_on_checkpoint(exp.model, test_loader)
+    # for checkpoint in [11, 15, 16, 17, 21]:
+    #     print("Testing checkpoint {}".format(checkpoint))
+    #     exp.load_checkpoint(checkpoint)
+    #     test_model_on_checkpoint(exp.model, test_loader)
 
+    exp.load_checkpoint(11)
     module = exp.model.model
     module.eval()
 
