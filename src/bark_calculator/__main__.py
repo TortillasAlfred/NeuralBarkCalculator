@@ -370,7 +370,7 @@ def main(args):
                         for value in values
                     ]
 
-            suptitle = 'Mean iou : {:.3f}'.format(acc)
+            suptitle = 'Mean iou : {:.3f}\n'.format(acc)
 
             for split_idxs, split_name in splits:
                 if image_number in split_idxs:
@@ -381,14 +381,14 @@ def main(args):
             class_names = ['Nothing', 'Bark', 'Node']
 
             for c, c_acc in zip(class_names, class_accs):
-                suptitle += '{} : {:.3f};  '.format(c, c_acc)
+                suptitle += '{} : {:.3f};  '.format('iou_' + c, c_acc)
                 running_csv_stats.append('{:.3f}'.format(c_acc))
 
             running_csv_stats.append('{:.3f}'.format(acc))
-            suptitle += '\n'
+            suptitle += 'Mean f1 : {:.3f}\n'.format(f1)
 
             for c, c_f1 in zip(class_names, f1s):
-                suptitle += '{} : {:.3f};  '.format(c, c_f1)
+                suptitle += '{} : {:.3f};  '.format('f1_' + c, c_f1)
                 running_csv_stats.append('{:.3f}'.format(c_f1))
 
             running_csv_stats.append('{:.3f}'.format(f1))
