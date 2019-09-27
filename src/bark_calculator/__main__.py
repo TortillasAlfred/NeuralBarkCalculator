@@ -385,7 +385,7 @@ def main(args):
                 running_csv_stats.append('{:.3f}'.format(c_acc))
 
             running_csv_stats.append('{:.3f}'.format(acc))
-            suptitle += 'Mean f1 : {:.3f}\n'.format(f1)
+            suptitle += '\nMean f1 : {:.3f}\n'.format(f1)
 
             for c, c_f1 in zip(class_names, f1s):
                 suptitle += '{} : {:.3f};  '.format('f1_' + c, c_f1)
